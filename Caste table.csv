@@ -1,0 +1,5 @@
+casten,caste,renew,resident
+11,RenewRes,Renew,Resident
+12,RenewNonRes,Renew,NonResident
+21,NonRenewRes,NonRenew,Resident
+22,NonRenewNonRes,NonRenew,NonResident

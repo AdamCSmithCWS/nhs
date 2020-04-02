@@ -1,0 +1,51 @@
+AOU,ENGLISH,FRENCH,specieslevelenglish,specieslevelfrench,group
+300,Common Murre,Guillemot marmette,Common Murre,Guillemot marmette,murre
+310,Thick-billed Murre,Guillemot de Brünnich,Thick-billed Murre,Guillemot de Brünnich,murre
+1290,Common Merganser,Grand Harle,Common Merganser,Grand Harle,duck
+1300,Red-breasted Merganser,Harle huppé,Red-breasted Merganser,Harle huppé,duck
+1310,Hooded Merganser,Harle couronné,Hooded Merganser,Harle couronné,duck
+1320,Mallard,Canard colvert,Mallard,Canard colvert,duck
+1321,Hybrid Mallard/Black Duck,Hybride Canard colvert/noir,Mallard,Hybride Canard colvert/noir,duck
+1326,,,Mallard,,duck
+1330,American Black Duck,Canard noir,American Black Duck,Canard noir,duck
+1331,Hybrid Black Duck/Mallard,Hybride canard noir/colvert,American Black Duck,Hybride canard noir/colvert,duck
+1350,Gadwall,Canard chipeau,Gadwall,Canard chipeau,duck
+1360,Eurasian Wigeon,Canard siffleur,Eurasian Wigeon,Canard siffleur,duck
+1370,American Wigeon,Canard d'Amérique,American Wigeon,Canard d'Amérique,duck
+1380,Eurasian Green-winged Teal,Sarcelle d'hiver (race crecca),Eurasian Green-winged Teal,Sarcelle d'hiver (race crecca),duck
+1390,American Green-winged Teal,Sarcelle d'hiver,American Green-winged Teal,Sarcelle d'hiver,duck
+1400,Blue-winged Teal,Sarcelle à ailes bleues,Blue-winged Teal,Sarcelle à ailes bleues,duck
+1420,Northern Shoveler,Canard souchet,Northern Shoveler,Canard souchet,duck
+1430,Northern Pintail,Canard pilet,Northern Pintail,Canard pilet,duck
+1436,Hybrid Mallard/Northern Pintail,Hybride Canard colvert/pilet,Hybrid Mallard/Northern Pintail,Hybride Canard colvert/pilet,duck
+1440,Wood Duck,Canard branchu,Wood Duck,Canard branchu,duck
+1460,Redhead,Fuligule à tête rouge,Redhead,Fuligule à tête rouge,duck
+1470,Canvasback,Fuligule à dos blanc,Canvasback,Fuligule à dos blanc,duck
+1480,Greater Scaup,Fuligule milouinan,Greater Scaup,Fuligule milouinan,duck
+1490,Lesser Scaup,Petit Fuligule,Lesser Scaup,Petit Fuligule,duck
+1500,Ring-necked Duck,Fuligule à collier,Ring-necked Duck,Fuligule à collier,duck
+1510,Common Goldeneye,Garrot à oeil d'or,Common Goldeneye,Garrot à oeil d'or,duck
+1520,Barrow's Goldeneye,Garrot d'Islande,Barrow's Goldeneye,Garrot d'Islande,duck
+1530,Bufflehead,Petit Garrot,Bufflehead,Petit Garrot,duck
+1540,Long-tailed Duck,Harelde kakawi,Long-tailed Duck,Harelde kakawi,duck
+1550,Harlequin Duck,Arlequin plongeur,Harlequin Duck,Arlequin plongeur,duck
+1590,Common Eider,Eider à duvet,Common Eider,Eider à duvet,duck
+1600,,,Common Eider,,duck
+1620,King Eider,Eider à tête grise,King Eider,Eider à tête grise,duck
+1630,Black Scoter,Macreuse noire,Black Scoter,Macreuse noire,duck
+1650,White-winged Scoter,Macreuse brune,White-winged Scoter,Macreuse brune,duck
+1660,Surf Scoter,Macreuse à front blanc,Surf Scoter,Macreuse à front blanc,duck
+1670,Ruddy Duck,Érismature rousse,Ruddy Duck,Érismature rousse,duck
+1690,Lesser Snow Goose: white phase,"Oie des neiges : petite, phase blanche",Snow Goose,Oie des neiges,goose
+1691,Lesser Snow Goose: blue phase,"Oie des neiges : petite, phase bleue",Snow Goose,Oie des neiges,goose
+1699,Greater Snow Goose,Oie des neiges : grande,Snow Goose,Oie des neiges,goose
+1700,Ross' Goose,Oie de Ross,Ross' Goose,Oie de Ross,goose
+1710,White-fronted Goose,Oie rieuse,White-fronted Goose,Oie rieuse,goose
+1720,Canada Goose,Bernache du Canada,Canada Goose,Bernache du Canada,goose
+1721,Canada Goose: small races,Bernache du Canada : petites races,Canada Goose,Bernache du Canada,goose
+1722,Canada Goose: large races,Bernache du Canada : grandes races,Canada Goose,Bernache du Canada,goose
+1730,Brant,Bernache cravant,Brant,Bernache cravant,goose
+1740,Black Brant,Bernache cravant : race de l'Ouest,Black Brant,Bernache cravant : race de l'Ouest,goose
+2210,American Coot,Foulque d'Amérique,American Coot,Foulque d'Amérique,other
+2280,American Woodcock,Bécasse d'Amérique,American Woodcock,Bécasse d'Amérique,other
+2300,Wilson's Snipe,Bécassine de Wilson,Wilson's Snipe,Bécassine de Wilson,other
