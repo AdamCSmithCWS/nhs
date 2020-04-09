@@ -193,61 +193,65 @@ model {
   ### assumes that seasonal distribution is the same across castes...questionable...
   
   
-  ### multinomial distribution across periods    
+#####################################################################
+  #### proportional distribution of all birds killed across periods
+  
+  ### multinomial distribution across periods  
+  ### kill_pyh and nkill[y,h] are data
   for (y in 1:nyears) {
     for(h in 1:nhunters[y]){
       kill_pyh[1:nperiods,y,h] ~ dmulti(pkill_py[1:nperiods,y], nkill[y,h])   # multinom distr vector responses
-      
-      
     }#h
   }#y
   
   ##### pkill_py[p,y] is the estimated proportion of the total duck harvest in year-y that occurred in period-p
-  ##### this submodel shrinks that proportion towards the mean proportion across all years
-  ##### using the kappat weight and the gamma distribution below
   for (p in 1:nperiods){
     for (y in 1:nyears){
-      pkill_py[p,y] <- deltat[p,y] / sum(deltat[1:nperiods,y])
-      
-      
-      deltat[p,y] ~ dgamma(alphat[p,y], 1)
-      alphat[p,y] <- mut[p]*kappat ### mut[p] is the mean proportion of the hunt occurring in period p across all years
-      
-      
-      
-    } #y
-    
+      pkill_py[p,y] <- delta_py[p,y] / sum(delta_py[1:nperiods,y])
+      delta_py[p,y] ~ dgamma(exp_alpha_py[p,y], 1)
+      exp_alpha_py[p,y] <- exp(alpha_py[p,y])
+      # alphat[p,y] <- mut[p]*kappat ### mut[p] is the mean proportion of the hunt occurring in period p across all years
+      # 
+       } #y
   }#p
-  
-  
-  #### hyperparameter mut[p] shrinking each period's estimate
-  #### towards the long-term mean proportion of the hunt occurring within that period
-  # logistic transformation
+
+  # logistic transformation to monitor the hyperparameter mean proportion in a given period
   for(p in 1:nperiods){
     mut[p] <- exp.termt[p]/sum(exp.termt[1:nperiods])
-    exp.termt[p] <- exp(alphabt[p])
-    
-    
-    
+    exp.termt[p] <- exp(alpha_p[p])
+  }#p
+ 
+  #### hyperparameter alpha_p[p] and tau_alpha_py[p], shrinking each period's estimate in a given year
+  #### towards last years proportion of the hunt occurring within that period
+  ### time-series first difference model through years on the period-specific parameters
+  alpha_p[1] <- 0 ## these are the log-scale intercepts of the proportions of the hunt in each period
+  for(y in 2:nyears){
+    alpha_py[1,y] ~ dnorm(alpha_py[1,y-1],tau_alpha_py[1])
+  }
+  tau_alpha_py[1] ~ dscaled.gamma(2,2)
+  for(p in 2:nperiods){
+    alpha_p[p] ~ dnorm(0,0.001) # fixed effect period-effects on total kill
+    alpha_py[p,1] <- alpha_p[p]
+     for(y in 2:nyears){
+       alpha_py[p,y] ~ dnorm(alpha_py[p,y-1],tau_alpha_py[p]) # first difference model through time
+     }
+    tau_alpha_py[p] ~ dscaled.gamma(2,2)
   }#p
   
-  alphabt[1] <- 0 ## these are the log-scale intercepts of the proportions of the hunt in each period
-  
-  for(p in 2:nperiods){
-    alphabt[p] ~ dnorm(0,0.001)
-    
-  }#s
   
   
-  
-  kappat ~ dgamma(Skappa,Rkappa) 
+ # kappat ~ dgamma(Skappa,Rkappa) 
   
   ### Skappa and Rkappa are defined below
   
   
   
   
+ 
   
+##################################################################################
+  ## species composition across periods and years
+  ## same basic model as the overall kill proportional distribution across periods
   
   ######## this model currently doesn't use the variation among hunters in the species distribution
   ### but perhaps it should, commented-out section that follows suggests how it should work
@@ -275,57 +279,39 @@ model {
     for (s in 1:nspecies){
       for (y in 1:nyears){
         pcomp_psy[p,s,y] <- delta_psy[p,s,y] / sum(delta_psy[p,1:nspecies,y])
-        
-        
-        delta_psy[p,s,y] ~ dgamma(alpha_psy[p,s,y], 1)
-        #alpha_psy[p,s,y] <- mu_ps[p,s]*kappa_mu_ps[p]
-        
+        delta_psy[p,s,y] ~ dgamma(exp_alpha_psy, 1)
+        exp_alpha_psy[p,s,y] <- exp(alpha_psy[p,s,y])
         
       } #y
       
     }#s
     
-    
-    # kappa estimates the weight of the priors in 
-    # estimating the species-level proportions
-    # it is referred to as the concentration parameter
-    # it's analogous to a variance on the probabilities
-    # in this parameterization, it also provides a way to re-scale the dirichlet-
-    # derived probabilities (alphapriors) to something more similar to the scale of the 
-    # original part counts in the multi-year alphapriors
-    
-    
-    
-    
     #### multinomial logistic regression on hyperparameter mu[p,s]
     # logistic transformation
     for( s in 1:nspecies ){
-      
       mu_ps[p,s] <- exp.alpha_ps[p,s]/sum(exp.alpha_ps[p,1:nspecies]) #mean proportional contribution of species during period
       exp.alpha_ps[p,s] <- exp(alpha_ps[p,s])
-      
-
     }
     
     
   }#p
-  for(s in 1:nspecies){
-  tau_alpha_psy[s] ~ dscaled.gamma(2, 4)
-    #illustrates the half-t distribution with 2 degrees of freedom.  The density isflat for very small values (σS) and has a long flat tail for large values (σS).  Thesefeatures protect against mis-specification of the prior scaleS.  Choosing a largeSis harmlessas it simply makes the prior flatter, whereas ifSis too small then the long flat tail ensuresthat sufficient data will dominate the prior.  Gelman [2006] calls this a “weakly informative”prior.  For comparison, figure 10.1 also shows the density onσin the limit as the degrees offreedomdfincreases to infinity.  The distribution then becomes a half-normal with standarddeviationS.  The effect of increasing the degrees of freedom is to diminish the weight of thetail.
-    
-  }
+
   
   alpha_s[1] <- 0
 
   for(s in 2:nspecies){
-    alpha_s[s] ~ dnorm(0,0.01)   # species mean proportional contribution across years and periods
+    alpha_s[s] ~ dnorm(0,0.001)   # species mean proportional contribution across years and periods
+    tau_alpha_psy[s] ~ dscaled.gamma(2, 4)
+    #prior on the sd of alpha_psy[s] equal to the half-t distribution with sd = 2 and 4 degrees of freedom.  The density isflat for very small values (σS) and has a long flat tail for large values (σS).  Thesefeatures protect against mis-specification of the prior scaleS.  Choosing a largeSis harmlessas it simply makes the prior flatter, whereas ifSis too small then the long flat tail ensuresthat sufficient data will dominate the prior.  Gelman [2006] calls this a “weakly informative”prior.  For comparison, figure 10.1 also shows the density onσin the limit as the degrees offreedomdfincreases to infinity.  The distribution then becomes a half-normal with standarddeviationS.  The effect of increasing the degrees of freedom is to diminish the weight of thetail.
     
   }#s
   for(s in 1:nspecies){
+    
+    
     for(p in 1:nperiods){
       alpha_ps[p,s] ~ dnorm(alpha_s[s],taualpha_s)
-      
       alpha_psy[p,s,1] <- alpha_ps[p,s]
+      
       for(y in 2:nyears){
         alpha_psy[p,s,y] ~ dnorm(alpha_psy[p,s,y-1],tau_alpha_psy[s]) 
       }
@@ -341,20 +327,7 @@ model {
   #is Dirichlet with parameters alpha[k], k = 1, ., K.'
   # Then infer in the gamma distribution instead
   
-  
-  ### gamma dist for kappa, derived from priors for the mean and sd of gamma 
-  ### consider making this prior less informative
-  
-  
-  for(p in 1:nperiods){
-    kappa[p] ~ dgamma(Skappa,Rkappa) 
-  }
-  Skappa <- pow(meanGamma,2)/pow(sdGamma,2) # gamma shape prior
-  Rkappa <- meanGamma/pow(sdGamma,2) # gamma rate prior
-  meanGamma <- 5
-  sdGamma <- 5
-  
-  ### derived counts
+ 
   
 }
 

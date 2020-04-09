@@ -216,8 +216,22 @@ outscse[which(outscse$BSEX %in% c("2")),"BSEX"] <- "F"
 outscse[which(outscse$BSEX %in% c("3")),"BSEX"] <- "U"
 outscse[which(outscse$BSEX %in% c("")),"BSEX"] <- "U"
 
+outscse$BAGE = factor(outscse$BAGE)
+round(prop.table(table(outscse$BAGE,outscse$AOU),2),2)
+
+outscse$BSEX = factor(outscse$BSEX)
+round(prop.table(table(outscse$BSEX,outscse$AOU),2),2)
+
+### for a given species and year, need estimates of the sex and age structure
+## assume independence of age and sex?
+## use a strongly informative prior on the variance, given the small number of parts
+## or estimate all 4 (or 9 incl unknowns) categories independently, with an 
+## use the same time-series structure used for hte other multinomial sub-models
 
 
+
+
+########## consider if the renewing hunters adjustment is necessary.
 
 
 for(spgp in c("goose","duck","murre")){
@@ -457,7 +471,7 @@ castes = 1:max(caste) #
 
 
 
-# population sizes --------------------------------------------------------
+# population sizes (number of permits in each caste and year) --------------------------------------------------------
 
 #pops[c,y]
 pops = matrix(0,nrow = max(castes),ncol = nyears)
@@ -513,7 +527,7 @@ nkill[y,h] <- sum(periodkill[,y,h],na.rm = T) #simple sum of the data
 # compiling JAGS data object ----------------------------------------------
 
 
-jdat = list(w = partsarray,
+jdat = list(w_psy = partsarray,
             nspecies = nspecies,
             nyears = nyears,
             nperiods = nperiods,
@@ -634,7 +648,7 @@ for(pr in unique(period.duck$pr)){
  nperiods = jdat$nperiods
  
  nspecies = jdat$nspecies
- w = jdat$w
+ w_psy = jdat$w_psy
     
 pdf(file = paste(pr,z," mean species proportions across periods.pdf"))
 for(s in 1:nspecies){
@@ -663,8 +677,8 @@ for(s in 1:nspecies){
           lwd = 2,
           col = "darkorange")
     for(per in 1:nperiods){
-      n.obs <- w[per,s,y]
-      p.obs <- n.obs/sum(w[per,1:nspecies,y])
+      n.obs <- w_psy[per,s,y]
+      p.obs <- n.obs/sum(w_psy[per,1:nspecies,y])
       muq = sumq[paste0("mu[",per,",",s,"]"),]
       
       arrows(x0 = per,
