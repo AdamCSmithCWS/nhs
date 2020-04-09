@@ -46,7 +46,7 @@ library(tidyverse)
 # load output from data_prep.R --------------------------------------------
 
 
-load(paste0("parts and harvest survey info",Y,".RData"))
+load(paste0("data/parts and harvest survey info",Y,".RData"))
 
 ### compile total harvest estimates into a dataframe of
 #### permit, year, caste, totalkill
@@ -216,11 +216,13 @@ outscse[which(outscse$BSEX %in% c("2")),"BSEX"] <- "F"
 outscse[which(outscse$BSEX %in% c("3")),"BSEX"] <- "U"
 outscse[which(outscse$BSEX %in% c("")),"BSEX"] <- "U"
 
-outscse$BAGE = factor(outscse$BAGE)
-round(prop.table(table(outscse$BAGE,outscse$AOU),2),2)
+#outscse$BAGE = factor(outscse$BAGE)
+#round(prop.table(table(outscse$BAGE,outscse$AOU),2),2)
 
-outscse$BSEX = factor(outscse$BSEX)
-round(prop.table(table(outscse$BSEX,outscse$AOU),2),2)
+#outscse$BSEX = factor(outscse$BSEX)
+#round(prop.table(table(outscse$BSEX,outscse$AOU),2),2)
+
+
 
 ### for a given species and year, need estimates of the sex and age structure
 ## assume independence of age and sex?
@@ -245,12 +247,39 @@ for(spgp in c("goose","duck","murre")){
     aou.spgp = aou.goose
     period = period.goose
     cal.spgp = calg
-    allkill = allkillwf
+    allkill = allkill
     phunt = "PRHUNTG"
     zhunt = "ZOHUNTG"
     wkill = "TOGOK"
+    wact = "ACTIVEWF"
+    wsucc = "SUCCWF"
+    wday = "DAYWF"
     years = 1975:Y
     nyears = length(years)
+    demog = data.frame(BSEX = rep(c("U","U"),each = 1),
+                       BAGE = rep(c("A","I"),times = 1),
+                       stringsAsFactors = F)
+    minyr <- min(years)
+    
+    
+  }
+  if(spgp == "duck"){
+    aou.spgp = aou.ducks
+    period = period.duck
+    cal.spgp = cald
+    allkill = allkill
+    phunt = "PRHUNT"
+    zhunt = "ZOHUNT"
+    wkill = "TODUK"
+    wact = "ACTIVEWF"
+    wsucc = "SUCCWF"
+    wday = "DAYWF"
+    years = 1975:Y
+    nyears = length(years)
+    demog = data.frame(BSEX = rep(c("F","M"),each = 2),
+                       BAGE = rep(c("A","I"),times = 2),
+                       stringsAsFactors = F)
+    minyr <- min(years)
     
   }
   
@@ -263,6 +292,12 @@ pzcount = pzcount + 1
 # z = 2
 
 
+
+
+
+# periods -----------------------------------------------------------------
+
+
 periods <- period[which(period$pr == pr & period$zo == z),]
 sumkill = allkill[which(allkill[,phunt] == pr &
                              allkill[,zhunt] == z &
@@ -272,11 +307,7 @@ sumkill = allkill[which(allkill[,phunt] == pr &
   nperiods <- max(periods$period)
     
     
-    # 
-    # periods <- period.duck[which(period.duck$pr == pr & period.duck$zo == z),]
-    # 
-    # nperiods <- max(periods$period)
-    # 
+    
     prts1 <- outscse[which(outscse$PRHUNT == pr &
                           outscse$ZOHUNT == z &
                           outscse$AOU %in% aou.spgp &
@@ -286,8 +317,10 @@ sumkill = allkill[which(allkill[,phunt] == pr &
       out <- length(unique(x))
     }
     yrspersp <- tapply(prts1$YEAR,prts1$AOU,luni)
-    #remov all sp with < 50% years occurrence
+
+# removing species that only show up in <half of years --------------------
     prts1 <- prts1[which(prts1$AOU %in% names(yrspersp)[which(yrspersp > (0.5*length(years)))]),]
+    
     
     for(per in periods$period){
       sy <- periods[which(periods$period == per),"startweek"]
@@ -300,60 +333,87 @@ sumkill = allkill[which(allkill[,phunt] == pr &
     # that only appear in very few periods
     #prts1 <- prts1[which(prts1$AOU %in% names(prdspersp)[which(prdspersp > 4)]),]
     
-   nspecies <- length(unique(prts1$AOU))
-   minyr <- min(prts1$YEAR,na.rm = T)
+    prts1$spfact = factor(prts1$AOU)
+    prts1$spn = as.integer(prts1$spfact)
+    nspecies <- max(prts1$spn)
+    
    #nyears <- length(min(prts1$YEAR,na.rm = T):max(prts1$YEAR,na.rm = T))
    partsarray <- array(data = 0,dim = c(nperiods,nspecies,nyears))
+   ndemog = nrow(demog)
+   
+   agesexarray <- array(data = 0,dim = c(ndemog,nspecies,nyears))
+    
+   
+    sp.save = unique(prts1[,c(phunt,zhunt,"AOU","spfact","spn")])
+    sp.save[,phunt] <- as.character(sp.save[,phunt])
+    sp.save[,"spfact"] <- as.character(sp.save[,"spfact"])
+  
+   
+    for(sp in 1:nspecies){
 
+      for(y in 1:nyears){
+        yr <- y+(minyr-1)
+        
     for(per in 1:nperiods){
-      spc = 0
-      sp.save = data.frame(spn = 1:nspecies,
-                           species = NA)
-      for(sp in unique(prts1$AOU)){
-        spc <- spc+1
-        sp.save[which(sp.save$spn == spc),"species"] <- sp
-        for(y in 1:nyears){
-         yr <- y+(minyr-1)
-          partsarray[per,spc,y] <- nrow(prts1[which(prts1$period == per & prts1$AOU == sp & prts1$YEAR == yr),])
+
+        partsarray[per,sp,y] <- nrow(prts1[which(prts1$period == per & prts1$spn == sp & prts1$YEAR == yr),])
           
            
-        }#y
-      }#sp
-      sp.save[,"province"] <- pr
-      sp.save[,"zone"] = z
-      if(pzcount == 1){
-        sp.save.out = sp.save
-      }else{
-        sp.save.out = rbind(sp.save.out,sp.save)
-      }
+        }#per
+      
+        if(spgp == "duck"){
+        for(dg in 1:ndemog){
+          ag <- demog[dg,"BAGE"]
+          sx <- demog[dg,"BSEX"]
+          
+          agesexarray[dg,sp,y] <- nrow(prts1[which(prts1$BAGE == ag & prts1$BSEX == sx & prts1$spn == sp & prts1$YEAR == yr),])
+        }#dg
+        }
+        if(spgp == "goose"){ ### lumps all sexes including unknowns just tracks ages
+          for(dg in 1:ndemog){
+            ag <- demog[dg,"BAGE"]
+            
+            agesexarray[dg,sp,y] <- nrow(prts1[which(prts1$BAGE == ag & prts1$spn == sp & prts1$YEAR == yr),])
+          }#dg
+        }
+        
+        
+      }#y
 
-    }#per
+
+    }#sp
    
 
-   
-   
-  # setting up initial values using observed data
-jinmeans = partsarray 
-for(y in 1:nyears){
-  for(pp in 1:nperiods){
-    for(sp in 1:nspecies){
-  jinmeans[pp,sp,y] <- sum(partsarray[,sp,])/sum(partsarray)
+    if(pzcount == 1){
+      sp.save.out = sp.save
+    }else{
+      sp.save.out = rbind(sp.save.out,sp.save)
     }
-                         }
-} 
-
-
+    
+   
+   
+#   # setting up initial values using observed data
+# jinmeans = partsarray 
+# for(y in 1:nyears){
+#   for(pp in 1:nperiods){
+#     for(sp in 1:nspecies){
+#   jinmeans[pp,sp,y] <- sum(partsarray[,sp,])/sum(partsarray)
+#     }
+#                          }
+# } 
+# 
+# 
+# # jin <- function(chain) return(switch(chain,
+# #                                       "1"=list(delta = array(runif(nspecies*nyears*nperiods,0.2,0.8),dim = c(nperiods,nspecies,nyears))),
+# #                                       "2"=list(delta = array(runif(nspecies*nyears*nperiods,0.2,0.8),dim = c(nperiods,nspecies,nyears))),
+# #                                       "3"=list(delta = array(runif(nspecies*nyears*nperiods,0.2,0.8),dim = c(nperiods,nspecies,nyears)))))
+# #  
 # jin <- function(chain) return(switch(chain,
-#                                       "1"=list(delta = array(runif(nspecies*nyears*nperiods,0.2,0.8),dim = c(nperiods,nspecies,nyears))),
-#                                       "2"=list(delta = array(runif(nspecies*nyears*nperiods,0.2,0.8),dim = c(nperiods,nspecies,nyears))),
-#                                       "3"=list(delta = array(runif(nspecies*nyears*nperiods,0.2,0.8),dim = c(nperiods,nspecies,nyears)))))
-#  
-jin <- function(chain) return(switch(chain,
-                                     "1"=list(delta = jinmeans),
-                                     "2"=list(delta = jinmeans),
-                                     "3"=list(delta = jinmeans)))
-## function to generate initial values across chains in jags
-
+#                                      "1"=list(delta = jinmeans),
+#                                      "2"=list(delta = jinmeans),
+#                                      "3"=list(delta = jinmeans)))
+# ## function to generate initial values across chains in jags
+# 
 
 
 
@@ -468,10 +528,14 @@ year = sumkill[,"year"]
 kill = sumkill[,wkill]
 nhs = nrow(sumkill)
 castes = 1:max(caste) #
+days = sumkill[,wday]
 
 
+# population sizes (number of permits in each caste and year) active potential and successful--------------------------------------------------------
 
-# population sizes (number of permits in each caste and year) --------------------------------------------------------
+npotential[c,y]
+nactive[c,y]
+nsucc[c,y]
 
 #pops[c,y]
 pops = matrix(0,nrow = max(castes),ncol = nyears)
@@ -499,6 +563,9 @@ for(c in castes[-1]){
 
 
 
+
+
+
 # total number of parts by year and period --------------------------------
 
 
@@ -507,6 +574,19 @@ nparts_py = matrix(nrow = nperiods,
 for(p in 1:nperiods){
   for(y in 1:nyears){
     nparts_py[p,y] <- sum(partsarray[p,,y],na.rm = T)# yearl and period sums of all parts
+  }
+}
+
+#### still need a predictive array to generate the PEFs 
+
+# total number of parts by species and period --------------------------------
+
+
+nparts_sy = matrix(nrow = nspecies,
+                   ncol = nyears)
+for(s in 1:nspecies){
+  for(y in 1:nyears){
+    nparts_sy[s,y] <- sum(agesexarray[,s,y],na.rm = T)# yearl and species sums of all parts for age and sex
   }
 }
 
@@ -528,6 +608,10 @@ nkill[y,h] <- sum(periodkill[,y,h],na.rm = T) #simple sum of the data
 
 
 jdat = list(w_psy = partsarray,
+            w_axsy = agesexarray,
+            ndemog = ndemog,
+            nparts_py = nparts_py,
+            nparts_sy = nparts_sy,
             nspecies = nspecies,
             nyears = nyears,
             nperiods = nperiods,
