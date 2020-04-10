@@ -31,10 +31,6 @@ Y <- 2018
 years <- 1975:Y
 
 names(years) <- paste(years)
- home.fold1 <- "m:/My Documents/Harvest Survey A146/"
-# 
- home.fold <- getwd()
-# setwd(home.fold)
 
 library(foreign)
 library(runjags)
@@ -190,18 +186,6 @@ aou.murre <- sps[which(sps$group == "murre"),"AOU"]
 
 
 
- #save.image(paste0("full data prep updated harvest model",Y,".RData"))
-
-
-
-###################### 
-## everything from this line down should work
-## adjust the "years = 1975:1984" line to change the
-## time-window for the analysis
-
-# load(paste0("full data prep updated harvest model",Y,".RData"))
-
-
 # correcting the age and sex indicators -----------------------------------
 
 
@@ -243,6 +227,10 @@ for(spgp in c("goose","duck","murre")){
 ## pr = "ON"
 ## z = 3
 
+
+# group data set up -------------------------------------------------------
+
+  
   if(spgp == "goose"){
     aou.spgp = aou.goose
     period = period.goose
@@ -421,23 +409,23 @@ sumkill = allkill[which(allkill[,phunt] == pr &
 ### compiling calendar info 
 ## generate an array 
 ## periodkill[p,y,h] = total kill in period-x and year-y for each hunter-h
-## nhunters[y] = number of hunters with calendar information in year-y
+## nhunter_y[y] = number of hunters with calendar information in year-y
 
 
-nhunters = vector(length = nyears)
-names(nhunters) = as.character(years)
+    nhunter_y = vector(length = nyears)
+names(nhunter_y) = as.character(years)
 
 for(y in years){
 
   tmp <- cal.spgp[[as.character(y)]]
   tmp1 <- tmp[which(tmp$PRHUNT == pr &
                       tmp$ZOHUNT == z),]
-  nhunters[as.character(y)] <- length(unique(tmp1$PERMIT))
+  nhunter_y[as.character(y)] <- length(unique(tmp1$PERMIT))
   
 }
 
 periodkill = array(0,
-                   dim = c(nperiods,nyears,max(nhunters)))
+                   dim = c(nperiods,nyears,max(nhunter_y)))
   ## the following loop is clumsy and slow, but it works
 NAcounts = list()
 length(NAcounts) <- nyears
@@ -485,7 +473,7 @@ tmp1$yearhunt = tmp1$YEAR
     tmp1[which(is.na(tmp1$COUNT)),"COUNT"] <- 1 ## decision to include a non-zero value because the rows include all of the relevant information (hunter, day, prov, week permit etc, just missing hte count, likely that the program in those few years made a mistake)
   }
   
-  for(h in 1:nhunters[yn]){
+  for(h in 1:nhunter_y[yn]){
   tmp2 = tmp1[which(tmp1$hunterf == h),]
     for(per in 1:nperiods){
       wks1 = periods[which(periods$period == per),"startweek"]
@@ -522,21 +510,9 @@ if(any(is.na(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,
 #combines castes B and D into resident renewal hunters
 
 sumkill$caste = factor(as.character(sumkill$CASTE),ordered = T,levels = c("D","B","A","E")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
-sumkill = sumkill[order(sumkill$caste),]
-caste = as.integer(sumkill[,"caste"])
-year = sumkill[,"year"]
-kill = sumkill[,wkill]
-nhs = nrow(sumkill)
-castes = 1:max(caste) #
-days = sumkill[,wday]
-
+castes = 1:max(as.integer(sumkill$caste)) #
 
 # population sizes (number of permits in each caste and year) active potential and successful--------------------------------------------------------
-
-npotential[c,y]
-nactive[c,y]
-nsucc[c,y]
-
 #pops[c,y]
 pops = matrix(0,nrow = max(castes),ncol = nyears)
 
@@ -545,23 +521,52 @@ for(cc in castes){
     yn = as.integer(substr(as.character(years[y]),3,4))
     pops[cc,y] <- popsiz[which(popsiz$SAMPLE == levels(sumkill$caste)[cc] & popsiz$YEAR == yn &
                                  popsiz$prov == pr & popsiz$ZOSAMP == z),"TOTPERM"]
+    
   }
 }
 
 
 
 
-# indicators for start and stop of sorted caste data ----------------------
+# separating active and inactive ------------------------------------------
 
 
-shuntercastes <- c(1)#first row of nhs data for hunter caste
-ehuntercastes = max(which(caste == 1))#last row for caste
-for(c in castes[-1]){
-  shuntercastes[c] = min(which(caste == c))
-  ehuntercastes[c] = max(which(caste == c))
+
+
+
+
+npotential <- as.matrix(table(sumkill$caste,sumkill$year))
+succ = sumkill[which(sumkill[,wsucc] == "Y"),]
+nsucc <- as.matrix(table(sumkill$caste,sumkill$year))
+
+
+sumkill_active = sumkill[which(sumkill[,wact] == "Y"),]
+nactive <- as.matrix(table(sumkill_active$caste,sumkill_active$year))
+
+
+caste = as.integer(sumkill_active[,"caste"])
+year = sumkill_active[,"year"]
+kill = sumkill_active[,wkill]
+nhs = nrow(sumkill_active)
+days = sumkill_active[,wday]
+
+
+
+#nhunter_cy[c,y] #number of active hunters by caste and year
+nhunter_cy = matrix(0,nrow = max(castes),ncol = nyears)
+
+for(y in 1:nyears){
+  
+  for(c in castes){
+    ww = which(sumkill_active$year == y & sumkill_active$caste == levels(sumkill_active$caste)[c])
+    sumkill_active[ww,"hunter_n_cy"] <- as.integer(factor(sumkill_active[ww,"PERMIT"]))
+    nhunter_cy[c,y] <- max(sumkill_active[ww,"hunter_n_cy"])
+    
+  }
 }
 
 
+hunter_n_cy = sumkill_active$hunter_n_cy
 
 
 
@@ -577,6 +582,10 @@ for(p in 1:nperiods){
   }
 }
 
+#### still need a predictive array to generate the PEFs 
+#### still need a predictive array to generate the PEFs 
+#### still need a predictive array to generate the PEFs 
+#### still need a predictive array to generate the PEFs 
 #### still need a predictive array to generate the PEFs 
 
 # total number of parts by species and period --------------------------------
@@ -594,11 +603,11 @@ for(s in 1:nspecies){
 # total harvest by year and hunter ----------------------------------------
 
 
-nkill = matrix(nrow = nyears,
-               ncol = max(nhunters))
+nkill_yh = matrix(nrow = nyears,
+               ncol = max(nhunter_y))
 for(y in 1:nyears){
-  for(h in 1:nhunters[y]){
-nkill[y,h] <- sum(periodkill[,y,h],na.rm = T) #simple sum of the data
+  for(h in 1:nhunter_y[y]){
+    nkill_yh[y,h] <- sum(periodkill[,y,h],na.rm = T) #simple sum of the data
   }
 }
 
@@ -615,17 +624,16 @@ jdat = list(w_psy = partsarray,
             nspecies = nspecies,
             nyears = nyears,
             nperiods = nperiods,
-            nhunters = nhunters,
+            nhunter_y = nhunter_y,
+            nhunter_cy = nhunter_cy,
             castes = castes,
+            hunter = hunter_n_cy,
             nhs = nhs,
             kill = kill,
             year = year,
             caste = caste,
             kill_pyh = periodkill,
-            nkill = nkill,
-            n = n,
-            shuntercastes = shuntercastes,
-            ehuntercastes = ehuntercastes,
+            nkill_yh = nkill_yh,
             pops = pops,
             nactive = nactive,
             npotential = npotential)
@@ -635,25 +643,10 @@ jdat = list(w_psy = partsarray,
 
 
 
-parms = c("pr",
-          "alpha",
-          "mu",
-          "kappa","kappat",
-          "alphab1",
-          "alphab",
-          "totkill",
-          "killpc",
-          "spkillperhunter",
-          "sdhunter",
-          "mut",
-          "pr",
-          "ptotkill",
-          "ann",
-          "cst",
-          "spkill"
-                     )
+parms = c("pactive",
+          "psucc")
 
-adaptSteps = 1000              # Number of steps to "tune" the samplers.
+adaptSteps = 100              # Number of steps to "tune" the samplers.
 burnInSteps = 5000            # Number of steps to "burn-in" the samplers.
 nChains = 3                   # Number of chains to run.
 numSavedSteps=100          # Total number of steps in chains to save.
@@ -662,8 +655,10 @@ nIter = ceiling( ( numSavedSteps * thinSteps ) / nChains ) # Steps per chain.
 
 t1 = Sys.time()
 
-    
-out2 = jags.model( file = "full zonal species proportional kill model.R", 
+   
+load.module("glm") 
+
+out2 = jags.model( file = "duck_harvest_model.R", 
                    data= jdat ,  
                    #inits= newinits,  
                    n.chains= nChains , 
@@ -795,7 +790,7 @@ for(s in 1:nspecies){
 dev.off()
 
 periodkill = jdat$periodkill
-nhunters = jdat$nhunters
+nhunter_y = jdat$nhunter_y
 
 pdf(file = paste(pr,z," proportion of total hunt in periods.pdf"))
 dd1 = ceiling(sqrt(nyears))
@@ -820,8 +815,8 @@ if(dd1*dd2 < nyears){dd2 = dd1}
           lwd = 2,
           col = "darkorange")
     for(per in 1:nperiods){
-      n.obs <- sum(periodkill[per,y,1:nhunters[y]],na.rm = T)
-      p.obs <- n.obs/sum(periodkill[,y,1:nhunters[y]])
+      n.obs <- sum(periodkill[per,y,1:nhunter_y[y]],na.rm = T)
+      p.obs <- n.obs/sum(periodkill[,y,1:nhunter_y[y]])
       muq = sumq[paste0("mut[",per,"]"),]
       
       arrows(x0 = per,

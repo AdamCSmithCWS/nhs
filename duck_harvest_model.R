@@ -16,7 +16,7 @@
 ###########################
 ###########################
 ## kill_pyh[p,y,h] = total kill in period-x and year-y for each hunter-h
-## nhunters[y] = number of hunters with calendar information in year-y
+## nhunter_y[y] = number of hunters with calendar information in year-y
 
 
 model {
@@ -43,45 +43,36 @@ model {
     
     
    ### successful hunters, alternative zero inflated approach
-   # succ[i] ~ dbern(psucc[caste[i],year[i]]) #probability a hunter is active varies by caste and year
+    ############ loop only includes active hunters because if days[i] = 0 (i.e., they're not active), then there is no uncertainty about kill[i] (kill must = 0)
     
     ### number harvested
     kill[i] ~ dpois(lambda[i]) #kill is data - each hunter's estimate of the total number of ducks killed 
     log(lambda[i]) <- elambda1[i] #*succ[caste[i]] + 0.0001 #cheat to avoid non-zero values from zero-mean poisson
-    elambda1[i] <- ann[year[i]] + cst[caste[i]] + hunter[i] + elambda_day1[i] #elambda_day[i] acts as an offset on effort
+    elambda1[i] <- ann[year[i]] + cst[caste[i]] + hntr[caste[i],year[i],hunter[i]] + elambda_day[i] #elambda_day[i] acts as an offset on effort
     
     ## ann[y] is a yearly intercept for all species kill
     ## cst[c] is a caste-specific intercept for all species kill
-    ## hunter[i] is an individual random error term to allow for overdispersion,
-    ##  t-distribution used for overdispersion to allow for heavy-tailed 
-    ## tauhunter[c] is a caste-specific precision to allow hunter-level dispersion to vary among castes
-    ## consider whether tauhunter should also vary among years...
+    ## hntr[c.y,h] is an individual random error term to account for the individual hunter skill and overdispersion, currently normal distribution
+
     
-    #hunter[i] ~ dt(0,tauhunter[caste[i]],nu[caste[i]])
-    hunter[i] ~ dnorm(0,tauhunter[caste[i]]) #normal overdispersion assuming that most of variance in harvest is a function of how many days a hunter spends hunting
-    #n days probably accounts for a bit of the hunting skill effect as well as the activity effect
+
     
     
-    
-    ### number days
-    days[i] ~ dpois(lambda_day[i]) #kill is data - each hunter's estimate of the total number of days spent hunting
-    log(lambda_day[i]) <- elambda_day1[i] 
-    elambda_day1[i] <- ann_day[year[i]] + cst_day[caste[i]] + hunter_day[i]
+    ### number of days truncated Poisson, because only active hunters are included and therefore days != 0
+    days[i] ~ dpois(lambda_day[i])T(1,) #kill is data - each hunter's estimate of the total number of days spent hunting
+    log(lambda_day[i]) <- elambda_day[i] 
+    elambda_day[i] <- ann_day[year[i]] + cst_day[caste[i]] + hntr_day[caste[i],year[i],hunter[i]]
     
     ## ann[y] is a yearly intercept for all species kill
     ## cst[c] is a caste-specific intercept for all species kill
-    ## hunter[i] is an individual random error term to allow for overdispersion,
-    ##  t-distribution used for overdispersion to allow for heavy-tailed 
-    ## tauhunter[c] is a caste-specific precision to allow hunter-level dispersion to vary among castes
-    ## consider whether tauhunter should also vary among years...
-    
-    hunter_day[i] ~ dt(0,tauhunter_day[caste[i]],nu_day[caste[i]])
+    ## hntr_day[c.y,h] is an individual random error term to account for the individual hunter behaviour and overdispersion, currently a t-distribution
     
     
   }#i
   
   for(c in castes){
     ## harvest rate priors
+    retrans_hunter[c] <- 0.5*(1/tauhunter[c])
     sdhunter[c] <- 1/pow(tauhunter[c],0.5)
     tauhunter[c] ~ dgamma(0.01,0.01)
     #nu[c] ~ dgamma(2,0.1)
@@ -89,6 +80,7 @@ model {
     cst[c] ~ dnorm(0,0.01)
     
     #activity (days) priors
+    retrans_hunter_day[c] <- 0.5*(1/tauhunter_day[c])
     sdhunter_day[c] <- 1/pow(tauhunter_day[c],0.5)
     tauhunter_day[c] ~ dgamma(0.01,0.01)
     nu_day[c] ~ dgamma(2,0.1)
@@ -123,22 +115,39 @@ model {
       # logit(mu_pactive[c,y]) <- mmu_pactive[c] + dnorm(0,tau_mu_pactive[c])
       # pactive[c,y] ~ dbeta(alpha_pactive[c,y],beta_pactive[c,y])
       pactive[c,y] ~ dbeta(alpha_pactive[c,y],beta_pactive[c,y])
-            
-    }
+      
+      
+      ############# hunter-specific effects
+      for(h in 1:nhunter_cy[c,y]){
+        ## hunter[i] is an individual random error term to allow for overdispersion,
+        ##  t-distribution used for overdispersion to allow for heavy-tailed 
+        ## tauhunter[c] is a caste-specific precision to allow hunter-level dispersion to vary among castes
+        ## consider whether tauhunter should also vary among years...
+        
+        hntr_day[c,y,h] ~ dt(0,tauhunter_day[c],nu_day[c])
+        #hntr[i] ~ dt(0,tauhunter[caste[i]],nu[caste[i]])
+        hntr[c,y,h] ~ dnorm(0,tauhunter[c]) #normal overdispersion assuming that most of variance in harvest is a function of how many days a hunter spends hunting
+        #n days probably accounts for a bit of the hunting skill effect as well as the activity effect
+        
+      }#h
+    }#y
     
   }#c
   
   ### yearly intercepts of total kill by first-difference
-  ann[1] ~ dnorm(0,tauyear.eps)
+  ann[1] ~ dnorm(0,0.01)
+  ann_day[1] ~ dnorm(0,0.01)
   for(y in 2:nyears){
     ann[y] ~ dnorm(ann[y-1],tauyear)
+    ann_day[y] ~ dnorm(ann_day[y-1],tauyear_day)
     
   }
   
   # year priors
   sdyear <- 1/pow(tauyear,0.5)
   tauyear ~ dgamma(0.001,0.001)
-  tauyear.eps <- tauyear*0.001
+  sdyear_day <- 1/pow(tauyear_day,0.5)
+  tauyear_day ~ dgamma(0.001,0.001)
   
   
   ##################################
@@ -148,21 +157,25 @@ model {
     for(y in 1:nyears){
       ## derived estimated means, which can then be multiplied by the extrapolation factors for each caste and year
       # estimate of the mean (per hunter) kill per caste, and year
-      for(h in shuntercastes[c]:ehuntercastes[c]){
+        for(h in 1:nhunter_cy[c,y]){
+          
         #consider alternative extrapolation factor approach, since hunters should be a random sample and representative
-        totkillh[y,c,h] <- exp(ann[y] + cst[c] + hunter[h] + ann_day[y] + cst_day[c] + hunter_day[h])
-        totdaysh[y,c,h] <- exp(ann_day[y] + cst_day[c] + hunter_day[h])
+        totkillh[y,c,h] <- exp(ann[y] + cst[c] + hntr[c,y,h] + ann_day[y] + cst_day[c] + hntr_day[c,y,h])
+        totdaysh[y,c,h] <- exp(ann_day[y] + cst_day[c] + hntr_day[c,y,h])
         }
-      mean_totkill[y,c] <- mean(totkillh[y,c,shuntercastes[c]:ehuntercastes[c]])
-      mean_totdays[y,c] <- mean(totdaysh[y,c,shuntercastes[c]:ehuntercastes[c]])
+      mean_totkill[y,c] <- mean(totkillh[y,c,1:nhunter_cy[c,y]]) #mean kill per active hunter
+      mean_totdays[y,c] <- mean(totdaysh[y,c,1:nhunter_cy[c,y]]) #mean days per active hunter
+      
+      mean_totkill_retrans[y,c] <- exp(ann[y] + cst[c] + ann_day[y] + cst_day[c] + retrans_hunter_day[c] + retrans_hunter[c])
+      mean_totdays_retrans[y,c] <- exp(ann[y] + cst[c] + ann_day[y] + cst_day[c] + retrans_hunter_day[c])
       
       for(p in 1:nperiods){
         ## estimate of the mean (per hunter) kill per period, caste, and year
-        kill_pcy[p,c,y] <-  pkill_py[p,y]*mean_totkill[y,c]
+        mean_kill_pcy[p,c,y] <-  pkill_py[p,y] * mean_totkill[y,c]
         
         for(s in 1:nspecies){
           # estimate of the mean (per hunter) kill, by period, caste, year, and species
-          kill_pcys[p,c,y,s] <- kill_pcy[p,c,y] * pcomp_psy[p,s,y]
+          mean_kill_pcys[p,c,y,s] <- mean_kill_pcy[p,c,y] * pcomp_psy[p,s,y]
           #
         }#s
       }#p
@@ -174,33 +187,45 @@ model {
   #total harvest estimate by species year and caste
   ## add in the estimated populations of each caste to generate final harvest estimates.
   for(y in 1:nyears){
+   
+    for(c in castes){
+      kill_cy[c,y] <- mean_totkill[y,c]*pops[c,y] * pactive[c,y] #total kill by caste and year
+      days_cy[c,y] <- mean_totdays[y,c]*pops[c,y] * pactive[c,y] #total days by caste and year
+      
+      for(s in 1:nspecies){
+  kill_cys[c,y,s] <- sum(mean_kill_pcys[1:nperiods,c,y,s])*pops[c,y] * pactive[c,y]
+      }#s
+    }#c
+    
+    for(s in 1:nspecies){
+      kill_ys[y,s] <- sum(kill_cys[castes,y,s])
+    }#s
+    
     kill_y[y] <- sum(kill_cy[castes,y])
     days_y[y] <- sum(days_cy[castes,y])
     
-    for(c in castes){
-      kill_cy[c,y] <- mean_totkill[y,c]*pops[c,y]
-      days_cy[c,y] <- mean_totdays[y,c]*pops[c,y] 
-      
-      for(s in 1:nspecies){
-  kill_cys[c,y,s] <- sum(kill_pcys[1:nperiods,c,y,s])*pops[c,y]
-      }
-    }
-  }
+  }#y
+  
+  
+  
+  ###################################
+  ######## Multinomial components
+  
   
   ### estimating the proportional-seasonal distribution of total harvest by periods
   ## kill_pyh[p,y,h] is data, the hunter-level total harvest by period from the calendars
-  ## nkill[y,h] is also data, hunter-level total estimate of their harvest
+  ## nkill_yh[y,h] is also data, hunter-level total estimate of their harvest
   ### assumes that seasonal distribution is the same across castes...questionable...
   
   
 #####################################################################
   #### proportional distribution of all birds killed across periods
-  
+  ### this component ignores hunter and caste specific variation in the seasonal spread of the hunt
   ### multinomial distribution across periods  
-  ### kill_pyh and nkill[y,h] are data
+  ### kill_pyh and nkill_yh[y,h] are data
   for (y in 1:nyears) {
-    for(h in 1:nhunters[y]){
-      kill_pyh[1:nperiods,y,h] ~ dmulti(pkill_py[1:nperiods,y], nkill[y,h])   # multinom distr vector responses
+    for(h in 1:nhunter_y[y]){
+      kill_pyh[1:nperiods,y,h] ~ dmulti(pkill_py[1:nperiods,y], nkill_yh[y,h])   # multinom distr vector responses
     }#h
   }#y
   
@@ -215,7 +240,7 @@ model {
        } #y
   }#p
 
-  # logistic transformation to monitor the hyperparameter mean proportion in a given period
+  # exponential transformation to monitor the hyperparameter mean proportion in a given period
   for(p in 1:nperiods){
     mut[p] <- exp.termt[p]/sum(exp.termt[1:nperiods])
     exp.termt[p] <- exp(alpha_p[p])
@@ -225,6 +250,7 @@ model {
   #### towards last years proportion of the hunt occurring within that period
   ### time-series first difference model through years on the period-specific parameters
   alpha_p[1] <- 0 ## these are the log-scale intercepts of the proportions of the hunt in each period
+  alpha_py[1,1] <- 0
   for(y in 2:nyears){
     alpha_py[1,y] ~ dnorm(alpha_py[1,y-1],tau_alpha_py[1])
   }
@@ -250,7 +276,7 @@ model {
   ## same basic model as the overall kill proportional distribution across periods
   
   ######## this model currently doesn't use the variation among hunters in the species distribution
-  ### but perhaps it should, commented-out section that follows suggests how it should work
+  ### but perhaps it should, commented-out section that follows suggests how it could work
   ##### species composition
   #     for (p in 1:nperiods){
   # 
@@ -282,8 +308,8 @@ model {
       
     }#s
     
-    #### multinomial logistic regression on hyperparameter mu[p,s]
-    # logistic transformation
+    #### multinomial exponential regression on hyperparameter mu[p,s]
+    # exponential transformation
     for( s in 1:nspecies ){
       mu_ps[p,s] <- exp.alpha_ps[p,s]/sum(exp.alpha_ps[p,1:nspecies]) #mean proportional contribution of species during period
       exp.alpha_ps[p,s] <- exp(alpha_ps[p,s])
@@ -350,7 +376,7 @@ model {
     }#d
     
     #### monitoring the mean demographic splits across all years for a given species
-    # logistic transformation
+    # exponential transformation
     for( d in 1:ndemog ){
       mu_axs[d,s] <- exp.alpha_axs[d,s]/sum(exp.alpha_axs[1:ndemog,s]) #
       exp.alpha_axs[d,s] <- exp(alpha_axs[d,s])
@@ -376,13 +402,12 @@ model {
     
     for(d in 1:ndemog){
      
-      alpha_axs[d,s] ~ dnorm(alpha_ax[d],taualpha_ax[d])
+      alpha_axs[d,s] ~ dnorm(alpha_ax[d],tau_alpha_ax[d])
       alpha_axsy[d,s,1] <- alpha_axs[d,s] # first year
       
       for(y in 2:nyears){
-        alpha_axsy[d,s,y] ~ dnorm(alpha_axsy[p,s,y-1],tau_alpha_axsy[s]) 
+        alpha_axsy[d,s,y] ~ dnorm(alpha_axsy[d,s,y-1],tau_alpha_axsy[s]) 
       }#y
-      
     }#d
     
   }#s
