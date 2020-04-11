@@ -1,22 +1,37 @@
 ############################### model
-
-## w_psy[p,s,y] = array of wing counts by periods (dim1) species (dim2) and years (dim3)
+### data required
+# pops = pops, # pops[c.y] total populations of permits by caste and year used to rescale all perhunter estimates to totals 
+# #component that estimates p_active etc. to generate totals of active and successful hunters by year
+# nactive = nactive, # nactive[c,y] number of active hunters by caste and year
+# npotential = npotential, # npotential[c,y] number of potential hunters (respondents who bought a permit this year) by caste and year
+# nsucc = nsucc, # nsucc[c,y] number of successful hunters by caste and year (active hunters with harvest > 0)
+# #spcies composition components
+# w_psy = partsarray, # w_psy[nperiods,nspecies,nyears] wings by period species year
+# nparts_py = nparts_py, # nparts_py[nperiods,nyears] sum parts across species by period and year
+# nparts_sy = nparts_sy, # nparts_sy[nspecies,nyears] sum parts species and year
+# kill_pyh = periodkill, # kill_pyh[nperiods,nyears,max(nhunters[y])] hunter-level total harvest by period from the calendars(separate hunter id caste doesn't matter)
+# nkill_yh = nkill_yh, # nkill_yh[nyears,max(nhunters[y])] hunter-level summed harvest from calendar (separate hunter id caste doesn't matter)
+# # demographic data for age and sex component of the model
+# w_axsy = agesexarray, # w_axsy[ndemog,nspecies,nyears] wings by age-sex species year
+# #indicators
+# ndemog = ndemog, # 2 if geese (A and I) 4 if ducks (AF, IF, AM, IM) number of demographic units (age-sex combinations)
+# nspecies = nspecies, # integer length = 1 number of species
+# nyears = nyears, #integer length = 1 number of years
+# nperiods = nperiods, # integer length = 1 number of periods
+# nhunter_y = nhunter_y, # nhunter_y[nyears] number active hunters by year
+# nhunter_cy = nhunter_cy, # nhunter_cy[castes,nyears] number active hunters by caste and year
+# castes = castes, # castes (numeric, 1:4)
+# nhs = nhs, # integer length = 1 number of active hunters over all years (nrow for sumkill_active)
+# #main data for overall harvest estimates
+# hunter = hunter_n_cy, # vector(length = nhs) unique numeric indicator for active hunters by caste and year 
+# kill = kill, # vector(length = nhs), total group (ducks, geese, murres) harvest of nhs response
+# year = year, # vector(length = nhs), year of response
+# caste = caste, # vector(length = nhs), caste of response
+# days = days# vector(length = nhs), number of days spent hunting
 ###### see below for alternate w[p,s,y,h] - hunter-specific data
 #### hunter specific data would be better because it would better account for the uncertainty among hunters in the species composition
 #### currently, this assumes that the selection of hunters in a given zone and year is representative
 #### this over-estimates the certainty of the annual estimates of composition, and downweights the influence of the normalizing prior
-## nspecies
-## nyears
-## nperiods (weeks?)
-## castes = vector of 1:4? assuming there are 4 castes
-## nhs = number of hunter survey responses
-## kill[i] = total duck (or other) harvest in a season for hunter i
-## year[i] = year of hunter i response to survey
-## caste[i] = caste of hunter i
-###########################
-###########################
-## kill_pyh[p,y,h] = total kill in period-x and year-y for each hunter-h
-## nhunter_y[y] = number of hunters with calendar information in year-y
 
 
 model {
@@ -99,7 +114,7 @@ model {
     
     for(y in 1:nyears){
       
-      alpha_psucc[c,y] ~ dunif(1,3) #very simple priors for the parameters of the beta prior on pactive and psucc
+      alpha_psucc[c,y] ~ dunif(1,3) #very simple priors for the parameters of the beta priors on pactive and psucc
       beta_psucc[c,y] ~ dunif(1,3)
       alpha_pactive[c,y] ~ dunif(1,3)
       beta_pactive[c,y] ~ dunif(1,3)
@@ -119,9 +134,11 @@ model {
       
       ############# hunter-specific effects
       for(h in 1:nhunter_cy[c,y]){
-        ## hunter[i] is an individual random error term to allow for overdispersion,
-        ##  t-distribution used for overdispersion to allow for heavy-tailed 
-        ## tauhunter[c] is a caste-specific precision to allow hunter-level dispersion to vary among castes
+        ## hntr[c,y,h] is an individual random error term to allow for overdispersion in the harvest,
+        ##  normal-distribution used for overdispersion in harvest assuming that activity accounts for most of the heavy-tailed variation in harvest
+        ## hntr_day[c,y,h] is an individual random error term to allow for overdispersion in the activity (days spent hunting),
+        ##  t-distribution used for overdispersion in activity to allow for heavy-tailed 
+        ## variances on both activity and harvest are caste-specific precision to allow hunter-level dispersion to vary among castes
         ## consider whether tauhunter should also vary among years...
         
         hntr_day[c,y,h] ~ dt(0,tauhunter_day[c],nu_day[c])
@@ -135,23 +152,23 @@ model {
   }#c
   
   ### yearly intercepts of total kill by first-difference
-  ann[1] ~ dnorm(0,0.01)
-  ann_day[1] ~ dnorm(0,0.01)
+  ann[1] ~ dnorm(0,0.01) # fixed effects for year-1 annual harvest level
+  ann_day[1] ~ dnorm(0,0.01) # fixed effect for year-1 annual activity level
   for(y in 2:nyears){
     ann[y] ~ dnorm(ann[y-1],tauyear)
     ann_day[y] ~ dnorm(ann_day[y-1],tauyear_day)
-    
   }
   
-  # year priors
+  # first-difference harvest and activity variance priors
   sdyear <- 1/pow(tauyear,0.5)
   tauyear ~ dgamma(0.001,0.001)
   sdyear_day <- 1/pow(tauyear_day,0.5)
   tauyear_day ~ dgamma(0.001,0.001)
   
   
+  
   ##################################
-  ### derived estimates of per-hunter species kill in each year###############
+  ### derived estimates of mean harvest by hunter ###############
   
   for(c in castes){
     for(y in 1:nyears){
@@ -159,22 +176,26 @@ model {
       # estimate of the mean (per hunter) kill per caste, and year
         for(h in 1:nhunter_cy[c,y]){
           
-        #consider alternative extrapolation factor approach, since hunters should be a random sample and representative
-        totkillh[y,c,h] <- exp(ann[y] + cst[c] + hntr[c,y,h] + ann_day[y] + cst_day[c] + hntr_day[c,y,h])
-        totdaysh[y,c,h] <- exp(ann_day[y] + cst_day[c] + hntr_day[c,y,h])
+        #hunter-level predictions of mean kill
+        totkill_hcy[y,c,h] <- exp(ann[y] + cst[c] + hntr[c,y,h] + ann_day[y] + cst_day[c] + hntr_day[c,y,h])
+        totdays_hcy[y,c,h] <- exp(ann_day[y] + cst_day[c] + hntr_day[c,y,h])
         }
-      mean_totkill[y,c] <- mean(totkillh[y,c,1:nhunter_cy[c,y]]) #mean kill per active hunter
-      mean_totdays[y,c] <- mean(totdaysh[y,c,1:nhunter_cy[c,y]]) #mean days per active hunter
+      #mean per-hunter kill and days by year and caste
+      mean_totkill_yc[y,c] <- mean(totkill_hcy[y,c,1:nhunter_cy[c,y]]) #mean kill per active hunter
+      mean_totdays_yc[y,c] <- mean(totdays_hcy[y,c,1:nhunter_cy[c,y]]) #mean days per active hunter
       
-      mean_totkill_retrans[y,c] <- exp(ann[y] + cst[c] + ann_day[y] + cst_day[c] + retrans_hunter_day[c] + retrans_hunter[c])
-      mean_totdays_retrans[y,c] <- exp(ann[y] + cst[c] + ann_day[y] + cst_day[c] + retrans_hunter_day[c])
+      #mean per-hunter kill and days by year and caste - alternative estimate
+      mean_totkill_retrans_yc[y,c] <- exp(ann[y] + cst[c] + ann_day[y] + cst_day[c] + retrans_hunter_day[c] + retrans_hunter[c])
+      mean_totdays_retrans_yc[y,c] <- exp(ann[y] + cst[c] + ann_day[y] + cst_day[c] + retrans_hunter_day[c])
       
       for(p in 1:nperiods){
         ## estimate of the mean (per hunter) kill per period, caste, and year
-        mean_kill_pcy[p,c,y] <-  pkill_py[p,y] * mean_totkill[y,c]
+        mean_kill_pcy[p,c,y] <-  pkill_py[p,y] * mean_totkill_yc[y,c]
+        #mean_kill_pcy[p,c,y] <-  pkill_py[p,y] * mean_totkill_retrans_yc[y,c] #alternate harvest estimate using retransformation fators
         
         for(s in 1:nspecies){
           # estimate of the mean (per hunter) kill, by period, caste, year, and species
+          # mean kill by period caste and year * proportional composition of each species in each period and year
           mean_kill_pcys[p,c,y,s] <- mean_kill_pcy[p,c,y] * pcomp_psy[p,s,y]
           #
         }#s
@@ -185,22 +206,29 @@ model {
   
   
   #total harvest estimate by species year and caste
-  ## add in the estimated populations of each caste to generate final harvest estimates.
+  ## mean harvest and days * population sizes of each caste and year * esimated proportion of population that is active to generate final harvest estimates.
   for(y in 1:nyears){
    
     for(c in castes){
-      kill_cy[c,y] <- mean_totkill[y,c]*pops[c,y] * pactive[c,y] #total kill by caste and year
-      days_cy[c,y] <- mean_totdays[y,c]*pops[c,y] * pactive[c,y] #total days by caste and year
+      kill_cy[c,y] <- mean_totkill_yc[y,c]*pops[c,y] * pactive[c,y] #total kill by caste and year
+      days_cy[c,y] <- mean_totdays_yc[y,c]*pops[c,y] * pactive[c,y] #total days by caste and year
       
       for(s in 1:nspecies){
-  kill_cys[c,y,s] <- sum(mean_kill_pcys[1:nperiods,c,y,s])*pops[c,y] * pactive[c,y]
+  kill_cys[c,y,s] <- sum(mean_kill_pcys[1:nperiods,c,y,s]) * pops[c,y] * pactive[c,y]
       }#s
     }#c
     
+    
+    ##### kill_ys = species level total estimated harvest by year
     for(s in 1:nspecies){
       kill_ys[y,s] <- sum(kill_cys[castes,y,s])
+        for(d in 1:ndemog){
+            ### kill_ysax = total harvest by age/sex species and year (e.g., number of adult female mallards killed)
+          kill_ysax[d,s,y] <- axcomp_axsy[d,s,y]*kill_ys[y,s]
+        }#d
     }#s
     
+    #### summed total harvest and activity (e.g., all ducks) across all species and castes in a given year
     kill_y[y] <- sum(kill_cy[castes,y])
     days_y[y] <- sum(days_cy[castes,y])
     
@@ -209,8 +237,10 @@ model {
   
   
   ###################################
-  ######## Multinomial components
-  
+  ######## Multinomial components - 3 separate parts
+  ### 1 - proportional distribution of all harvest across periods
+  ### 2 - proportional distribution of species harvest across periods
+  ### 3 - proportional distribution of age and sex categories by species and year
   
   ### estimating the proportional-seasonal distribution of total harvest by periods
   ## kill_pyh[p,y,h] is data, the hunter-level total harvest by period from the calendars
@@ -246,7 +276,9 @@ model {
     exp.termt[p] <- exp(alpha_p[p])
   }#p
  
-  #### hyperparameter alpha_p[p] and tau_alpha_py[p], shrinking each period's estimate in a given year
+  #### multinomial dirichlet-prior, time-series model for the distribution of harvest across periods
+  #### fixed effects for the mean harvest across periods in the first year
+  #### hyperparameter alpha_py[p] and tau_alpha_py[p], shrinking each period's estimate in a given year
   #### towards last years proportion of the hunt occurring within that period
   ### time-series first difference model through years on the period-specific parameters
   alpha_p[1] <- 0 ## these are the log-scale intercepts of the proportions of the hunt in each period
@@ -308,7 +340,6 @@ model {
       
     }#s
     
-    #### multinomial exponential regression on hyperparameter mu[p,s]
     # exponential transformation
     for( s in 1:nspecies ){
       mu_ps[p,s] <- exp.alpha_ps[p,s]/sum(exp.alpha_ps[p,1:nspecies]) #mean proportional contribution of species during period
@@ -318,6 +349,7 @@ model {
     
   }#p
 
+  #### multinomial dirichlet-prior, time-series model for the species composition
   
   alpha_s[1] <- 0
 
@@ -353,6 +385,7 @@ model {
   
   #####################################################################
   #### proportional distribution of age and sex by species
+  #### axcomp_axsy[1:ndemog,s,y] = proportional distribution of age and sex classes by species and year
   
   ##### species composition
   for (s in 1:nspecies){
@@ -377,6 +410,7 @@ model {
     
     #### monitoring the mean demographic splits across all years for a given species
     # exponential transformation
+    ## mu_axs = mean across years of the species age-sex composition
     for( d in 1:ndemog ){
       mu_axs[d,s] <- exp.alpha_axs[d,s]/sum(exp.alpha_axs[1:ndemog,s]) #
       exp.alpha_axs[d,s] <- exp(alpha_axs[d,s])
@@ -385,6 +419,7 @@ model {
     
   }#s
   
+  #### multinomial dirichlet-prior, time-series model for the age and sex (ducks) or age (geese) composition
   
   alpha_ax[1] <- 0
   tau_alpha_ax[1] ~ dscaled.gamma(2, 4)

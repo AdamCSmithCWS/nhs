@@ -25,7 +25,7 @@ sashome <- "C:\\Program Files\\SASHome\\SASFoundation\\9.4"
 provs = c("AB","BC","SK","MB","ON","PQ","NS","PE","NB","NF")#,"NU","NT","YT") #All prov
 #ignoring territories above
 
-sps <- read.csv(paste(home.fold,"/Bird names 2010.csv", sep = ""))
+sps <- read.csv(paste(home.fold,"/data/Bird names 2010.csv", sep = ""))
                           species <- unique(sps[which(sps$group %in% c("duck","goose","murre")),"specieslevelenglish"])
                           species <- species[-which(species == "Hybrid Mallard/Northern Pintail")]
                           gnames <- unique(sps[which(sps$group == "goose"),"specieslevelenglish"])
@@ -41,8 +41,8 @@ zone <- T           ### change to false, if provincial summaries are desired
 # #
 # ############## extracting harvest survey data for all years
 #
-provzone = read.csv("province and zone table.csv",stringsAsFactors = F)
-casteslist = read.csv("caste table.csv",stringsAsFactors = F)
+provzone = read.csv("data/province and zone table.csv",stringsAsFactors = F)
+casteslist = read.csv("data/caste table.csv",stringsAsFactors = F)
 
 #
 #
@@ -51,6 +51,8 @@ length(harvw) <- length(years)
 names(harvw) <- as.character(years)
 cald = harvw
 calg = cald
+calm = cald
+
 cls = c("PRHUNT",
         "ZOHUNT",
         "AOU",
@@ -83,6 +85,12 @@ for (y in years){
                                         sectionnames = fil.yr,
                                         sascmd = file.path(sashome, "sas.exe"))
 
+   if(y > 2012){
+   fil.yr <- paste0("mcal",substring(y,3,4))
+   calm[[as.character(y)]] <- read.ssd(libname = dir.yr,
+                                       sectionnames = fil.yr,
+                                       sascmd = file.path(sashome, "sas.exe"))
+ }
  fil.yr = paste0("persum",substring(y,3,4))
  tmpp <- read.ssd(libname = paste0(home.fold1,"/PermitSummary"),
                                      sectionnames = fil.yr,
@@ -158,6 +166,7 @@ period.duck[,"startweek"] <- NA
 period.duck[,"endweek"] <- NA
 
 period.goose <- period.duck
+period.murre <- period.duck
 
 for(pr in provs){
   pzones <- unique(outscse[which(outscse$PRHUNT == pr),"ZOHUNT"])
@@ -217,7 +226,7 @@ for(pr in provs){
 }#pr
 period.duck <- period.duck[-which(is.na(period.duck$startweek)),]
 period.duck <- period.duck[order(period.duck$pr,period.duck$zo),]
-write.csv(period.duck,"period.duck.csv",row.names = F)
+write.csv(period.duck,"data/period.duck.csv",row.names = F)
 
 
 ##### goose periods
@@ -280,18 +289,72 @@ for(pr in provs){
 }#pr
 period.goose <- period.goose[-which(is.na(period.goose$startweek)),]
 period.goose <- period.goose[order(period.goose$pr,period.goose$zo),]
-write.csv(period.goose,"period.goose.csv",row.names = F)
+write.csv(period.goose,"data/period.goose.csv",row.names = F)
 
 
 
+##### murre periods
 
-# list = c("harvw",
-#          "cald",
-#          "calg",
-#          "years",
-#          "sps",
-#          "period.duck",
-#          "period.goose",
-#          "outscse"),
+for(pr in "NF"){
+  pzones <- unique(outscse[which(outscse$PRHUNT == pr),"ZOHUNT"])
+  if(anyNA(pzones)){pzones <- pzones[-which(is.na(pzones))]}
+  for(z in pzones){
+    tmp <- outscse[which(outscse$PRHUNT == pr & outscse$ZOHUNT == z & outscse$AOU %in% sps[which(sps$group == "murre"),"AOU"]),]
+    
+    testm <- table(tmp[,c("AOU")],tmp[,c("WEEK")])
+    
+    wsums <- colSums(testm)
+    wprops <- wsums/sum(wsums)
+    
+    ##### identify periods based on weeks with at least 5% of the parts across all years
+    per1 <- 1
+    per2 <- NA
+    p = 1
+    mw <- F
+    q <- 0
+    
+    for(w in 1:length(wprops)){
+      if(mw){
+        
+        if(sum(wprops[per1[p]:(per1[p]+q)]) > 0.05){
+          q <- 0
+          per2[p] <- w
+          p <- p+1
+          mw <- F
+        }else{
+          q <- q+1
+        }
+      }else{
+        
+        if(wprops[w] > 0.05){
+          per1[p] <- w
+          per2[p] <- w
+          p <- p+1
+        }else{
+          per1[p] <- w
+          mw <- T
+          q <- q+1
+        }
+      }
+      
+    }#w
+    if(length(per1) > length(per2)){per1 <- per1[-length(per1)]
+    per2[p-1] <- length(wprops)}
+    
+    for(j in 1:length(per1)){
+      rs <- which(period.murre$pr == pr & period.murre$zo == z & period.murre$period == j)
+      period.murre[rs,"startweek"] <- per1[j]
+      period.murre[rs,"endweek"] <- per2[j]
+      
+    }
+    
+  }#z
+  
+}#pr
+period.murre <- period.murre[-which(is.na(period.murre$startweek)),]
+period.murre <- period.murre[order(period.murre$pr,period.murre$zo),]
+write.csv(period.murre,"data/period.murre.csv",row.names = F)
 
-save.image(file = paste0("parts and harvest survey info",Y,".RData"))
+
+
+save.image(file = paste0("data/parts and harvest survey info",Y,".RData"))

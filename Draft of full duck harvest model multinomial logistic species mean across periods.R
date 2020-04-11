@@ -36,6 +36,7 @@ library(foreign)
 library(runjags)
 library(rjags)
 library(tidyverse)
+load.module("glm") 
 
  
 
@@ -65,8 +66,10 @@ cls = c("PERMIT",
    "CRANK",
    "RAILK",
    "MURRK",
+   "RNDMURK",
    "DAYWF",
    "DAYOT",
+   "DAYM",
    "PRHUNTG",
    "ZOHUNTG",
    "LATG",
@@ -138,37 +141,6 @@ nrow(allkill) == length(unique(allkill$uniperm))
                         levels = c("A","B","D","E"))
 
 
-# allkillwf = allkill[which(allkill$ACTIVEWF == "Y"),]
-# 
-# 
-# allkillwf$year = allkillwf$YEAR-(min(allkillwf$YEAR)-1)
-# allkillwf$caste = factor(allkillwf$CASTE,
-#                        ordered = T,
-#                        levels = c("A","B","D","E"))
-# 
-# 
-# 
-# allkillot = allkill[which(allkill$ACTIVEOT == "Y"),]
-# 
-# allkillot$year = allkillot$YEAR-(min(allkillot$YEAR)-1)
-# allkillot$caste = factor(allkillot$CASTE,
-#                          ordered = T,
-#                          levels = c("A","B","D","E"))
-# 
-# 
-# 
-# 
-# allkillmu = allkill[which(allkill$ACTIVEM == "Y"),]
-# 
-# allkillmu$year = allkillmu$YEAR-(min(allkillmu$YEAR)-1)
-# allkillmu$caste = factor(allkillmu$CASTE,
-#                          ordered = T,
-#                          levels = c("A","B","D","E"))
-# 
-# 
-
-
-
 
 popsiz = merge(popsiz,provzone[,c("prov","provn")],by.x = "PRSAMP",by.y = "provn",all.x = T)
 popsiz = unique(popsiz)
@@ -224,9 +196,6 @@ for(spgp in c("goose","duck","murre")){
 ### begining of loop through provinces only engage this loop if running the full analysis
 ### for a single province and zone, skip the next 4 lines
 ### and enter something like the following (e.g., to run Ontario-zone 3)
-## pr = "ON"
-## z = 3
-
 
 # group data set up -------------------------------------------------------
 
@@ -248,6 +217,7 @@ for(spgp in c("goose","duck","murre")){
                        BAGE = rep(c("A","I"),times = 1),
                        stringsAsFactors = F)
     minyr <- min(years)
+    provs2 <- provs
     
     
   }
@@ -268,16 +238,40 @@ for(spgp in c("goose","duck","murre")){
                        BAGE = rep(c("A","I"),times = 2),
                        stringsAsFactors = F)
     minyr <- min(years)
+    provs2 <- provs
+  }
+  
+  
+  
+  if(spgp == "murre"){
+    aou.spgp = aou.murre
+    period = period.murre
+    cal.spgp = calm
+    allkill = allkill
+    phunt = "PRHUNTM"
+    zhunt = "ZOHUNTM"
+    wkill = "MURRK"
+    wact = "ACTIVEM"
+    wsucc = "SUCCM"
+    wday = "DAYM" #?
+    years = 2014:Y #### previous years Murre harvest was calculated differently, pre 2013 only total MURRK, and in 2013 it was a mix of infor from DAYOT and calendars and species composition
+    nyears = length(years)
+    demog = data.frame(BSEX = rep(c("U","U"),each = 1),
+                       BAGE = rep(c("A","I"),times = 1),
+                       stringsAsFactors = F)
+    minyr <- 2014
+    provs2 = "NF"
     
   }
   
+
+  non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
+  
 pzcount = 0
-for(pr in provs){
+for(pr in provs2){
   zns <- unique(period[which(period$pr == pr),"zo"])
   for(z in zns){
 pzcount = pzcount + 1
-# pr = "NF"
-# z = 2
 
 
 
@@ -291,7 +285,9 @@ sumkill = allkill[which(allkill[,phunt] == pr &
                              allkill[,zhunt] == z &
                              allkill$YEAR %in% years),]
 
-
+if(minyr != 1975){
+sumkill$year = sumkill$YEAR-(minyr-1)
+}
   nperiods <- max(periods$period)
     
     
@@ -332,8 +328,8 @@ sumkill = allkill[which(allkill[,phunt] == pr &
    agesexarray <- array(data = 0,dim = c(ndemog,nspecies,nyears))
     
    
-    sp.save = unique(prts1[,c(phunt,zhunt,"AOU","spfact","spn")])
-    sp.save[,phunt] <- as.character(sp.save[,phunt])
+    sp.save = unique(prts1[,c("PRHUNT","ZOHUNT","AOU","spfact","spn")])
+    sp.save[,"PRHUNT"] <- as.character(sp.save[,"PRHUNT"])
     sp.save[,"spfact"] <- as.character(sp.save[,"spfact"])
   
    
@@ -357,7 +353,7 @@ sumkill = allkill[which(allkill[,phunt] == pr &
           agesexarray[dg,sp,y] <- nrow(prts1[which(prts1$BAGE == ag & prts1$BSEX == sx & prts1$spn == sp & prts1$YEAR == yr),])
         }#dg
         }
-        if(spgp == "goose"){ ### lumps all sexes including unknowns just tracks ages
+        if(spgp %in% c("murre","goose")){ ### lumps all sexes including unknowns just tracks ages
           for(dg in 1:ndemog){
             ag <- demog[dg,"BAGE"]
             
@@ -380,33 +376,16 @@ sumkill = allkill[which(allkill[,phunt] == pr &
     
    
    
-#   # setting up initial values using observed data
-# jinmeans = partsarray 
-# for(y in 1:nyears){
-#   for(pp in 1:nperiods){
-#     for(sp in 1:nspecies){
-#   jinmeans[pp,sp,y] <- sum(partsarray[,sp,])/sum(partsarray)
-#     }
-#                          }
-# } 
-# 
-# 
-# # jin <- function(chain) return(switch(chain,
-# #                                       "1"=list(delta = array(runif(nspecies*nyears*nperiods,0.2,0.8),dim = c(nperiods,nspecies,nyears))),
-# #                                       "2"=list(delta = array(runif(nspecies*nyears*nperiods,0.2,0.8),dim = c(nperiods,nspecies,nyears))),
-# #                                       "3"=list(delta = array(runif(nspecies*nyears*nperiods,0.2,0.8),dim = c(nperiods,nspecies,nyears)))))
-# #  
-# jin <- function(chain) return(switch(chain,
-#                                      "1"=list(delta = jinmeans),
-#                                      "2"=list(delta = jinmeans),
-#                                      "3"=list(delta = jinmeans)))
-# ## function to generate initial values across chains in jags
-# 
 
 
 
+    
 #########################
-### compiling calendar info 
+### 
+
+# compiling calendar info -------------------------------------------------
+
+    
 ## generate an array 
 ## periodkill[p,y,h] = total kill in period-x and year-y for each hunter-h
 ## nhunter_y[y] = number of hunters with calendar information in year-y
@@ -489,10 +468,10 @@ tmp1$yearhunt = tmp1$YEAR
 ### below can be commented out but prints the 
 ### observed proportional composition of the hunt by years (rows) and periods (columns)
 ### helps for checking that there are no missing data
-for(y in 1:nyears){
-print(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,],na.rm = F)),3))
-if(any(is.na(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,],na.rm = F)),3)))){print(y)}
-  }
+# for(y in 1:nyears){
+# print(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,],na.rm = F)),3))
+# if(any(is.na(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,],na.rm = F)),3)))){print(y)}
+#   }
 
 
 
@@ -501,15 +480,21 @@ if(any(is.na(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,
 
 
 
-#combines castes B and D into resident renewal hunters
 
-#combines castes B and D into resident renewal hunters
+if(paste(pr,z) %in% non_res_combine){
+  
+  #combines castes A and E into resident non-renewal hunters
+  #### for 8 zones this is necessary because there are very few non-resident hunters
+  ##### now with sharing of info through time, this is worth reconsidering...
+  
+sumkill[which(sumkill$CASTE == "E"),"CASTE"] <- "A" 
+sumkill$caste = factor(as.character(sumkill$CASTE),ordered = T,levels = c("D","B","A")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter) plus the few nonresidents
 
-##sumkill[which(sumkill$CASTE == "B"),"CASTE"] <- "D" #combines castes B and D into resident renewal hunters
-#combines castes B and D into resident renewal hunters
-#combines castes B and D into resident renewal hunters
+}else{
+  sumkill$caste = factor(as.character(sumkill$CASTE),ordered = T,levels = c("D","B","A","E")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
+  
+}
 
-sumkill$caste = factor(as.character(sumkill$CASTE),ordered = T,levels = c("D","B","A","E")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
 castes = 1:max(as.integer(sumkill$caste)) #
 
 # population sizes (number of permits in each caste and year) active potential and successful--------------------------------------------------------
@@ -537,12 +522,17 @@ for(cc in castes){
 
 npotential <- as.matrix(table(sumkill$caste,sumkill$year))
 succ = sumkill[which(sumkill[,wsucc] == "Y"),]
-nsucc <- as.matrix(table(sumkill$caste,sumkill$year))
+nsucc <- as.matrix(table(succ$caste,succ$year))
 
 
 sumkill_active = sumkill[which(sumkill[,wact] == "Y"),]
 nactive <- as.matrix(table(sumkill_active$caste,sumkill_active$year))
 
+if(any(sumkill_active[,wday] < 1 & spgp == "murre")){
+  sumkill_active[which(sumkill_active[,wday] < 1),wday] <- sumkill_active[which(sumkill_active[,wday] < 1),"DAYOT"]
+}
+
+if(any(nsucc > nactive)){break("number successful > number active, problem with the data")}
 
 caste = as.integer(sumkill_active[,"caste"])
 year = sumkill_active[,"year"]
@@ -550,7 +540,11 @@ kill = sumkill_active[,wkill]
 nhs = nrow(sumkill_active)
 days = sumkill_active[,wday]
 
-
+if(any(days < 1)){
+  mday_per_kill <- sum(days[which(days > 0)])/sum(kill[which(days > 0)])
+  days[which(days == 0)] <- ceiling(mday_per_kill*(kill[which(days == 0)]+1))
+}
+if(any(days < 1)){break("number of days includes zeros for successful hunters")}
 
 #nhunter_cy[c,y] #number of active hunters by caste and year
 nhunter_cy = matrix(0,nrow = max(castes),ncol = nyears)
@@ -616,49 +610,61 @@ for(y in 1:nyears){
 # compiling JAGS data object ----------------------------------------------
 
 
-jdat = list(w_psy = partsarray,
-            w_axsy = agesexarray,
-            ndemog = ndemog,
-            nparts_py = nparts_py,
-            nparts_sy = nparts_sy,
-            nspecies = nspecies,
-            nyears = nyears,
-            nperiods = nperiods,
-            nhunter_y = nhunter_y,
-            nhunter_cy = nhunter_cy,
-            castes = castes,
-            hunter = hunter_n_cy,
-            nhs = nhs,
-            kill = kill,
-            year = year,
-            caste = caste,
-            kill_pyh = periodkill,
-            nkill_yh = nkill_yh,
-            pops = pops,
-            nactive = nactive,
-            npotential = npotential)
+jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and year used to rescale all perhunter estimates to totals 
+            #component that estimates p_active etc. to generate totals of active and successful hunters by year
+            nactive = nactive, # nactive[c,y] number of active hunters by caste and year
+            npotential = npotential, # npotential[c,y] number of potential hunters (respondents who bought a permit this year) by caste and year
+            nsucc = nsucc, # nsucc[c,y] number of successful hunters by caste and year (active hunters with harvest > 0)
+            #spcies composition components
+            w_psy = partsarray, # w_psy[nperiods,nspecies,nyears] wings by period species year
+            nparts_py = nparts_py, # nparts_py[nperiods,nyears] sum parts across species by period and year
+            nparts_sy = nparts_sy, # nparts_sy[nspecies,nyears] sum parts species and year
+            kill_pyh = periodkill, # kill_pyh[nperiods,nyears,max(nhunters[y])] hunter-level total harvest by period from the calendars(separate hunter id caste doesn't matter)
+            nkill_yh = nkill_yh, # nkill_yh[nyears,max(nhunters[y])] hunter-level summed harvest from calendar (separate hunter id caste doesn't matter)
+            # demographic data for age and sex component of the model
+            w_axsy = agesexarray, # w_axsy[ndemog,nspecies,nyears] wings by age-sex species year
+            #indicators
+            ndemog = ndemog, # 2 if geese (A and I) 4 if ducks (AF, IF, AM, IM) number of demographic units (age-sex combinations)
+            nspecies = nspecies, # integer length = 1 number of species
+            nyears = nyears, #integer length = 1 number of years
+            nperiods = nperiods, # integer length = 1 number of periods
+            nhunter_y = nhunter_y, # nhunter_y[nyears] number active hunters by year
+            nhunter_cy = nhunter_cy, # nhunter_cy[castes,nyears] number active hunters by caste and year
+            castes = castes, # castes (numeric, 1:4)
+            nhs = nhs, # integer length = 1 number of active hunters over all years (nrow for sumkill_active)
+            #main data for overall harvest estimates
+            hunter = hunter_n_cy, # vector(length = nhs) unique numeric indicator for active hunters by caste and year 
+            kill = kill, # vector(length = nhs), total group (ducks, geese, murres) harvest of nhs response
+            year = year, # vector(length = nhs), year of response
+            caste = caste, # vector(length = nhs), caste of response
+            days = days)# vector(length = nhs), number of days spent hunting
 
 
 
 
 
 
-parms = c("pactive",
-          "psucc")
 
-adaptSteps = 100              # Number of steps to "tune" the samplers.
+
+parms = c("kill_ys",
+          "axcomp_axsy",
+          "sdhunter",
+          "sdhunter_day")
+
+adaptSteps = 200              # Number of steps to "tune" the samplers.
 burnInSteps = 5000            # Number of steps to "burn-in" the samplers.
 nChains = 3                   # Number of chains to run.
-numSavedSteps=100          # Total number of steps in chains to save.
+numSavedSteps=2000          # Total number of steps in chains to save.
 thinSteps=10                   # Number of steps to "thin" (1=keep every step).
 nIter = ceiling( ( numSavedSteps * thinSteps ) / nChains ) # Steps per chain.
 
 t1 = Sys.time()
-
+#if(spgp == "duck"){
+  mod.file = "duck_harvest_model.R" # I think this should work for geese and murres too
+#}
    
-load.module("glm") 
 
-out2 = jags.model( file = "duck_harvest_model.R", 
+out2 = jags.model( file = mod.file, 
                    data= jdat ,  
                    #inits= newinits,  
                    n.chains= nChains , 
@@ -679,20 +685,21 @@ t2 = Sys.time()
 sum <- summary(codaSamples)
 
 
+
 library(ggmcmc)
 
 g = ggs(codaSamples)
 for(pp in parms){
   gg = filter(g,grepl(Parameter,pattern = pp))
-  ggmcmc(gg,file = paste(pp,"mcmc.pdf"))
+  ggmcmc(gg,file = paste("output/converge",pr,z,spgp,pp,"mcmc.pdf"))
 }
 
 
 newinits = coef(out2) # this object can be used as initial values to re-start the jags
 
 
-save(list = c("sum","out2","jdat","codaSamples","newinits","prts1","sp.save.out"),
-     file = paste(pr,z,spgp,"full harvest model draft.RData"))
+save(list = c("sum","out2","jdat","codaSamples","newinits","sp.save.out"),
+     file = paste("output/full harvest",pr,z,spgp,"mod.RData"))
 
 
 
