@@ -27,6 +27,23 @@
 ## after the various local folders have been adjusted
 
 
+
+###############################################
+###############
+
+## need to remove the scaled gamma and the glm module
+## this may remove the tendency to get the inconsistent with parents errors
+
+## also
+
+## add the relevant sex and age ratios as explicit calculations
+# AGE RATIO: IMMATURES/ADULT: 
+#   The ratio corresponds to the number of immatures per adult bird in the sample. Ratios were calculated if the total sample equals or exceeds 20 parts.
+# 
+# SEX RATIO: MALES PER FEMALE: 
+#   The ratio corresponds to the number of males per female bird in the sample. Ratios were calculated if the total sample equals or exceeds 20 parts.
+
+
 Y <- 2018
 years <- 1975:Y
 
@@ -268,7 +285,7 @@ for(spgp in c("goose","duck","murre")){
   non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
   
 pzcount = 0
-for(pr in provs2){
+for(pr in provs2[c(3,6)]){
   zns <- unique(period[which(period$pr == pr),"zo"])
   for(z in zns){
 pzcount = pzcount + 1
@@ -303,7 +320,7 @@ sumkill$year = sumkill$YEAR-(minyr-1)
     yrspersp <- tapply(prts1$YEAR,prts1$AOU,luni)
 
 # removing species that only show up in <half of years --------------------
-    prts1 <- prts1[which(prts1$AOU %in% names(yrspersp)[which(yrspersp > (0.5*length(years)))]),]
+    prts1 <- prts1[which(prts1$AOU %in% names(yrspersp)[which(yrspersp > (0.33*length(years)))]),]
     
     
     for(per in periods$period){
@@ -540,9 +557,9 @@ kill = sumkill_active[,wkill]
 nhs = nrow(sumkill_active)
 days = sumkill_active[,wday]
 
-if(any(days < 1)){
-  mday_per_kill <- sum(days[which(days > 0)])/sum(kill[which(days > 0)])
-  days[which(days == 0)] <- ceiling(mday_per_kill*(kill[which(days == 0)]+1))
+if(any(days < 1) | any(is.na(days))){
+  mday_per_kill <- sum(days[which(days > 0)])/sum(kill[which(days > 0)],na.rm = T)
+  days[which(days == 0 | is.na(days))] <- ceiling(mday_per_kill*(kill[which(days == 0)]+1))
 }
 if(any(days < 1)){break("number of days includes zeros for successful hunters")}
 
@@ -553,8 +570,15 @@ for(y in 1:nyears){
   
   for(c in castes){
     ww = which(sumkill_active$year == y & sumkill_active$caste == levels(sumkill_active$caste)[c])
+    if(length(ww) == 0){print(paste("no hunter responses in caste",c,"year",y,pr,z))}
     sumkill_active[ww,"hunter_n_cy"] <- as.integer(factor(sumkill_active[ww,"PERMIT"]))
-    nhunter_cy[c,y] <- max(sumkill_active[ww,"hunter_n_cy"])
+    if(length(ww) == 0){
+      nhunter_cy[c,y] <- 0
+      
+    }else{
+      nhunter_cy[c,y] <- max(sumkill_active[ww,"hunter_n_cy"])
+      
+    }
     
   }
 }
@@ -664,11 +688,12 @@ t1 = Sys.time()
 #}
    
 
-out2 = jags.model( file = mod.file, 
+out2 = try(jags.model( file = mod.file, 
                    data= jdat ,  
                    #inits= newinits,  
                    n.chains= nChains , 
-                   n.adapt= adaptSteps )
+                   n.adapt= adaptSteps ),silent = F)
+if(class(out2) != "try-error"){
 
 # Burn-in:
 cat( "Burning in the MCMC chain...\n" )
@@ -701,7 +726,8 @@ newinits = coef(out2) # this object can be used as initial values to re-start th
 save(list = c("sum","out2","jdat","codaSamples","newinits","sp.save.out"),
      file = paste("output/full harvest",pr,z,spgp,"mod.RData"))
 
-
+rm(list = "out2")
+}
 
   }#z
 
