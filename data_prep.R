@@ -91,14 +91,14 @@ for (y in years){
                                        sectionnames = fil.yr,
                                        sascmd = file.path(sashome, "sas.exe"))
  }
- fil.yr = paste0("persum",substring(y,3,4))
- tmpp <- read.ssd(libname = paste0(home.fold1,"/PermitSummary"),
+ fil.yr = paste0("persal",substring(y,3,4))
+ tmpp <- read.ssd(libname = paste0(home.fold1,"/PermitSales"),
                                      sectionnames = fil.yr,
                                      sascmd = file.path(sashome, "sas.exe"))
  if(any(tmpp$YEAR > 50,na.rm = T) ){
-   tmpp$YEAR = tmpp$YEAR+2000
- }else{
    tmpp$YEAR = tmpp$YEAR+1900
+ }else{
+   tmpp$YEAR = tmpp$YEAR+2000
 
  }
 
