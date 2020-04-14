@@ -152,8 +152,8 @@ model {
   }#c
   
   ### yearly intercepts of total kill by first-difference
-  ann[1] ~ dnorm(0,0.01) # fixed effects for year-1 annual harvest level
-  ann_day[1] ~ dnorm(0,0.01) # fixed effect for year-1 annual activity level
+  ann[1] ~ dnorm(0,0.001) # fixed effects for year-1 annual harvest level
+  ann_day[1] ~ dnorm(0,0.001) # fixed effect for year-1 annual activity level
   for(y in 2:nyears){
     ann[y] ~ dnorm(ann[y-1],tauyear)
     ann_day[y] ~ dnorm(ann_day[y-1],tauyear_day)
