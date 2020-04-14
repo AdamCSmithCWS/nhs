@@ -284,10 +284,10 @@ for(spgp in c("goose","duck","murre")){
   }
   
 
-  non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
+  non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1") # (run 3,5,and 6)
   
 pzcount = 0
-for(pr in provs2[c(5)]){
+for(pr in provs2[c(3)]){
   zns <- unique(period[which(period$pr == pr),"zo"])
   for(z in zns){
 pzcount = pzcount + 1
@@ -672,10 +672,11 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
 
 
 
-parms = c("kill_ys",
-          "axcomp_axsy",
+parms = c("cst_day",
+          "cst",
           "sdhunter",
-          "sdhunter_day")
+          "sdhunter_day",
+          "dif_1_2")
 
 adaptSteps = 200              # Number of steps to "tune" the samplers.
 burnInSteps = 5000            # Number of steps to "burn-in" the samplers.
