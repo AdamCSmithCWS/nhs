@@ -155,16 +155,20 @@ model {
   ann[1] ~ dnorm(0,0.001) # fixed effects for year-1 annual harvest level
   ann_day[1] ~ dnorm(0,0.001) # fixed effect for year-1 annual activity level
   for(y in 2:nyears){
-    ann[y] ~ dnorm(ann[y-1],tauyear)
-    ann_day[y] ~ dnorm(ann_day[y-1],tauyear_day)
+    #ann[y] ~ dnorm(ann[y-1],tauyear)
+    #ann_day[y] ~ dnorm(ann_day[y-1],tauyear_day)
+    
+    ann[y] ~ dnorm(0,0.001)
+    ann_day[y] ~ dnorm(0,0.001)
+    
   }
   
   # first-difference harvest and activity variance priors
-  sdyear <- 1/pow(tauyear,0.5)
-  tauyear ~ dgamma(0.001,0.001)
-  sdyear_day <- 1/pow(tauyear_day,0.5)
-  tauyear_day ~ dgamma(0.001,0.001)
-  
+  # sdyear <- 1/pow(tauyear,0.5)
+  # tauyear ~ dgamma(0.001,0.001)
+  # sdyear_day <- 1/pow(tauyear_day,0.5)
+  # tauyear_day ~ dgamma(0.001,0.001)
+  # 
   
   
   ##################################
