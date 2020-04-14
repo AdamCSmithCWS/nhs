@@ -707,8 +707,9 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
 
 
 
-parms = c("kill_ys",
-          "axcomp_axsy",
+parms = c("dif_1_2",
+          "cst",
+          "cst_day",
           "sdhunter",
           "sdhunter_day")
 
