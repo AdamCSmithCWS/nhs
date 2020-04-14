@@ -295,7 +295,7 @@ for(spgp in c("goose","duck","murre")){
   non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
   
 pzcount = 0
-for(pr in provs2[c(5)]){
+for(pr in provs2[c(3,5,6)]){
   zns <- unique(period[which(period$pr == pr),"zo"])
   for(z in zns){
 pzcount = pzcount + 1
@@ -691,6 +691,7 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
             nhunter_y = nhunter_y, # nhunter_y[nyears] number active hunters by year
             nhunter_cy = nhunter_cy, # nhunter_cy[castes,nyears] number active hunters by caste and year
             ncastes = max(castes), # castes (numeric, 1:4)
+            castes = castes, # castes (numeric, 1:4)
             nhs = nhs, # integer length = 1 number of active hunters over all years (nrow for sumkill_active)
             #main data for overall harvest estimates
             hunter = hunter_n_cy, # vector(length = nhs) unique numeric indicator for active hunters by caste and year 
