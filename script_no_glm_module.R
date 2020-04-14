@@ -161,8 +161,16 @@ nrow(allkill) == length(unique(allkill$uniperm))
 
 
 
-popsiz = merge(popsiz,provzone[,c("prov","provn")],by.x = "PRSAMP",by.y = "provn",all.x = T)
-popsiz = unique(popsiz)
+ 
+ ######## sampling population sizes
+popsiz_s = merge(popsiz,provzone[,c("prov","provn")],by.x = "PRSAMP",by.y = "provn",all.x = T)
+popsiz_s = unique(popsiz_s)
+
+
+#### total number of permits in each year
+
+popsiz_perm = merge(perms,provzone[,c("prov","provn")],by.x = "PRSALE",by.y = "provn",all.x = T)
+popsiz_perm = unique(popsiz_perm)
 
 
 ### species lists
@@ -520,16 +528,42 @@ castes = 1:max(as.integer(sumkill$caste)) #
 #pops[c,y]
 pops = matrix(0,nrow = max(castes),ncol = nyears)
 
-for(cc in castes){
+for(cc in castes[(3:length(castes))]){ # loops through the castes A and E(if present)
   for(y in 1:nyears){
     yn = as.integer(substr(as.character(years[y]),3,4))
-    pops[cc,y] <- popsiz[which(popsiz$SAMPLE == levels(sumkill$caste)[cc] & popsiz$YEAR == yn &
-                                 popsiz$prov == pr & popsiz$ZOSAMP == z),"TOTPERM"]
+    pops[cc,y] <- popsiz_s[which(popsiz_s$SAMPLE == levels(sumkill$caste)[cc] & popsiz_s$YEAR == yn &
+                                 popsiz_s$prov == pr & popsiz_s$ZOSAMP == z),"TOTPERM"]
     
   }
 }
 
+cfact = matrix(NA,nrow = 2,ncol = nyears) ## matrix of the yearly proportion of RESREN hunters that were drawn from caste D (row = 1) and B (row = 2) 
+### correction factors for RESREN hunters
+for(y in 1:nyears){
+  permpop = popsiz_perm[which(popsiz_perm$SAMPLE == "B" & popsiz_perm$YEAR == as.character(years[y]) &
+                                popsiz_perm$prov == pr & popsiz_perm$ZOSALE == z),"TOTSALE"]
+  for(cc in castes[1:2]){ # loops through the castes D and B
+    yn = as.integer(substr(as.character(years[y]),3,4))
+    tmpnum = popsiz_s[which(popsiz_s$SAMPLE == levels(sumkill$caste)[cc] & popsiz_s$YEAR == yn &
+                                   popsiz_s$prov == pr & popsiz_s$ZOSAMP == z),"TOTPERM"]
+    tmpdenom = sum(popsiz_s[which(popsiz_s$SAMPLE %in% levels(sumkill$caste)[1:2] & popsiz_s$YEAR == yn &
+                            popsiz_s$prov == pr & popsiz_s$ZOSAMP == z),"TOTPERM"])
+    
+    
+    cfact[cc,y] = tmpnum/tmpdenom
 
+    pops[cc,y] <- as.integer(round(permpop*cfact[cc,y],0))
+
+    
+  }
+  #print(permpop - sum(pops[1:2,y]))
+}
+
+# 
+# for(y in years){
+#   cfact[1,y] <- popsiz_s[which(popsiz_s$SAMPLE == "D" & popsiz_s$)]
+#   
+# }#y
 
 
 # separating active and inactive ------------------------------------------
