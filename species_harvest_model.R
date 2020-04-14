@@ -41,7 +41,7 @@ model {
   #nactive = data (number of active hunters in a given caste and year)
   #npotential = data (number of potential hunters in a given caste and year)
   for(y in 1:nyears){
-  for(c in castes){
+  for(c in 1:ncastes){
     nactive[c,y] ~ dbinom(pactive[c,y],npotential[c,y])
     NACTIVE_cy[c,y] <- pactive[c,y]*pops[c,y]
     
@@ -85,22 +85,37 @@ model {
     
   }#i
   
-  for(c in castes){
+  
+  dif_1_2[1] <- cst[1]-cst[2]
+  dif_1_2[2] <- cst_day[1]-cst_day[2]
+  
+  dif_1_2[3] <- sdhunter[1]-sdhunter[2]
+  dif_1_2[4] <- sdhunter_day[1]-sdhunter_day[2]
+  
+  dif_1_2[5] <- nu_day[1]-nu_day[2]
+  
+  
+  cst[1] <- 1
+  cst_day[1] <- 1
+  for(c in 2:ncastes){
+  cst[c] ~ dnorm(0,0.01)
+  cst_day[c] ~ dnorm(0,0.01)
+  }
+  
+  for(c in 1:ncastes){
     ## harvest rate priors
     retrans_hunter[c] <- 0.5*(1/tauhunter[c])
     sdhunter[c] <- 1/pow(tauhunter[c],0.5)
     tauhunter[c] ~ dgamma(0.01,0.01)
     #nu[c] ~ dgamma(2,0.1)
     ## caste specific intercept priors
-    cst[c] ~ dnorm(0,0.01)
-    
+   
     #activity (days) priors
     retrans_hunter_day[c] <- 0.5*(1/tauhunter_day[c])
     sdhunter_day[c] <- 1/pow(tauhunter_day[c],0.5)
     tauhunter_day[c] ~ dgamma(0.01,0.01)
     nu_day[c] ~ dgamma(2,0.1)
     ## caste specific intercept priors
-    cst_day[c] ~ dnorm(0,0.01)
     
     
     # mmu_psucc[c] ~ dnorm(0,1)
@@ -174,7 +189,7 @@ model {
   ##################################
   ### derived estimates of mean harvest by hunter ###############
   
-  for(c in castes){
+  for(c in 1:ncastes){
     for(y in 1:nyears){
       ## derived estimated means, which can then be multiplied by the extrapolation factors for each caste and year
       # estimate of the mean (per hunter) kill per caste, and year
@@ -213,7 +228,7 @@ model {
   ## mean harvest and days * population sizes of each caste and year * esimated proportion of population that is active to generate final harvest estimates.
   for(y in 1:nyears){
    
-    for(c in castes){
+    for(c in 1:ncastes){
       kill_cy[c,y] <- mean_totkill_yc[y,c]*pops[c,y] * pactive[c,y] #total kill by caste and year
       days_cy[c,y] <- mean_totdays_yc[y,c]*pops[c,y] * pactive[c,y] #total days by caste and year
       
