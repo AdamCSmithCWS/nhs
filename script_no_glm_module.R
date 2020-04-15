@@ -298,7 +298,7 @@ for(spgp in c("goose","duck","murre")){
   non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
   
 pzcount = 0
-for(pr in provs2[c(3,5,6)]){
+for(pr in provs2[c(5)]){
   zns <- unique(period[which(period$pr == pr),"zo"])
   for(z in zns){
 pzcount = pzcount + 1
@@ -582,6 +582,14 @@ nsucc <- as.matrix(table(succ$caste,succ$year))
 
 
 sumkill_active = sumkill[which(sumkill[,wact] == "Y"),]
+
+#### insert 0 for all NA-kill values and active hunters (applies to active WF hunters with NA values for geese)
+
+if(any(is.na(sumkill_active[,wkill]) & spgp == "goose")){
+  sumkill_active[which(is.na(sumkill_active[,wkill])),wkill] <- 0
+}
+
+
 nactive <- as.matrix(table(sumkill_active$caste,sumkill_active$year))
 
 if(any(sumkill_active[,wday] < 1 & spgp == "murre")){
@@ -589,6 +597,8 @@ if(any(sumkill_active[,wday] < 1 & spgp == "murre")){
 }
 
 if(any(nsucc > nactive)){break("number successful > number active, problem with the data")}
+
+
 
 caste = as.integer(sumkill_active[,"caste"])
 year = sumkill_active[,"year"]
@@ -598,8 +608,11 @@ days = sumkill_active[,wday]
 
 if(any(days < 1) | any(is.na(days))){
   mday_per_kill <- sum(days[which(days > 0)])/sum(kill[which(days > 0)],na.rm = T)
-  days[which(days == 0 | is.na(days))] <- ceiling(mday_per_kill*(kill[which(days == 0)]+1))
+  days[which(days == 0 | is.na(days))] <- ceiling(mday_per_kill*(kill[which(days == 0 | is.na(days))]+1))
 }
+
+clsw = which(names(sumkill_active) %in% c(wkill,wday,"year","caste"))
+
 if(any(days < 1)){break("number of days includes zeros for successful hunters")}
 
 #nhunter_cy[c,y] #number of active hunters by caste and year
