@@ -21,6 +21,7 @@
 # nhunter_y = nhunter_y, # nhunter_y[nyears] number active hunters by year
 # nhunter_cy = nhunter_cy, # nhunter_cy[castes,nyears] number active hunters by caste and year
 # castes = castes, # castes (numeric, 1:4)
+# ncastes = length(castes), # number of castes
 # nhs = nhs, # integer length = 1 number of active hunters over all years (nrow for sumkill_active)
 # #main data for overall harvest estimates
 # hunter = hunter_n_cy, # vector(length = nhs) unique numeric indicator for active hunters by caste and year 
