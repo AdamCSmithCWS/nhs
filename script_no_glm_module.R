@@ -52,7 +52,10 @@ names(years) <- paste(years)
 library(foreign)
 library(runjags)
 library(rjags)
+library(jagsUI)
 library(tidyverse)
+library(ggmcmc)
+
 #load.module("glm") 
 
  
@@ -725,7 +728,7 @@ burnInSteps = 5000            # Number of steps to "burn-in" the samplers.
 nChains = 3                   # Number of chains to run.
 numSavedSteps=2000          # Total number of steps in chains to save.
 thinSteps=10                   # Number of steps to "thin" (1=keep every step).
-nIter = ceiling( ( numSavedSteps * thinSteps ) / nChains ) # Steps per chain.
+nIter = ceiling( ( (numSavedSteps * thinSteps )+burnInSteps) / nChains ) # Steps per chain.
 
 t1 = Sys.time()
 #if(spgp == "duck"){
@@ -733,42 +736,47 @@ t1 = Sys.time()
 #}
    
 
-out2 = try(jags.model( file = mod.file, 
-                   data= jdat ,  
-                   #inits= newinits,  
-                   n.chains= nChains , 
-                   n.adapt= adaptSteps ),silent = F)
+# out2 = try(jags.model( file = mod.file, 
+#                    data= jdat ,  
+#                    #inits= newinits,  
+#                    n.chains= nChains , 
+#                    n.adapt= adaptSteps ),silent = F)
+# if(class(out2) != "try-error"){
+# 
+# # Burn-in:
+# cat( "Burning in the MCMC chain...\n" )
+# update( out2 , n.iter=burnInSteps )
+# # The saved MCMC chain:
+# cat( "Sampling final MCMC chain...\n" )
+# codaSamples = coda.samples( out2 , variable.names=parms ,
+#                             n.iter=nIter , thin=thinSteps )
+# #codaSamples = coda.samples( jagsMod , variable.names=parms ,
+# #                            n.iter=50 , thin=1 )
+
+  
+  out2 = try(jagsUI(data = jdat,
+                    parameters.to.save = parms,
+                    n.chains = 3,
+                    n.burnin = burnInSteps,
+                    n.thin = thinSteps,
+                    n.iter = nIter,
+                    parallel = T,
+                    modules = NULL,
+                    model.file = mod.file),silent = F)
+t2 = Sys.time()
 if(class(out2) != "try-error"){
 
-# Burn-in:
-cat( "Burning in the MCMC chain...\n" )
-update( out2 , n.iter=burnInSteps )
-# The saved MCMC chain:
-cat( "Sampling final MCMC chain...\n" )
-codaSamples = coda.samples( out2 , variable.names=parms ,
-                            n.iter=nIter , thin=thinSteps )
-#codaSamples = coda.samples( jagsMod , variable.names=parms ,
-#                            n.iter=50 , thin=1 )
 
-t2 = Sys.time()
-
-sum <- summary(codaSamples)
-
-
-
-library(ggmcmc)
-
-g = ggs(codaSamples)
+g = ggs(out2$samples)
 for(pp in parms){
   gg = filter(g,grepl(Parameter,pattern = pp))
   ggmcmc(gg,file = paste("output/converge",pr,z,spgp,pp,"mcmc.pdf"))
 }
 
 
-newinits = coef(out2) # this object can be used as initial values to re-start the jags
 
 
-save(list = c("sum","out2","jdat","codaSamples","newinits","sp.save.out"),
+save(list = c("sum","out2","jdat","sp.save.out"),
      file = paste("output/full harvest",pr,z,spgp,"mod.RData"))
 
 rm(list = "out2")
