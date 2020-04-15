@@ -87,14 +87,14 @@ model {
   }#i
   
   
-  dif_1_2[1] <- cst[1]-cst[2]
-  dif_1_2[2] <- cst_day[1]-cst_day[2]
-  
-  dif_1_2[3] <- sdhunter[1]-sdhunter[2]
-  dif_1_2[4] <- sdhunter_day[1]-sdhunter_day[2]
-  
-  dif_1_2[5] <- nu_day[1]-nu_day[2]
-  
+  # dif_1_2[1] <- cst[1]-cst[2] #temporary parameters to assess the difference between castes D and B all results suggest significant differences
+  # dif_1_2[2] <- cst_day[1]-cst_day[2]
+  # 
+  # dif_1_2[3] <- sdhunter[1]-sdhunter[2]
+  # dif_1_2[4] <- sdhunter_day[1]-sdhunter_day[2]
+  # 
+  # dif_1_2[5] <- nu_day[1]-nu_day[2]
+  # 
   
   cst[1] <- 1
   cst_day[1] <- 1

@@ -707,13 +707,18 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
 
 
 
-parms = c("cst",
-          "cst_day",
-          "ann",
-          "ann_day",
-          "dif_1_2",
-          "sdhunter",
-          "sdhunter_day")
+parms = c("NACTIVE_y",
+          "NSUCC_y",
+          "nu_day",
+          "sdhunter_day",
+          "mean_totkill_yc",
+          "mean_totdays_yc",
+          "mean_totkill_retrans_yc",
+          "mean_totdays_retrans_yc",
+          "mean_kill_pcy",
+          "kill_ysax",
+          "kill_y",
+          "days_y")
 
 adaptSteps = 200              # Number of steps to "tune" the samplers.
 burnInSteps = 5000            # Number of steps to "burn-in" the samplers.
