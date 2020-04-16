@@ -55,6 +55,8 @@ library(rjags)
 library(jagsUI)
 library(tidyverse)
 library(ggmcmc)
+library(tidybayes)
+library(ggrepel)
 
 #load.module("glm") 
 
@@ -64,6 +66,25 @@ library(ggmcmc)
 
 
 load(paste0("data/parts and harvest survey info",Y,".RData"))
+
+
+
+# load published estimates by zone ----------------------------------------
+
+pubEsts_simple = read.csv("data/enp_nhs_a_by_zone_20200416.csv",stringsAsFactors = F)
+names(pubEsts_simple) <- c("var","name","prov","zone","resid","year","mean","sd")
+pubEsts_simple$lci = ceiling(pubEsts_simple$mean-(1.96*pubEsts_simple$sd))
+pubEsts_simple$uci = ceiling(pubEsts_simple$mean+(1.96*pubEsts_simple$sd))
+pubEsts_simple[which(pubEsts_simple$lci < 0),"lci"] <- 0
+
+
+pubEsts_species = read.csv("data/enp_nhs_b_by_zone_20200416.csv",stringsAsFactors = F)
+names(pubEsts_species) <- c("sp","species","prov","zone","year","mean","sd")
+pubEsts_species$lci = ceiling(pubEsts_species$mean-(1.96*pubEsts_species$sd))
+pubEsts_species$uci = ceiling(pubEsts_species$mean+(1.96*pubEsts_species$sd))
+pubEsts_species[which(pubEsts_species$lci < 0),"lci"] <- 0
+
+# compile total harvest estimates into a dataframe ------------------------
 
 ### compile total harvest estimates into a dataframe of
 #### permit, year, caste, totalkill
@@ -132,8 +153,6 @@ if(length(tkp)>0){
 }### removing the hunters sampled from last year's permit file who indicated they didn't buy a permit this year
 ### and are therefore not potential hunters
 
-################### this is where the reporting bias might be an issue - renewal-hunter adjustment factors
-
 
 trem = which(allkill$PERMIT == 0)
 if(length(trem)>0){
@@ -144,7 +163,7 @@ if(length(trem)>0){
 tkp = which(allkill$PRHUNT %in% c("AB","BC","MB","NB","NF","NS","NT","ON","PE","PQ","SK","YT","")) #drops NU and non provincial values
 if(length(tkp)>0){
   allkill = allkill[tkp,]
-}### removes a single permit from 1985 with no permit number
+}### 
 
 
 
@@ -732,7 +751,7 @@ parms = c("NACTIVE_y",
           "mean_totkill_retrans_yc",
           "mean_totdays_retrans_yc",
           "mean_kill_pcy",
-          "kill_ysax",
+          "kill_ys",
           "kill_y",
           "days_y")
 
@@ -780,11 +799,11 @@ t2 = Sys.time()
 if(class(out2) != "try-error"){
 
 
-g = ggs(out2$samples)
-for(pp in parms){
-  gg = filter(g,grepl(Parameter,pattern = pp))
-  ggmcmc(gg,file = paste("output/converge",pr,z,spgp,pp,"mcmc.pdf"))
-}
+# g = ggs(out2$samples)
+# for(pp in parms){
+#   gg = filter(g,grepl(Parameter,pattern = pp))
+#   ggmcmc(gg,file = paste("output/converge",pr,z,spgp,pp,"mcmc.pdf"))
+# }
 
 
 
@@ -793,9 +812,192 @@ save(list = c("sum","out2","jdat","sp.save.out"),
      file = paste("output/full harvest",pr,z,spgp,"mod.RData"))
 
 rm(list = "out2")
+
 }
 
   }#z
+  
+}#pr
+
+
+# plotting comparisons to published estimates -----------------------------
+
+source("comparison_plotting_function.R")
+source("utility_functions.R")
+
+var_pair = data.frame(new = c("NACTIVE_y",
+                              "NSUCC_y",
+                              "kill_y",
+                              "days_y"),
+                      duck = c("ACTIWF",
+                               "SUTODU",
+                               "TODUK",
+                               "DAYWF"),
+                      stringsAsFactors = F) ## add ofther spgp columns to match
+
+plts = list()
+length(plts) = nrow(var_pair)
+pdf(paste("output/comparison graphs",pr,z,"simple.pdf"))
+
+for(i in 1:nrow(var_pair)){
+
+  
+plts[[i]] <-  comp_plot_simple(group = spgp,
+var = var_pair[i,"new"],
+prov = pr,
+zone = z,
+M = out2)
+print(plts[[i]])
+}
+
+dev.off()
+
+
+
+
+# comparing retransformation options --------------------------------------
+
+
+
+### mean kill
+dsum = as.data.frame(out2$summary)
+names(dsum)[3:7] <- c("lci","lqrt","med","uqrt","uci")
+dsum$Parameter = row.names(dsum)
+d1 = filter(dsum,grepl(Parameter,pattern = "mean_totkill_yc"))
+d1$vers = "smear"
+d1$yr = jags_dim(var = "mean_totkill_yc",dat = d1)
+d1$caste = jags_dim(var = "mean_totkill_yc",dat = d1,dim = 2)
+
+d2 = filter(dsum,grepl(Parameter,pattern = "mean_totkill_retrans_yc"))
+d2$vers = "retrans"
+d2$yr = jags_dim(var = "mean_totkill_retrans_yc",dat = d2)
+d2$caste = jags_dim(var = "mean_totkill_retrans_yc",dat = d2,dim = 2)
+
+dd = bind_rows(d1,d2)
+
+dd$year = years[dd$yr]
+dd$castes = levels(sumkill_active$caste)[dd$caste]
+
+for(i in 1:nrow(dd)){
+  cc = dd[i,"caste"]
+  yy = dd[i,"yr"]
+  
+  dd[i,"nhunter"] <- nhunter_cy[cc,yy]
+}
+
+
+# if(max(to_plot$nrts) > 200){
+#   ncby_y = ceiling(to_plot$nrts/50)
+#   annot = c("each dot ~ 50 routes")
+# }else{
+#   ncby_y = to_plot$nrts
+#   annot = c("each dot = 1 route")
+#   
+# }
+
+ulim = max(dd$uci)
+ddb = dd[which(dd$vers == "smear"),]
+ddb$hunterplot <- (ddb$nhunter/max(ddb$nhunter))*(ulim/2)
+ddbmx = tapply(ddb$nhunter,ddb$castes,max)
+wm = NULL
+ddbmn = tapply(ddb$nhunter,ddb$castes,min)
+wmn = NULL
+
+for(j in 1:length(ddbmx)){
+  wm[j] <- which(ddb$nhunter == ddbmx[j] & ddb$castes == names(ddbmx)[j])
+  wmn[j] <- which(ddb$nhunter == ddbmn[j] & ddb$castes == names(ddbmn)[j])
+}
+ddbm = ddb[c(wm,wmn),]
+compp = ggplot(data = dd,aes(x = year,y = mean,fill = vers))+
+  geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = hunterplot),fill = grey(0.2),alpha = 0.1,stat = "identity")+
+  geom_point(aes(colour = vers))+
+  geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.3)+
+  labs(title = paste0("retrans comparison ",prov," zn",zone," (mean and 95 CI)"))+
+  scale_y_continuous(limits = c(0,ulim))+
+  scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
+  theme_classic()+
+  geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = hunterplot,label = nhunter),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
+  facet_wrap(facets = ~castes,ncol = 2,scales = "fixed")
+
+pdf(file = paste0("retransformation comparison ",pr,z," Kill.pdf"),
+    width = 8,height = 6)
+print(compp)
+dev.off()
+ 
+
+### mean days
+dsum = as.data.frame(out2$summary)
+names(dsum)[3:7] <- c("lci","lqrt","med","uqrt","uci")
+dsum$Parameter = row.names(dsum)
+d1 = filter(dsum,grepl(Parameter,pattern = "mean_totdays_yc"))
+d1$vers = "smear"
+d1$yr = jags_dim(var = "mean_totdays_yc",dat = d1)
+d1$caste = jags_dim(var = "mean_totdays_yc",dat = d1,dim = 2)
+
+d2 = filter(dsum,grepl(Parameter,pattern = "mean_totdays_retrans_yc"))
+d2$vers = "retrans"
+d2$yr = jags_dim(var = "mean_totdays_retrans_yc",dat = d2)
+d2$caste = jags_dim(var = "mean_totdays_retrans_yc",dat = d2,dim = 2)
+
+dd = bind_rows(d1,d2)
+
+dd$year = years[dd$yr]
+dd$castes = levels(sumkill_active$caste)[dd$caste]
+
+for(i in 1:nrow(dd)){
+  cc = dd[i,"caste"]
+  yy = dd[i,"yr"]
+  
+  dd[i,"nhunter"] <- nhunter_cy[cc,yy]
+}
+
+
+# if(max(to_plot$nrts) > 200){
+#   ncby_y = ceiling(to_plot$nrts/50)
+#   annot = c("each dot ~ 50 routes")
+# }else{
+#   ncby_y = to_plot$nrts
+#   annot = c("each dot = 1 route")
+#   
+# }
+
+ulim = max(dd$uci)
+ddb = dd[which(dd$vers == "smear"),]
+ddb$hunterplot <- (ddb$nhunter/max(ddb$nhunter))*(ulim/2)
+ddbmx = tapply(ddb$nhunter,ddb$castes,max)
+wm = NULL
+ddbmn = tapply(ddb$nhunter,ddb$castes,min)
+wmn = NULL
+
+for(j in 1:length(ddbmx)){
+  wm[j] <- which(ddb$nhunter == ddbmx[j] & ddb$castes == names(ddbmx)[j])
+  wmn[j] <- which(ddb$nhunter == ddbmn[j] & ddb$castes == names(ddbmn)[j])
+}
+ddbm = ddb[c(wm,wmn),]
+compp = ggplot(data = dd,aes(x = year,y = mean,fill = vers))+
+  geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = hunterplot),fill = grey(0.2),alpha = 0.1,stat = "identity")+
+  geom_point(aes(colour = vers))+
+  geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.3)+
+  labs(title = paste0("retrans comparison ",prov," zn",zone," (mean and 95 CI)"))+
+  scale_y_continuous(limits = c(0,ulim))+
+  scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
+  theme_classic()+
+  geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = hunterplot,label = nhunter),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
+  facet_wrap(facets = ~castes,ncol = 2,scales = "fixed")
+
+pdf(file = paste0("retransformation comparison ",pr,z," days.pdf"),
+    width = 8,height = 6)
+print(compp)
+dev.off()
+
+
+
+
+}#end if jags run 
+
+
+
+ }#z
 
 }#pr
 
@@ -804,326 +1006,3 @@ rm(list = "out2")
 ## set up some automatic plotting of important variables and compare with this year's 10-year trend graphs
 
 ###### still to Do...
-
-#### add the extrapolation factors to the model calculations
-#### compare (graphs) to the published harvest estimates
-#### all before the tech meetings
-
-pzcount = 0
-for(pr in unique(period.duck$pr)){
-  zns <- unique(period.duck[which(period.duck$pr == pr),"zo"])
-  for(z in zns){
-    pzcount = pzcount + 1
-    if(file.exists(paste(pr,z,"full harvest model draft.RData"))){
-    load(paste(pr,z,"full harvest model draft.RData"))
-      }else{
-      next
-      }
-    sumq = sum$quantiles
-    
-    
-    
- nperiods = jdat$nperiods
- 
- nspecies = jdat$nspecies
- w_psy = jdat$w_psy
-    
-pdf(file = paste(pr,z," mean species proportions across periods.pdf"))
-for(s in 1:nspecies){
-  spn <- sp.save[which(sp.save$spn == s),"species"]
-  dd1 = ceiling(sqrt(nyears))
-
-    if(round(sqrt(nyears)) != dd1){dd2 = dd1-1}else{dd2 = dd1}
-  if(dd1*dd2 < nyears){dd2 = dd1}
-  
-    par(mfrow = c(dd1,dd2),
-      mar = c(1,4,3,1))
-  
-  for(y in 1:jdat$nyears){
-    
-    plot(y = 3,x = 0,
-         xlim = c(1,jdat$nperiods),
-         ylim = c(0,max(sumq[paste0("pr[",rep(1:nperiods,each = nyears),",",s,",",rep(1:nyears,times = nperiods),"]"),"97.5%"])),
-         main = paste(pr,z,spn,y+(Y-nyears)),
-         ylab = "p of kill in period",
-         xlab = "")
-    
-    muq = sumq[paste0("mu[",1:nperiods,",",s,"]"),]
-    
-    lines(y = muq[,"50%"],
-          x = 1:nperiods,
-          lwd = 2,
-          col = "darkorange")
-    for(per in 1:nperiods){
-      n.obs <- w_psy[per,s,y]
-      p.obs <- n.obs/sum(w_psy[per,1:nspecies,y])
-      muq = sumq[paste0("mu[",per,",",s,"]"),]
-      
-      arrows(x0 = per,
-             x1 = per,
-             y0 = muq["2.5%"],
-             y1 = muq["97.5%"],
-             lwd = 2,
-             col = "darkorange",
-             length = 0)
-      
-      points(y = sumq[paste0("pr[",per,",",s,",",y,"]"),"50%"],
-             x = per,
-             pch = 19)
-      arrows(x0 = per,
-             x1 = per,
-             y0 = sumq[paste0("pr[",per,",",s,",",y,"]"),"2.5%"],
-             y1 = sumq[paste0("pr[",per,",",s,",",y,"]"),"97.5%"],
-             lwd = 1,
-             col = grey(0.5),
-             length = 0)
-      points(y = p.obs,
-             x = per,
-             pch = 1,
-             col = "blue",
-             cex = 1.2)
-      
-    }
-  }
-}#s
-dev.off()
-
-periodkill = jdat$periodkill
-nhunter_y = jdat$nhunter_y
-
-pdf(file = paste(pr,z," proportion of total hunt in periods.pdf"))
-dd1 = ceiling(sqrt(nyears))
-if(round(sqrt(nyears)) != dd1){dd2 = dd1-1}else{dd2 = dd1}
-if(dd1*dd2 < nyears){dd2 = dd1}
-  par(mfrow = c(dd1,dd2),
-      mar = c(1,3,3,1))
-  
-  for(y in 1:jdat$nyears){
-    
-    plot(y = 3,x = 0,
-         xlim = c(1,jdat$nperiods),
-         ylim = c(0,max(sumq[paste0("ptotkill[",rep(1:nperiods,each = nyears),",",rep(1:nyears,times = nperiods),"]"),"97.5%"])),
-         main = paste(pr,z,y+(Y-nyears)),
-         ylab = "p of totkill in period",
-         xlab = "")
-    
-    muq = sumq[paste0("mut[",1:nperiods,"]"),]
-    
-    lines(y = muq[,"50%"],
-          x = 1:nperiods,
-          lwd = 2,
-          col = "darkorange")
-    for(per in 1:nperiods){
-      n.obs <- sum(periodkill[per,y,1:nhunter_y[y]],na.rm = T)
-      p.obs <- n.obs/sum(periodkill[,y,1:nhunter_y[y]])
-      muq = sumq[paste0("mut[",per,"]"),]
-      
-      arrows(x0 = per,
-             x1 = per,
-             y0 = muq["2.5%"],
-             y1 = muq["97.5%"],
-             lwd = 2,
-             col = "darkorange",
-             length = 0)
-      
-      points(y = sumq[paste0("ptotkill[",per,",",y,"]"),"50%"],
-             x = per,
-             pch = 19)
-      arrows(x0 = per,
-             x1 = per,
-             y0 = sumq[paste0("ptotkill[",per,",",y,"]"),"2.5%"],
-             y1 = sumq[paste0("ptotkill[",per,",",y,"]"),"97.5%"],
-             lwd = 1,
-             col = grey(0.5),
-             length = 0)
-      points(y = p.obs,
-             x = per,
-             pch = 1,
-             col = "blue",
-             cex = 1.2)
-      
-    }
-  }
-
-dev.off()
-
-
-}#z
-  
-}#pr
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# 
-# 
-# ######### to add to summary and diagnostic plots:
-# 
-# yn <- 2016
-# years <- (yn-30):yn
-# 
-# names(years) <- paste(years)
-# home.fold <- "m:/My Documents/Harvest Survey A146/"
-# 
-# home.fold <- "C:/nhstemp/update 2016/"
-# setwd(home.fold)
-# year.fold <- paste(home.fold,yn,"/",sep = "")
-# #year.fold2 <- paste(home.fold,y,sep = "")
-# sum.fold <- paste0(home.fold,"update 2016/")
-# sashome <- "C:\\Program Files\\SASHome\\SASFoundation\\9.4"
-# 
-# library(foreign)
-# library(runjags)
-# #library(emdbook)
-# #library(bbmle)
-# 
-# #specieslevel <- F     ### change to true if species level summaries are desired, otherwise AOU-level summaries
-# goose <- TRUE         ### change to false, if no goose species included (simplifies the PEF file extraction)
-# murre <- T      #change to fales if no murre species should be included
-# zone <- T           ### change to false, if provincial summaries are desired
-# 
-# load("completed June 1.RData")
-# 
-# # for(pr in unique(period.duck$pr)){
-# #   zns <- unique(period.duck[which(period.duck$pr == pr),"zo"])
-# #   for(z in zns){
-# #     
-#      pr = "AB"
-#      z = 1
-#     
-#     
-#     tmp <- period.duck[which(period.duck$pr == pr & period.duck$zo == z),]
-#     
-#     nperiods <- max(tmp$period)
-#     
-#     
-#     prts1 <- outscse[which(outscse$PRHUNT == pr &
-#                            outscse$ZOHUNT == z &
-#                            outscse$AOU %in% aou.ducks),]
-#     
-#     luni <- function(x){
-#       out <- length(unique(x))
-#     }
-#     yrspersp <- tapply(prts1$year,prts1$AOU,luni)
-#     #remov all sp with < 10 years occurrence
-#     prts1 <- prts1[which(prts1$AOU %in% names(yrspersp)[which(yrspersp > 9)]),]
-#     
-#     for(per in tmp$period){
-#       sy <- tmp[which(tmp$period == per),"startweek"]
-#       ey <- tmp[which(tmp$period == per),"endweek"]
-#       prts1[which(prts1$WEEK %in% c(sy:ey)),"period"] <- per
-#     }
-#     
-#     prdspersp <- tapply(prts1$period,prts1$AOU,luni)
-#     prts1 <- prts1[which(prts1$AOU %in% names(prdspersp)[which(prdspersp > 4)]),]
-#     
-#     nspecies <- length(unique(prts1$AOU))
-#     minyr <- min(prts1$year,na.rm = T)
-#     nyears <- length(min(prts1$year,na.rm = T):max(prts1$year,na.rm = T))
-#     partsarray <- array(data = 0,dim = c(nperiods,nspecies,nyears))
-#     
-#     for(per in 1:nperiods){
-#       spc = 0
-#       for(sp in unique(prts1$AOU)){
-#         spc <- spc+1
-#         for(y in 1:nyears){
-#           yr <- y+(minyr-1)
-#           partsarray[per,spc,y] <- nrow(prts1[which(prts1$period == per & prts1$AOU == sp & prts1$year == yr),])
-#           
-#           
-#         }#y
-#       }#sp
-#       
-#     }#per
-#     
-#     n <- matrix(NA,nrow = nperiods,ncol = nyears)  
-#     for(per in 1:nperiods){
-#       for(y in 1:nyears){
-#         
-#         n[per,y] <- sum(partsarray[per,,y])
-#       }
-#     }
-#     
-#     #### on Monday finish compiling data and try to run the model.
-#     
-# #     
-# #     jin <- function(chain) return(switch(chain,
-# #                                          "1"=list(delta = array(runif(nspecies*nyears*nperiods,0.2,0.8),dim = c(nperiods,nspecies,nyears))),
-# #                                          "2"=list(delta = array(runif(nspecies*nyears*nperiods,0.2,0.8),dim = c(nperiods,nspecies,nyears))),
-# #                                          "3"=list(delta = array(runif(nspecies*nyears*nperiods,0.2,0.8),dim = c(nperiods,nspecies,nyears)))))
-# #     
-#     
-#     jdat = list(w = partsarray,
-#                 nspecies = nspecies,
-#                 nyears = nyears,
-#                 nperiods = nperiods,
-#                 midp = floor(nperiods/2),
-#                 n = n)
-#     
-#     
-#     load(paste(pr,z,"logistic species mean across period post jags.RData"))
-#     
-#     
-#     sumq <- sum[["quantiles"]]
-#     
-#     
-#     
-#     
-#     
-#     pdf(file = paste(pr,z," mean across periods.pdf"))
-#     for(s in 1:nspecies){
-#       spn <- unique(prts1$AOU)[s]
-#       par(mfrow = c(4,4),
-#           mar = c(1,3,3,1))
-# 
-#       for(y in (nyears-15):nyears){
-#       
-#       plot(y = 3,x = 0,
-#            xlim = c(1,nperiods),
-#            ylim = c(0,max(sumq[paste0("pr[",rep(1:nperiods,each = 16),",",s,",",rep((nyears-15):nyears,times = nperiods),"]"),"97.5%"])),
-#            main = paste(spn,y),
-#            ylab = "proportion",
-#            xlab = "")
-# 
-#         for(per in 1:nperiods){
-#         n.obs <- partsarray[per,s,y]
-#         p.obs <- n.obs/sum(partsarray[per,1:nspecies,y])
-#         points(y = p.obs,
-#                x = per,
-#                pch = 1)
-#         points(y = sumq[paste0("pr[",per,",",s,",",y,"]"),"50%"],
-#                x = per,
-#                pch = 19)
-#         arrows(x0 = per,
-#                x1 = per,
-#                y0 = sumq[paste0("pr[",per,",",s,",",y,"]"),"2.5%"],
-#                y1 = sumq[paste0("pr[",per,",",s,",",y,"]"),"97.5%"],
-#                lwd = 1,
-#                col = grey(0.5),
-#                length = 0)
-#         
-#         }
-#       }
-#     }#s
-#     dev.off()
-#     
-#     x[i,j, drop=missing(i)]
-#     sub.mcmc <- codaSamples[,"alphab[4]",]
-#     plot(sub.mcmc)
-#     
-#     #}
-#     

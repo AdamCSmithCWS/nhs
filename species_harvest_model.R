@@ -206,7 +206,7 @@ model {
       
       #mean per-hunter kill and days by year and caste - alternative estimate
       mean_totkill_retrans_yc[y,c] <- exp(ann[y] + cst[c] + ann_day[y] + cst_day[c] + retrans_hunter_day[c] + retrans_hunter[c])
-      mean_totdays_retrans_yc[y,c] <- exp(ann[y] + cst[c] + ann_day[y] + cst_day[c] + retrans_hunter_day[c])
+      mean_totdays_retrans_yc[y,c] <- exp(ann_day[y] + cst_day[c] + retrans_hunter_day[c])
       
       for(p in 1:nperiods){
         ## estimate of the mean (per hunter) kill per period, caste, and year

@@ -1,25 +1,25 @@
-prov,provn,zone,poprzo,combA
-NF,1,1,11,TRUE
-NF,1,2,12,TRUE
-PE,2,1,21,TRUE
-NS,3,1,31,TRUE
-NS,3,2,32,TRUE
-NB,4,1,41,FALSE
-NB,4,2,42,FALSE
-PQ,5,1,51,FALSE
-PQ,5,2,52,FALSE
-ON,6,1,61,FALSE
-ON,6,2,62,FALSE
-ON,6,3,63,FALSE
-MB,7,1,71,FALSE
-MB,7,2,72,FALSE
-SK,8,1,81,FALSE
-SK,8,2,82,FALSE
-SK,8,3,83,FALSE
-AB,9,1,91,FALSE
-AB,9,2,92,FALSE
-BC,10,1,101,FALSE
-BC,10,2,102,TRUE
-NT,11,1,111,TRUE
-YT,12,1,121,TRUE
-NU,13,1,131,TRUE
+prov,provn,zone,poprzo,combA,province
+NF,1,1,11,TRUE,Newfoundland and Labrador
+NF,1,2,12,TRUE,Newfoundland and Labrador
+PE,2,1,21,TRUE,Prince Edward Island
+NS,3,1,31,TRUE,Nova Scotia
+NS,3,2,32,TRUE,Nova Scotia
+NB,4,1,41,FALSE,New Brunswick
+NB,4,2,42,FALSE,New Brunswick
+PQ,5,1,51,FALSE,Quebec
+PQ,5,2,52,FALSE,Quebec
+ON,6,1,61,FALSE,Ontario
+ON,6,2,62,FALSE,Ontario
+ON,6,3,63,FALSE,Ontario
+MB,7,1,71,FALSE,Manitoba
+MB,7,2,72,FALSE,Manitoba
+SK,8,1,81,FALSE,Saskatchewan
+SK,8,2,82,FALSE,Saskatchewan
+SK,8,3,83,FALSE,Saskatchewan
+AB,9,1,91,FALSE,Alberta
+AB,9,2,92,FALSE,Alberta
+BC,10,1,101,FALSE,British Columbia
+BC,10,2,102,TRUE,British Columbia
+NT,11,1,111,TRUE,Northwest Territories
+YT,12,1,121,TRUE,Yukon
+NU,13,1,131,TRUE,Nunavut
