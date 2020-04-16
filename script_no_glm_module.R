@@ -298,7 +298,7 @@ for(spgp in c("goose","duck","murre")){
   non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
   
 pzcount = 0
-for(pr in provs2[c(5)]){
+for(pr in provs2[c(3,5,6)]){
   zns <- unique(period[which(period$pr == pr),"zo"])
   for(z in zns){
 pzcount = pzcount + 1
