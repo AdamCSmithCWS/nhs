@@ -35,7 +35,8 @@ comp_plot_species <- function(group = spgp,
   
 for(pp in 1:(ceiling(nspecies/9))){
   outgg = ggplot(data = dd,aes(x = year,y = mean,group = mod,fill = mod))+
-    geom_point(aes(colour = mod))+
+    geom_point(aes(colour = mod),size = 0.5)+
+    geom_line(aes(colour = mod))+
     labs(title = paste0("species level harvest ",prov," zn",zone," (mean and 95 CI)"))+
     geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
     scale_y_continuous(limits = c(0,NA))+
