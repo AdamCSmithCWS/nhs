@@ -64,7 +64,7 @@ model {
     ### number harvested
     kill[i] ~ dpois(lambda[i]) #kill is data - each hunter's estimate of the total number of ducks killed 
     log(lambda[i]) <- elambda1[i] #*succ[caste[i]] + 0.0001 #cheat to avoid non-zero values from zero-mean poisson
-    elambda1[i] <- ann[year[i]] + cst[caste[i],year[i]] + hntr[caste[i],year[i],hunter[i]] + elambda_day[i] #elambda_day[i] acts as an offset on effort
+    elambda1[i] <- ann[year[i]] + cst[caste[i]] + hntr[caste[i],year[i],hunter[i]] + elambda_day[i] #elambda_day[i] acts as an offset on effort
     
     ## ann[y] is a yearly intercept for all species kill
     ## cst[c] is a caste-specific intercept for all species kill
@@ -77,7 +77,7 @@ model {
     ### number of days truncated Poisson, because only active hunters are included and therefore days != 0
     days[i] ~ dpois(lambda_day[i])T(1,) #kill is data - each hunter's estimate of the total number of days spent hunting
     log(lambda_day[i]) <- elambda_day[i] 
-    elambda_day[i] <- ann_day[year[i]] + cst_day[caste[i],year[i]] + hntr_day[caste[i],year[i],hunter[i]]
+    elambda_day[i] <- ann_day[year[i]] + cst_day[caste[i]] + hntr_day[caste[i],year[i],hunter[i]]
     
     ## ann[y] is a yearly intercept for all species kill
     ## cst[c] is a caste-specific intercept for all species kill
@@ -96,22 +96,12 @@ model {
   # dif_1_2[5] <- nu_day[1]-nu_day[2]
   # 
   
-  cst[1,1] <- 1
-  cst_day[1,1] <- 1
+  cst[1] <- 1
+  cst_day[1] <- 1
   for(c in 2:ncastes){
-  cst[c,1] ~ dnorm(0,0.01)
-  cst_day[c,1] ~ dnorm(0,0.01)
+  cst[c] ~ dnorm(0,0.01)
+  cst_day[c] ~ dnorm(0,0.01)
   }
-  for(y in 2:nyears){  ### time series model for caste effects, allowing them to vary through time
-    for(c in 1:ncastes){
-      
-    cst[c,y] ~ dnorm(cst[c,y-1],tau_cst)
-    cst_day[c,y] ~ dnorm(cst_day[c,y-1],tau_cst_day)
-    }
-  }
-  
-  tau_cst ~ dgamma(0.001,0.001) # assumption that the temporal variance in caste effects is the same (???), separating by caste may require sharing info among zones
-  tau_cst_day ~ dgamma(0.001,0.001)
   
   for(c in 1:ncastes){
     ## harvest rate priors
@@ -181,7 +171,6 @@ model {
   ### yearly intercepts of total kill by first-difference
   ann[1] ~ dnorm(0,0.001) # fixed effects for year-1 annual harvest level
   ann_day[1] ~ dnorm(0,0.001) # fixed effect for year-1 annual activity level
-  
   for(y in 2:nyears){
     #ann[y] ~ dnorm(ann[y-1],tauyear)
     #ann_day[y] ~ dnorm(ann_day[y-1],tauyear_day)
@@ -206,19 +195,19 @@ model {
     for(y in 1:nyears){
       ## derived estimated means, which can then be multiplied by the extrapolation factors for each caste and year
       # estimate of the mean (per hunter) kill per caste, and year
-      #   for(h in 1:nhunter_cy[c,y]){
-      #     
-      #   #hunter-level predictions of mean kill
-      #   totkill_hcy[y,c,h] <- exp(ann[y] + cst[c] + hntr[c,y,h] + ann_day[y] + cst_day[c] + hntr_day[c,y,h])
-      #   totdays_hcy[y,c,h] <- exp(ann_day[y] + cst_day[c] + hntr_day[c,y,h])
-      #   }
-      # #mean per-hunter kill and days by year and caste
-      # mean_totkill_yc_alt[y,c] <- mean(totkill_hcy[y,c,1:nhunter_cy[c,y]]) #mean kill per active hunter
-      # mean_totkill_yc_alt[y,c] <- mean(totdays_hcy[y,c,1:nhunter_cy[c,y]]) #mean days per active hunter
-      # 
+        for(h in 1:nhunter_cy[c,y]){
+          
+        #hunter-level predictions of mean kill
+        totkill_hcy[y,c,h] <- exp(ann[y] + cst[c] + hntr[c,y,h] + ann_day[y] + cst_day[c] + hntr_day[c,y,h])
+        totdays_hcy[y,c,h] <- exp(ann_day[y] + cst_day[c] + hntr_day[c,y,h])
+        }
+      #mean per-hunter kill and days by year and caste
+      mean_totkill_yc[y,c] <- mean(totkill_hcy[y,c,1:nhunter_cy[c,y]]) #mean kill per active hunter
+      mean_totdays_yc[y,c] <- mean(totdays_hcy[y,c,1:nhunter_cy[c,y]]) #mean days per active hunter
+      
       #mean per-hunter kill and days by year and caste - alternative estimate
-      mean_totkill_yc[y,c] <- exp(ann[y] + cst[c] + ann_day[y] + cst_day[c] + retrans_hunter_day[c] + retrans_hunter[c])
-      mean_totdays_yc[y,c] <- exp(ann_day[y] + cst_day[c] + retrans_hunter_day[c])
+      mean_totkill_retrans_yc[y,c] <- exp(ann[y] + cst[c] + ann_day[y] + cst_day[c] + retrans_hunter_day[c] + retrans_hunter[c])
+      mean_totdays_retrans_yc[y,c] <- exp(ann_day[y] + cst_day[c] + retrans_hunter_day[c])
       
       for(p in 1:nperiods){
         ## estimate of the mean (per hunter) kill per period, caste, and year
