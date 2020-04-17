@@ -318,6 +318,12 @@ for(spgp in c("goose","duck","murre")){
 
   non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
   
+  
+  
+
+# Province and Zone loop --------------------------------------------------
+
+  
 pzcount = 0
 for(pr in provs2[c(3,5,6)]){
   zns <- unique(period[which(period$pr == pr),"zo"])
@@ -646,7 +652,7 @@ for(y in 1:nyears){
     if(length(ww) == 0){print(paste("no hunter responses in caste",c,"year",y,pr,z))}
     sumkill_active[ww,"hunter_n_cy"] <- as.integer(factor(sumkill_active[ww,"PERMIT"]))
     if(length(ww) == 0){
-      nhunter_cy[c,y] <- 1
+      nhunter_cy[c,y] <- 1 ## minimum number of hunters = 1 to avoid indexing errors in the jags model
       
     }else{
       nhunter_cy[c,y] <- max(sumkill_active[ww,"hunter_n_cy"])
