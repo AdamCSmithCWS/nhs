@@ -1,45 +1,51 @@
 ### 
 
 
-comp_plot_simple <- function(group = spgp,
-                             var = "NACTIVE_y",
+comp_plot_species <- function(group = spgp,
+                             var = "kill_ys",
                              prov = "",
                              zone = "",
                              M = out2,
-                             n_species = nspecies){
+                             nspecies = jdat$nspecies){
   
   
   
-  wd1 = paste0(var,"[",1:nyears,"]")  
-  d1 = as.data.frame(M$summary[wd1,])
-  names(d1)[3:7] <- c("lci","lqrt","med","uqrt","uci")
-  d1$varbl = row.names(d1)
-  d1$var = var
-  d1$yr = 1:nyears
-  d1$year = years
-  d1$prov = prov
-  d1$zone = zone
+  
+  dsum = as.data.frame(M$summary)
+  names(dsum)[3:7] <- c("lci","lqrt","med","uqrt","uci")
+  dsum$Parameter = row.names(dsum)
+  d1 = filter(dsum,grepl(Parameter,pattern = paste0(var,"["),fixed = T))
+  d1$yr = jags_dim(var = var,dat = d1)
+  d1$sp = jags_dim(var = var,dat = d1,dim = 2)
+  d1$year = d1$yr+(Y-(jdat$nyears))
+  
+  spls = sp.save.out[which(sp.save.out$PRHUNT == prov & sp.save.out$ZOHUNT == zone),]
+  d1 = merge(d1,spls,by.x = "sp",by.y = "spn")
+  d1 = merge(d1,provzone,by.x = c("PRHUNT","ZOHUNT"),by.y = c("prov","zone"))
+  d1 = merge(d1,species_web_names,by.x = "AOU",by.y = "sp",all.x = T)
   d1$mod = "New"
   
-  oldvar = var_pair[which(var_pair[,"new"] == var),group]
-  
-  province = unique(provzone[which(provzone$prov == prov),"province"])
-  d2 = pubEsts_simple[which(pubEsts_simple$var == oldvar &
-                              pubEsts_simple$prov == province & pubEsts_simple$zone == zone),]
+  d2 = pubEsts_species[which(pubEsts_species$prov == unique(d1$province) & pubEsts_species$zone == zone),]
+  names(d2) <- c("AOU","species","province","ZOHUNT","year","mean","sd","lci","uci")
   d2$mod = "Old"
+  
   dd = bind_rows(d1,d2)
+  outggs <- list()
+  length(outggs) <- ceiling(nspecies/9)
   
-  
+for(pp in 1:(ceiling(nspecies/9))){
   outgg = ggplot(data = dd,aes(x = year,y = mean,group = mod,fill = mod))+
     geom_point(aes(colour = mod))+
-    labs(title = paste0(var," vs ",oldvar," ",prov," zn",zone," (mean and 95 CI)"))+
+    labs(title = paste0("species level harvest ",prov," zn",zone," (mean and 95 CI)"))+
     geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
     scale_y_continuous(limits = c(0,NA))+
     scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
     theme_classic()+
-    
+    facet_wrap_paginate(facets = ~AOU,nrow = 3,ncol = 3,scales = "free",page = pp)
+  outggs[[pp]] <- outgg
+}
   
-  return(outgg)
+  return(outggs)
 }
 
 

@@ -57,6 +57,7 @@ library(tidyverse)
 library(ggmcmc)
 library(tidybayes)
 library(ggrepel)
+library(ggforce)
 
 #load.module("glm") 
 
@@ -84,6 +85,7 @@ pubEsts_species$lci = ceiling(pubEsts_species$mean-(1.96*pubEsts_species$sd))
 pubEsts_species$uci = ceiling(pubEsts_species$mean+(1.96*pubEsts_species$sd))
 pubEsts_species[which(pubEsts_species$lci < 0),"lci"] <- 0
 
+species_web_names = unique(pubEsts_species[,c("sp","species")])
 # compile total harvest estimates into a dataframe ------------------------
 
 ### compile total harvest estimates into a dataframe of
@@ -808,7 +810,7 @@ if(class(out2) != "try-error"){
 
 
 
-save(list = c("sum","out2","jdat","sp.save.out"),
+save(list = c("out2","jdat","sp.save.out"),
      file = paste("output/full harvest",pr,z,spgp,"mod.RData"))
 
 rm(list = "out2")
@@ -819,7 +821,7 @@ rm(list = "out2")
   
 }#pr
 
-
+}#spgp
 # plotting comparisons to published estimates -----------------------------
 
 source("comparison_plotting_function.R")
@@ -904,8 +906,10 @@ for(spgp in c("goose","duck","murre")){
     zns <- unique(period[which(period$pr == pr),"zo"])
     for(z in zns){
       if(file.exists(paste("output/full harvest",pr,z,spgp,"mod.RData"))){
-load(paste("output/full harvest",pr,z,spgp,"mod.RData"))
-var_pair = data.frame(new = c("NACTIVE_y",
+#load(paste("output/full harvest",pr,z,spgp,"mod.RData"))
+        load(paste("output/full harvest caste time",pr,z,spgp,"mod.RData"))
+        
+        var_pair = data.frame(new = c("NACTIVE_y",
                               "NSUCC_y",
                               "kill_y",
                               "days_y"),
@@ -935,6 +939,19 @@ print(plts[[i]])
 dev.off()
 
 
+
+
+
+# species comparisons -----------------------------------------------------
+
+
+spplts <- comp_plot_species(prov = pr,
+                            zone = z,
+                            nspecies = jdat$nspecies)
+
+pdf(paste0("output/species_level_harvests_",pr,z,".pdf"),width = 8,height = 10)
+for(pp in 1:length(spplts)){print(spplts[[pp]])}
+dev.off()
 
 
 # comparing retransformation options --------------------------------------
@@ -1071,7 +1088,7 @@ jjcomp = jjcomp +1
 
 
 
-}#end if jags run 
+}#end if jags output exists 
 
 
 
