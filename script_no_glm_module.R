@@ -58,6 +58,8 @@ library(ggmcmc)
 library(tidybayes)
 library(ggrepel)
 library(ggforce)
+library(doParallel)
+library(foreach)
 
 #load.module("glm") 
 
@@ -324,8 +326,23 @@ for(spgp in c("goose","duck","murre")){
 # Province and Zone loop --------------------------------------------------
 
   
-pzcount = 0
-for(pr in provs2[c(3,5,6)]){
+#for(pr in provs2[c(3,5,6)]){
+  
+  # Set up parallel stuff
+  n_cores <- length(provs2)
+  cluster <- makeCluster(n_cores, type = "PSOCK")
+  registerDoParallel(cluster)
+  
+  
+  
+  fullrun <- foreach(pr = provs2,
+                      .packages = c("jagsUI","tidyverse"),
+                      .inorder = FALSE,
+                      .errorhandling = "pass") %dopar%
+    {
+      
+  pzcount = 0
+  
   zns <- unique(period[which(period$pr == pr),"zo"])
   for(z in zns){
 pzcount = pzcount + 1
@@ -826,6 +843,9 @@ rm(list = "out2")
   }#z
   
 }#pr
+
+stopCluster(cl = cluster)
+
 
 }#spgp
 # plotting comparisons to published estimates -----------------------------
