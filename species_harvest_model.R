@@ -108,7 +108,7 @@ model {
     retrans_hunter[c] <- 0.5*(1/tauhunter[c])
     sdhunter[c] <- 1/pow(tauhunter[c],0.5)
     tauhunter[c] ~ dgamma(0.01,0.01)
-    #nu[c] ~ dgamma(2,0.1)
+    nu[c] ~ dgamma(2,0.1)
     ## caste specific intercept priors
    
     #activity (days) priors
@@ -159,7 +159,8 @@ model {
         
         hntr_day[c,y,h] ~ dt(0,tauhunter_day[c],nu_day[c])
         #hntr[i] ~ dt(0,tauhunter[caste[i]],nu[caste[i]])
-        hntr[c,y,h] ~ dnorm(0,tauhunter[c]) #normal overdispersion assuming that most of variance in harvest is a function of how many days a hunter spends hunting
+        hntr[c,y,h] ~ dt(0,tauhunter[c],nu[c])
+        #hntr[c,y,h] ~ dnorm(0,tauhunter[c]) #alternative normal overdispersion assuming that most of variance in harvest is a function of how many days a hunter spends hunting
         #n days probably accounts for a bit of the hunting skill effect as well as the activity effect
         
       }#h
