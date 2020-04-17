@@ -824,7 +824,87 @@ rm(list = "out2")
 
 source("comparison_plotting_function.R")
 source("utility_functions.R")
-
+for(spgp in c("goose","duck","murre")){
+  ### begining of loop through provinces only engage this loop if running the full analysis
+  ### for a single province and zone, skip the next 4 lines
+  ### and enter something like the following (e.g., to run Ontario-zone 3)
+  
+  # group data set up -------------------------------------------------------
+  
+  
+  if(spgp == "goose"){
+    aou.spgp = aou.goose
+    period = period.goose
+    cal.spgp = calg
+    allkill = allkill
+    phunt = "PRHUNTG"
+    zhunt = "ZOHUNTG"
+    wkill = "TOGOK"
+    wact = "ACTIVEWF"
+    wsucc = "SUCCWF"
+    wday = "DAYWF"
+    years = 1975:Y
+    nyears = length(years)
+    demog = data.frame(BSEX = rep(c("U","U"),each = 1),
+                       BAGE = rep(c("A","I"),times = 1),
+                       stringsAsFactors = F)
+    minyr <- min(years)
+    provs2 <- provs
+    
+    
+  }
+  if(spgp == "duck"){
+    aou.spgp = aou.ducks
+    period = period.duck
+    cal.spgp = cald
+    allkill = allkill
+    phunt = "PRHUNT"
+    zhunt = "ZOHUNT"
+    wkill = "TODUK"
+    wact = "ACTIVEWF"
+    wsucc = "SUCCWF"
+    wday = "DAYWF"
+    years = 1975:Y
+    nyears = length(years)
+    demog = data.frame(BSEX = rep(c("F","M"),each = 2),
+                       BAGE = rep(c("A","I"),times = 2),
+                       stringsAsFactors = F)
+    minyr <- min(years)
+    provs2 <- provs
+  }
+  
+  
+  
+  if(spgp == "murre"){
+    aou.spgp = aou.murre
+    period = period.murre
+    cal.spgp = calm
+    allkill = allkill
+    phunt = "PRHUNTM"
+    zhunt = "ZOHUNTM"
+    wkill = "MURRK"
+    wact = "ACTIVEM"
+    wsucc = "SUCCM"
+    wday = "DAYM" #?
+    years = 2014:Y #### previous years Murre harvest was calculated differently, pre 2013 only total MURRK, and in 2013 it was a mix of infor from DAYOT and calendars and species composition
+    nyears = length(years)
+    demog = data.frame(BSEX = rep(c("U","U"),each = 1),
+                       BAGE = rep(c("A","I"),times = 1),
+                       stringsAsFactors = F)
+    minyr <- 2014
+    provs2 = "NF"
+    
+  }
+  
+  
+  jjcomp = 1
+  compps <-  list() 
+    
+  for(pr in provs2){
+    zns <- unique(period[which(period$pr == pr),"zo"])
+    for(z in zns){
+      if(file.exists(paste("output/full harvest",pr,z,spgp,"mod.RData"))){
+load(paste("output/full harvest",pr,z,spgp,"mod.RData"))
 var_pair = data.frame(new = c("NACTIVE_y",
                               "NSUCC_y",
                               "kill_y",
@@ -847,6 +927,8 @@ var = var_pair[i,"new"],
 prov = pr,
 zone = z,
 M = out2)
+
+
 print(plts[[i]])
 }
 
@@ -912,19 +994,15 @@ compp = ggplot(data = dd,aes(x = year,y = mean,fill = vers))+
   geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = hunterplot),fill = grey(0.2),alpha = 0.1,stat = "identity")+
   geom_point(aes(colour = vers))+
   geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.3)+
-  labs(title = paste0("retrans comparison ",prov," zn",zone," (mean and 95 CI)"))+
+  labs(title = paste0("retrans comparison KILL",pr," zn",z," (mean and 95 CI)"))+
   scale_y_continuous(limits = c(0,ulim))+
   scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
   theme_classic()+
   geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = hunterplot,label = nhunter),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
   facet_wrap(facets = ~castes,ncol = 2,scales = "fixed")
 
-pdf(file = paste0("retransformation comparison ",pr,z," Kill.pdf"),
-    width = 8,height = 6)
-print(compp)
-dev.off()
- 
-
+compps[[jjcomp]] <- compp
+jjcomp = jjcomp +1
 ### mean days
 dsum = as.data.frame(out2$summary)
 names(dsum)[3:7] <- c("lci","lqrt","med","uqrt","uci")
@@ -978,17 +1056,17 @@ compp = ggplot(data = dd,aes(x = year,y = mean,fill = vers))+
   geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = hunterplot),fill = grey(0.2),alpha = 0.1,stat = "identity")+
   geom_point(aes(colour = vers))+
   geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.3)+
-  labs(title = paste0("retrans comparison ",prov," zn",zone," (mean and 95 CI)"))+
+  labs(title = paste0("retrans comparison DAYS",pr," zn",z," (mean and 95 CI)"))+
   scale_y_continuous(limits = c(0,ulim))+
   scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
   theme_classic()+
   geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = hunterplot,label = nhunter),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
   facet_wrap(facets = ~castes,ncol = 2,scales = "fixed")
 
-pdf(file = paste0("retransformation comparison ",pr,z," days.pdf"),
-    width = 8,height = 6)
-print(compp)
-dev.off()
+
+compps[[jjcomp]] <- compp
+jjcomp = jjcomp +1
+
 
 
 
@@ -1001,6 +1079,14 @@ dev.off()
 
 }#pr
 
+  pdf(paste0("output/retransformation comparison.pdf"),
+      width = 8,
+      height = 6)
+  for(jj in 1:length(compps)){
+    print(compps[[jj]])
+  }
+  dev.off()
+  
 }#spgp (species group)
 #######################################
 ## set up some automatic plotting of important variables and compare with this year's 10-year trend graphs
