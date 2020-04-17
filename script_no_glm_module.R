@@ -646,7 +646,7 @@ for(y in 1:nyears){
     if(length(ww) == 0){print(paste("no hunter responses in caste",c,"year",y,pr,z))}
     sumkill_active[ww,"hunter_n_cy"] <- as.integer(factor(sumkill_active[ww,"PERMIT"]))
     if(length(ww) == 0){
-      nhunter_cy[c,y] <- 0
+      nhunter_cy[c,y] <- 1
       
     }else{
       nhunter_cy[c,y] <- max(sumkill_active[ww,"hunter_n_cy"])
