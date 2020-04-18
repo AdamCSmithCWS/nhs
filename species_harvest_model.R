@@ -178,7 +178,8 @@ model {
     
   }#c
   
-  ### yearly intercepts of total kill by first-difference
+  ### yearly intercepts of total kill by first-difference 
+  ### still has structure to allow first-differenc time-series model, but appears to be uneccessary and identifiability issues with caste time-series
   ann[1] ~ dnorm(0,0.001) # fixed effects for year-1 annual harvest level
   ann_day[1] ~ dnorm(0,0.001) # fixed effect for year-1 annual activity level
   
@@ -206,16 +207,16 @@ model {
     for(y in 1:nyears){
       ## derived estimated means, which can then be multiplied by the extrapolation factors for each caste and year
       # estimate of the mean (per hunter) kill per caste, and year
-      #   for(h in 1:nhunter_cy[c,y]){
-      #     
-      #   #hunter-level predictions of mean kill
-      #   totkill_hcy[y,c,h] <- exp(ann[y] + cst[c] + hntr[c,y,h] + ann_day[y] + cst_day[c] + hntr_day[c,y,h])
-      #   totdays_hcy[y,c,h] <- exp(ann_day[y] + cst_day[c] + hntr_day[c,y,h])
-      #   }
-      # #mean per-hunter kill and days by year and caste
-      # mean_totkill_yc_alt[y,c] <- mean(totkill_hcy[y,c,1:nhunter_cy[c,y]]) #mean kill per active hunter
-      # mean_totkill_yc_alt[y,c] <- mean(totdays_hcy[y,c,1:nhunter_cy[c,y]]) #mean days per active hunter
-      # 
+        for(h in 1:nhunter_cy[c,y]){
+
+        #hunter-level predictions of mean kill
+        totkill_hcy[y,c,h] <- exp(ann[y] + cst[c,y] + hntr[c,y,h] + ann_day[y] + cst_day[c,y] + hntr_day[c,y,h])
+        totdays_hcy[y,c,h] <- exp(ann_day[y] + cst_day[c,y] + hntr_day[c,y,h])
+        }
+      #mean per-hunter kill and days by year and caste
+      mean_totkill_yc_alt[y,c] <- mean(totkill_hcy[y,c,1:nhunter_cy[c,y]]) #mean kill per active hunter
+      mean_totdays_yc_alt[y,c] <- mean(totdays_hcy[y,c,1:nhunter_cy[c,y]]) #mean days per active hunter
+
       #mean per-hunter kill and days by year and caste - alternative estimate
       mean_totkill_yc[y,c] <- exp(ann[y] + cst[c,y] + ann_day[y] + cst_day[c,y] + retrans_hunter_day[c] + retrans_hunter[c])
       mean_totdays_yc[y,c] <- exp(ann_day[y] + cst_day[c,y] + retrans_hunter_day[c])
@@ -353,6 +354,7 @@ model {
   # }#y
   
   ##### species composition
+  ## nparts_py (nwings by period and year) and w_psy (nwings by period, species, and year) are data
   for (p in 1:nperiods){
     
     for (y in 1:nyears) {
@@ -372,7 +374,7 @@ model {
       
     }#s
     
-    # exponential transformation
+    # exponential transformation, just to monitor mean proportions by species
     for( s in 1:nspecies ){
       mu_ps[p,s] <- exp.alpha_ps[p,s]/sum(exp.alpha_ps[p,1:nspecies]) #mean proportional contribution of species during period
       exp.alpha_ps[p,s] <- exp(alpha_ps[p,s])

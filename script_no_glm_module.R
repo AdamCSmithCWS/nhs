@@ -70,6 +70,7 @@ library(foreach)
 
 load(paste0("data/parts and harvest survey info",Y,".RData"))
 
+provzone <- read.csv("data/Province and zone table.csv")
 
 
 # load published estimates by zone ----------------------------------------
@@ -773,9 +774,9 @@ parms = c("NACTIVE_y",
           "sdhunter_day",
           "mean_totkill_yc",
           "mean_totdays_yc",
-          "mean_totkill_retrans_yc",
-          "mean_totdays_retrans_yc",
-          "mean_kill_pcy",
+          "mean_totkill_yc_alt",
+          "mean_totdays_yc_alt",
+          "kill_cy",
           "kill_ys",
           "kill_y",
           "days_y")
@@ -925,7 +926,11 @@ for(spgp in c("goose","duck","murre")){
     
   }
   
-  
+ 
+
+# plotting loop -----------------------------------------------------------
+
+   
   jjcomp = 1
   compps <-  list() 
     
