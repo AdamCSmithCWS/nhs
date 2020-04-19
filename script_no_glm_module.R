@@ -570,6 +570,9 @@ sumkill$caste = factor(as.character(sumkill$CASTE),ordered = T,levels = c("D","B
   
 }
 
+if(any(is.na(sumkill$caste))){
+  sumkill <- sumkill[which(!is.na(sumkill$caste)),]
+}
 castes = 1:max(as.integer(sumkill$caste)) #
 
 # population sizes (number of permits in each caste and year) active potential and successful--------------------------------------------------------
@@ -655,6 +658,8 @@ if(any(days < 1) | any(is.na(days))){
   mday_per_kill <- sum(days[which(days > 0)])/sum(kill[which(days > 0)],na.rm = T)
   days[which(days == 0 | is.na(days))] <- ceiling(mday_per_kill*(kill[which(days == 0 | is.na(days))]+1))
 }
+
+days = ceiling(days)
 
 clsw = which(names(sumkill_active) %in% c(wkill,wday,"year","caste"))
 
@@ -779,9 +784,13 @@ parms = c("NACTIVE_y",
           "kill_cy",
           "kill_ys",
           "kill_y",
-          "days_y")
+          "days_y",
+          "nu",
+          "sdhunter",
+          "cst",
+          "cst_day")
 
-adaptSteps = 200              # Number of steps to "tune" the samplers.
+#adaptSteps = 200              # Number of steps to "tune" the samplers.
 burnInSteps = 5000            # Number of steps to "burn-in" the samplers.
 nChains = 3                   # Number of chains to run.
 numSavedSteps=6000          # Total number of steps in chains to save.
@@ -821,7 +830,9 @@ t1 = Sys.time()
                     parallel = T,
                     modules = NULL,
                     model.file = mod.file),silent = F)
-t2 = Sys.time()
+
+  
+  t2 = Sys.time()
 if(class(out2) != "try-error"){
 
 
