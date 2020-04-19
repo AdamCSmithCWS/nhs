@@ -673,7 +673,7 @@ days = ceiling(days)
 
 clsw = which(names(sumkill_active) %in% c(wkill,wday,"year","caste"))
 
-if(any(days < 1)){break("number of days includes zeros for successful hunters")}
+if(any(days < 1)){break("number of days includes zeros for Active hunters")}
 
 #nhunter_cy[c,y] #number of active hunters by caste and year
 nhunter_cy = matrix(0,nrow = max(castes),ncol = nyears)
