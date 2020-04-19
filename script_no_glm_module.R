@@ -125,6 +125,8 @@ cls = c("PERMIT",
    "LATM",
    "LONM",
    "SUCCWF",
+   "SUTODU",
+   "SUTOGO",
    "SUCCOT",
    "SUCCM",
    "ACTIVEOT",
@@ -146,10 +148,10 @@ for(y in years){
   }
 }
 
-trem = which(allkill$CASTE %in% c("C","F"))
+trem = which(allkill$CASTE %in% c("C","F","H"))
 if(length(trem)>0){
   allkill = allkill[-trem,]
-}### removing the unused castes; there are two permits that have this caste designation across all years
+}### removing the unused castes; there are permits that have this caste designation across all years
 
 
 tkp = which(allkill$POTNTL == "Y")
@@ -178,6 +180,14 @@ dupuni = allkill$uniperm[duplicated(allkill$uniperm)]
 # dupdf = dupdf[order(dupdf$uniperm),]
 
 
+wsud = which(allkill$TODUK > 0)
+allkill$SUTODU <- "N"
+allkill[wsud,"SUTODU"] <- "Y"
+
+
+wsud = which(allkill$TOGOK > 0)
+allkill$SUTOGO <- "N"
+allkill[wsud,"SUTOGO"] <- "Y"
 
 
 nrow(allkill) == length(unique(allkill$uniperm))
@@ -263,7 +273,7 @@ for(spgp in c("goose","duck","murre")){
     zhunt = "ZOHUNTG"
     wkill = "TOGOK"
     wact = "ACTIVEWF"
-    wsucc = "SUCCWF"
+    wsucc = "SUTOGO"
     wday = "DAYWF"
     years = 1975:Y
     nyears = length(years)
@@ -284,7 +294,7 @@ for(spgp in c("goose","duck","murre")){
     zhunt = "ZOHUNT"
     wkill = "TODUK"
     wact = "ACTIVEWF"
-    wsucc = "SUCCWF"
+    wsucc = "SUTODU"
     wday = "DAYWF"
     years = 1975:Y
     nyears = length(years)
