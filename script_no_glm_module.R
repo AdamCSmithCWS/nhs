@@ -784,7 +784,7 @@ parms = c("NACTIVE_y",
 adaptSteps = 200              # Number of steps to "tune" the samplers.
 burnInSteps = 5000            # Number of steps to "burn-in" the samplers.
 nChains = 3                   # Number of chains to run.
-numSavedSteps=2000          # Total number of steps in chains to save.
+numSavedSteps=6000          # Total number of steps in chains to save.
 thinSteps=10                   # Number of steps to "thin" (1=keep every step).
 nIter = ceiling( ( (numSavedSteps * thinSteps )+burnInSteps) / nChains ) # Steps per chain.
 
