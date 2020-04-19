@@ -256,7 +256,7 @@ outscse[which(outscse$BSEX %in% c("")),"BSEX"] <- "U"
 ########## consider if the renewing hunters adjustment is necessary.
 
 
-for(spgp in c("goose","duck","murre")){
+for(spgp in c("duck","goose","murre")){
 ### begining of loop through provinces only engage this loop if running the full analysis
 ### for a single province and zone, skip the next 4 lines
 ### and enter something like the following (e.g., to run Ontario-zone 3)
@@ -798,7 +798,8 @@ parms = c("NACTIVE_y",
           "nu",
           "sdhunter",
           "cst",
-          "cst_day")
+          "cst_day",
+          "axcomp_axsy")
 
 #adaptSteps = 200              # Number of steps to "tune" the samplers.
 burnInSteps = 5000            # Number of steps to "burn-in" the samplers.
