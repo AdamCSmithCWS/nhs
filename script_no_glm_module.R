@@ -933,7 +933,15 @@ for(spgp in c("goose","duck","murre")){
    
   jjcomp = 1
   compps <-  list() 
-    
+  
+  jjsp = 1
+  spplts_list <-  list() 
+  
+  jjsimcomp = 1
+  simcomp_list <-  list() 
+  
+
+  
   for(pr in provs2){
     zns <- unique(period[which(period$pr == pr),"zo"])
     for(z in zns){
@@ -953,7 +961,7 @@ load(paste("output/full harvest",pr,z,spgp,"mod.RData"))
 
 plts = list()
 length(plts) = nrow(var_pair)
-pdf(paste("output/comparison graphs",pr,z,"simple.pdf"))
+#pdf(paste("output/comparison graphs",pr,z,"simple.pdf"))
 
 for(i in 1:nrow(var_pair)){
 
@@ -965,156 +973,184 @@ zone = z,
 M = out2)
 
 
-print(plts[[i]])
+#print(plts[[i]])
 }
 
-dev.off()
 
+simcomp_list[[jjsimcomp]] <- plts
+#dev.off()
 
+jjsimcomp <- jjsimcomp + 1
 
 
 
 # species comparisons -----------------------------------------------------
 
-
-spplts <- comp_plot_species(prov = pr,
+spplts_list[[jjsp]] <- comp_plot_species(prov = pr,
                             zone = z,
                             nspecies = jdat$nspecies)
 
-pdf(paste0("output/species_level_harvests_",pr,z,".pdf"),width = 8,height = 10)
-for(pp in 1:length(spplts)){print(spplts[[pp]])}
-dev.off()
+jjsp = jjsp +1
+# pdf(paste0("output/species_level_harvests_",pr,z,".pdf"),width = 8,height = 10)
+# for(pp in 1:length(spplts)){print(spplts[[pp]])}
+# dev.off()
 
 
 # comparing retransformation options --------------------------------------
 
-# 
-# 
-# ### mean kill
-# dsum = as.data.frame(out2$summary)
-# names(dsum)[3:7] <- c("lci","lqrt","med","uqrt","uci")
-# dsum$Parameter = row.names(dsum)
-# d1 = filter(dsum,grepl(Parameter,pattern = "mean_totkill_yc"))
-# d1$vers = "smear"
-# d1$yr = jags_dim(var = "mean_totkill_yc",dat = d1)
-# d1$caste = jags_dim(var = "mean_totkill_yc",dat = d1,dim = 2)
-# 
-# d2 = filter(dsum,grepl(Parameter,pattern = "mean_totkill_retrans_yc"))
-# d2$vers = "retrans"
-# d2$yr = jags_dim(var = "mean_totkill_retrans_yc",dat = d2)
-# d2$caste = jags_dim(var = "mean_totkill_retrans_yc",dat = d2,dim = 2)
-# 
-# dd = bind_rows(d1,d2)
-# 
-# dd$year = years[dd$yr]
-# dd$castes = levels(sumkill_active$caste)[dd$caste]
-# 
-# for(i in 1:nrow(dd)){
-#   cc = dd[i,"caste"]
-#   yy = dd[i,"yr"]
-#   
-#   dd[i,"nhunter"] <- nhunter_cy[cc,yy]
+
+
+### mean kill
+dsum = as.data.frame(out2$summary)
+names(dsum)[3:7] <- c("lci","lqrt","med","uqrt","uci")
+dsum$Parameter = row.names(dsum)
+d1 = filter(dsum,grepl(Parameter,pattern = "mean_totkill_yc\\["))
+d1$vers = "retrans"
+d1$yr = jags_dim(var = "mean_totkill_yc",dat = d1)
+d1$caste = jags_dim(var = "mean_totkill_yc",dat = d1,dim = 2)
+
+d2 = filter(dsum,grepl(Parameter,pattern = "mean_totkill_yc_alt"))
+d2$vers = "smear"
+d2$yr = jags_dim(var = "mean_totkill_yc_alt",dat = d2)
+d2$caste = jags_dim(var = "mean_totkill_yc_alt",dat = d2,dim = 2)
+
+dd = bind_rows(d1,d2)
+
+dd$year = years[dd$yr]
+
+
+  csts = c("D","B","A","E")
+
+
+for(i in 1:max(dd$caste)){
+  ww = which(dd$caste == i)
+  dd[ww,"castes"] <- csts[i]
+  
+}
+
+
+if(max(dd$caste == 3)){
+  dd$castes = factor((dd$castes),ordered = T,levels = c("D","B","A")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
+  
+}else{
+  
+  dd$castes = factor((dd$castes),ordered = T,levels = c("D","B","A","E")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
+}
+
+
+for(i in 1:nrow(dd)){
+  cc = dd[i,"caste"]
+  yy = dd[i,"yr"]
+
+  dd[i,"nhunter"] <- jdat$nhunter_cy[cc,yy]
+}
+
+
+
+
+ulim = max(dd$uci)
+ddb = dd[which(dd$vers == "retrans"),]
+ddb$hunterplot <- (ddb$nhunter/max(ddb$nhunter))*(ulim/2)
+ddbmx = tapply(ddb$nhunter,ddb$castes,max)
+wm = NULL
+ddbmn = tapply(ddb$nhunter,ddb$castes,min)
+wmn = NULL
+
+for(j in 1:length(ddbmx)){
+  wm[j] <- which(ddb$nhunter == ddbmx[j] & ddb$castes == names(ddbmx)[j])
+  wmn[j] <- which(ddb$nhunter == ddbmn[j] & ddb$castes == names(ddbmn)[j])
+}
+ddbm = ddb[c(wm,wmn),]
+compp = ggplot(data = dd,aes(x = year,y = mean,fill = vers))+
+  geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = hunterplot),fill = grey(0.2),alpha = 0.1,stat = "identity")+
+  geom_point(aes(colour = vers))+
+  geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.3)+
+  labs(title = paste0("retrans comparison KILL",pr," zn",z," (mean and 95 CI)"))+
+  scale_y_continuous(limits = c(0,ulim))+
+  scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
+  theme_classic()+
+  geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = hunterplot,label = nhunter),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
+  facet_wrap(facets = ~castes,ncol = 2,scales = "fixed")
+
+compps[[jjcomp]] <- compp
+jjcomp = jjcomp +1
+### mean days
+dsum = as.data.frame(out2$summary)
+names(dsum)[3:7] <- c("lci","lqrt","med","uqrt","uci")
+dsum$Parameter = row.names(dsum)
+d1 = filter(dsum,grepl(Parameter,pattern = "mean_totdays_yc\\["))
+d1$vers = "retrans"
+d1$yr = jags_dim(var = "mean_totdays_yc",dat = d1)
+d1$caste = jags_dim(var = "mean_totdays_yc",dat = d1,dim = 2)
+
+d2 = filter(dsum,grepl(Parameter,pattern = "mean_totdays_yc_alt"))
+d2$vers = "smear"
+d2$yr = jags_dim(var = "mean_totdays_yc_alt",dat = d2)
+d2$caste = jags_dim(var = "mean_totdays_yc_alt",dat = d2,dim = 2)
+
+dd = bind_rows(d1,d2)
+
+dd$year = years[dd$yr]
+
+for(i in 1:max(dd$caste)){
+  ww = which(dd$caste == i)
+  dd[ww,"castes"] <- csts[i]
+  
+}
+
+if(max(dd$caste == 3)){
+  dd$castes = factor((dd$castes),ordered = T,levels = c("D","B","A")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
+  
+}else{
+  
+dd$castes = factor((dd$castes),ordered = T,levels = c("D","B","A","E")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
+}
+
+
+for(i in 1:nrow(dd)){
+  cc = dd[i,"caste"]
+  yy = dd[i,"yr"]
+
+  dd[i,"nhunter"] <- jdat$nhunter_cy[cc,yy]
+}
+
+
+# if(max(to_plot$nrts) > 200){
+#   ncby_y = ceiling(to_plot$nrts/50)
+#   annot = c("each dot ~ 50 routes")
+# }else{
+#   ncby_y = to_plot$nrts
+#   annot = c("each dot = 1 route")
+#
 # }
-# 
-# 
-# # if(max(to_plot$nrts) > 200){
-# #   ncby_y = ceiling(to_plot$nrts/50)
-# #   annot = c("each dot ~ 50 routes")
-# # }else{
-# #   ncby_y = to_plot$nrts
-# #   annot = c("each dot = 1 route")
-# #   
-# # }
-# 
-# ulim = max(dd$uci)
-# ddb = dd[which(dd$vers == "smear"),]
-# ddb$hunterplot <- (ddb$nhunter/max(ddb$nhunter))*(ulim/2)
-# ddbmx = tapply(ddb$nhunter,ddb$castes,max)
-# wm = NULL
-# ddbmn = tapply(ddb$nhunter,ddb$castes,min)
-# wmn = NULL
-# 
-# for(j in 1:length(ddbmx)){
-#   wm[j] <- which(ddb$nhunter == ddbmx[j] & ddb$castes == names(ddbmx)[j])
-#   wmn[j] <- which(ddb$nhunter == ddbmn[j] & ddb$castes == names(ddbmn)[j])
-# }
-# ddbm = ddb[c(wm,wmn),]
-# compp = ggplot(data = dd,aes(x = year,y = mean,fill = vers))+
-#   geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = hunterplot),fill = grey(0.2),alpha = 0.1,stat = "identity")+
-#   geom_point(aes(colour = vers))+
-#   geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.3)+
-#   labs(title = paste0("retrans comparison KILL",pr," zn",z," (mean and 95 CI)"))+
-#   scale_y_continuous(limits = c(0,ulim))+
-#   scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
-#   theme_classic()+
-#   geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = hunterplot,label = nhunter),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
-#   facet_wrap(facets = ~castes,ncol = 2,scales = "fixed")
-# 
-# compps[[jjcomp]] <- compp
-# jjcomp = jjcomp +1
-# ### mean days
-# dsum = as.data.frame(out2$summary)
-# names(dsum)[3:7] <- c("lci","lqrt","med","uqrt","uci")
-# dsum$Parameter = row.names(dsum)
-# d1 = filter(dsum,grepl(Parameter,pattern = "mean_totdays_yc"))
-# d1$vers = "smear"
-# d1$yr = jags_dim(var = "mean_totdays_yc",dat = d1)
-# d1$caste = jags_dim(var = "mean_totdays_yc",dat = d1,dim = 2)
-# 
-# d2 = filter(dsum,grepl(Parameter,pattern = "mean_totdays_retrans_yc"))
-# d2$vers = "retrans"
-# d2$yr = jags_dim(var = "mean_totdays_retrans_yc",dat = d2)
-# d2$caste = jags_dim(var = "mean_totdays_retrans_yc",dat = d2,dim = 2)
-# 
-# dd = bind_rows(d1,d2)
-# 
-# dd$year = years[dd$yr]
-# dd$castes = levels(sumkill_active$caste)[dd$caste]
-# 
-# for(i in 1:nrow(dd)){
-#   cc = dd[i,"caste"]
-#   yy = dd[i,"yr"]
-#   
-#   dd[i,"nhunter"] <- nhunter_cy[cc,yy]
-# }
-# 
-# 
-# # if(max(to_plot$nrts) > 200){
-# #   ncby_y = ceiling(to_plot$nrts/50)
-# #   annot = c("each dot ~ 50 routes")
-# # }else{
-# #   ncby_y = to_plot$nrts
-# #   annot = c("each dot = 1 route")
-# #   
-# # }
-# 
-# ulim = max(dd$uci)
-# ddb = dd[which(dd$vers == "smear"),]
-# ddb$hunterplot <- (ddb$nhunter/max(ddb$nhunter))*(ulim/2)
-# ddbmx = tapply(ddb$nhunter,ddb$castes,max)
-# wm = NULL
-# ddbmn = tapply(ddb$nhunter,ddb$castes,min)
-# wmn = NULL
-# 
-# for(j in 1:length(ddbmx)){
-#   wm[j] <- which(ddb$nhunter == ddbmx[j] & ddb$castes == names(ddbmx)[j])
-#   wmn[j] <- which(ddb$nhunter == ddbmn[j] & ddb$castes == names(ddbmn)[j])
-# }
-# ddbm = ddb[c(wm,wmn),]
-# compp = ggplot(data = dd,aes(x = year,y = mean,fill = vers))+
-#   geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = hunterplot),fill = grey(0.2),alpha = 0.1,stat = "identity")+
-#   geom_point(aes(colour = vers))+
-#   geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.3)+
-#   labs(title = paste0("retrans comparison DAYS",pr," zn",z," (mean and 95 CI)"))+
-#   scale_y_continuous(limits = c(0,ulim))+
-#   scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
-#   theme_classic()+
-#   geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = hunterplot,label = nhunter),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
-#   facet_wrap(facets = ~castes,ncol = 2,scales = "fixed")
-# 
-# 
-# compps[[jjcomp]] <- compp
-# jjcomp = jjcomp +1
+
+ulim = max(dd$uci)
+ddb = dd[which(dd$vers == "smear"),]
+ddb$hunterplot <- (ddb$nhunter/max(ddb$nhunter,na.rm = T))*(ulim/2)
+ddbmx = tapply(ddb$nhunter,ddb$castes,max)
+wm = NULL
+ddbmn = tapply(ddb$nhunter,ddb$castes,min)
+wmn = NULL
+
+for(j in 1:length(ddbmx)){
+  wm[j] <- which(ddb$nhunter == ddbmx[j] & ddb$castes == names(ddbmx)[j])
+  wmn[j] <- which(ddb$nhunter == ddbmn[j] & ddb$castes == names(ddbmn)[j])
+}
+ddbm = ddb[c(wm,wmn),]
+compp = ggplot(data = dd,aes(x = year,y = mean,fill = vers))+
+  geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = hunterplot),fill = grey(0.2),alpha = 0.1,stat = "identity")+
+  geom_point(aes(colour = vers))+
+  geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.3)+
+  labs(title = paste0("retrans comparison DAYS",pr," zn",z," (mean and 95 CI)"))+
+  scale_y_continuous(limits = c(0,ulim))+
+  scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
+  theme_classic()+
+  geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = hunterplot,label = nhunter),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
+  facet_wrap(facets = ~castes,ncol = 2,scales = "fixed")
+
+
+compps[[jjcomp]] <- compp
+jjcomp = jjcomp +1
 
 
 
@@ -1135,6 +1171,27 @@ dev.off()
     print(compps[[jj]])
   }
   dev.off()
+  
+  
+  pdf(paste0("output/species_level_harvests.pdf"),width = 8,height = 10)
+  for(pp in 1:length(spplts_list)){
+    plt = spplts_list[[pp]]
+    for(j in 1:length(plt)){
+    print(plt[[j]])
+    }}
+  dev.off()
+  
+  
+  
+  pdf(paste("output/comparison graphs simple.pdf"))
+  
+  for(pp in 1:length(simcomp_list)){
+    plt = simcomp_list[[pp]]
+    for(j in 1:length(plt)){
+      print(plt[[j]])
+    }}
+  dev.off()
+  
   
 }#spgp (species group)
 #######################################
