@@ -872,6 +872,7 @@ stopCluster(cl = cluster)
 }#spgp
 # plotting comparisons to published estimates -----------------------------
 
+source("comparison_plotting_function_caste_year.R")
 source("comparison_plotting_function_species.R")
 source("comparison_plotting_function.R")
 source("utility_functions.R")
@@ -961,7 +962,9 @@ for(spgp in c("goose","duck","murre")){
   jjsimcomp = 1
   simcomp_list <-  list() 
   
-
+  jjcst = 1
+  cst_list <-  list() 
+  
   
   for(pr in provs2){
     zns <- unique(period[which(period$pr == pr),"zo"])
@@ -1016,6 +1019,15 @@ jjsp = jjsp +1
 # for(pp in 1:length(spplts)){print(spplts[[pp]])}
 # dev.off()
 
+# caste comparisons -----------------------------------------------------
+
+cst_list[[jjcst]] <- comp_plot_caste_year(prov = pr,
+                                         zone = z)
+
+jjcst = jjcst +1
+# pdf(paste0("output/species_level_harvests_",pr,z,".pdf"),width = 8,height = 10)
+# for(pp in 1:length(spplts)){print(spplts[[pp]])}
+# dev.off()
 
 # comparing retransformation options --------------------------------------
 
@@ -1190,6 +1202,14 @@ jjcomp = jjcomp +1
       height = 6)
   for(jj in 1:length(compps)){
     print(compps[[jj]])
+  }
+  dev.off()
+  
+  pdf(paste0("output/caste effects.pdf"),
+      width = 8,
+      height = 6)
+  for(jj in 1:length(cst_list)){
+    print(cst_list[[jj]])
   }
   dev.off()
   
