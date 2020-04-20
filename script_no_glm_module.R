@@ -810,7 +810,7 @@ nIter = ceiling( ( (numSavedSteps * thinSteps )+burnInSteps) / nChains ) # Steps
 
 t1 = Sys.time()
 #if(spgp == "duck"){
-  mod.file = "species_harvest_model.R" # I think this should work for geese and murres too
+  mod.file = "species_harvest_model_noann.R" # I think this should work for geese and murres too
 #}
    
 
