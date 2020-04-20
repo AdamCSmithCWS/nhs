@@ -96,7 +96,7 @@ model {
   # dif_1_2[5] <- nu_day[1]-nu_day[2]
   # 
   
-  cst[1,1] <- 1
+  cst[1,1] ~ dnorm(0,0.01)
   cst_day[1,1] <- 1
   for(c in 2:ncastes){
   cst[c,1] ~ dnorm(0,0.01)
