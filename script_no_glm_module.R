@@ -799,6 +799,8 @@ parms = c("NACTIVE_y",
           "sdhunter",
           "cst",
           "cst_day",
+          "ann",
+          "ann_day",
           "axcomp_axsy")
 
 #adaptSteps = 200              # Number of steps to "tune" the samplers.
@@ -810,8 +812,9 @@ nIter = ceiling( ( (numSavedSteps * thinSteps )+burnInSteps) / nChains ) # Steps
 
 t1 = Sys.time()
 #if(spgp == "duck"){
-  mod.file = "species_harvest_model_noann.R" # I think this should work for geese and murres too
-#}
+ # mod.file = "species_harvest_model_noann.R" # I think this should work for geese and murres too
+  mod.file = "species_harvest_model.R" # I think this should work for geese and murres too
+  #}
    
 
 # out2 = try(jags.model( file = mod.file, 
