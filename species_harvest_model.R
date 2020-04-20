@@ -96,22 +96,24 @@ model {
   # dif_1_2[5] <- nu_day[1]-nu_day[2]
   # 
   
-  cst[1,1] ~ dnorm(0,0.01)
-  cst_day[1,1] <- 1
+ CCST[1] <- 0
+ CCST_day[1] <- 0
   for(c in 2:ncastes){
-  cst[c,1] ~ dnorm(0,0.01)
-  cst_day[c,1] ~ dnorm(0,0.01)
+  CCST[c] ~ dnorm(0,0.001)
+  CCST_day[c] ~ dnorm(0,0.001)
   }
-  for(y in 2:nyears){  ### time series model for caste effects, allowing them to vary through time
-    for(c in 1:ncastes){
-      
-    cst[c,y] ~ dnorm(cst[c,y-1],tau_cst)
-    cst_day[c,y] ~ dnorm(cst_day[c,y-1],tau_cst_day)
+
+ for(c in 1:ncastes){
+   for(y in 1:nyears){  ### random effects for caste effects, allowing them to vary randomly by year
+     
+    cst[c,y] ~ dnorm(CCST[c],tau_cst[c])
+    cst_day[c,y] ~ dnorm(CCST_day[c],tau_cst_day[c])
     }
+    tau_cst[c] ~ dgamma(0.001,0.001) # assumption that the
+    tau_cst_day[c] ~ dgamma(0.001,0.001)
+    
   }
   
-  tau_cst ~ dgamma(0.001,0.001) # assumption that the temporal variance in caste effects is the same (???), separating by caste may require sharing info among zones
-  tau_cst_day ~ dgamma(0.001,0.001)
   
   for(c in 1:ncastes){
     ## harvest rate priors
