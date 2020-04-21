@@ -104,7 +104,12 @@ model {
   }
 
  for(c in 1:ncastes){
-   for(y in 1:nyears){  ### random effects for caste effects, allowing them to vary randomly by year
+   
+ 
+     cst[c,1] <- CCST[c] #fixed value in first year, to help separately estimate the cst effects from ann
+     cst_day[c,1] ~ CCST_day[c] #fixed value in first year, to help separately estimate the cst_day effects from ann_day
+   
+   for(y in 2:nyears){  ### random effects for caste effects, allowing them to vary randomly by year
      
     cst[c,y] ~ dnorm(CCST[c],tau_cst[c])
     cst_day[c,y] ~ dnorm(CCST_day[c],tau_cst_day[c])
@@ -186,19 +191,19 @@ model {
   ann_day[1] ~ dnorm(0,0.001) # fixed effect for year-1 annual activity level
   
   for(y in 2:nyears){
-    #ann[y] ~ dnorm(ann[y-1],tauyear)
-    #ann_day[y] ~ dnorm(ann_day[y-1],tauyear_day)
+    ann[y] ~ dnorm(ann[y-1],tauyear)
+    ann_day[y] ~ dnorm(ann_day[y-1],tauyear_day)
     
-    ann[y] ~ dnorm(0,0.001)
-    ann_day[y] ~ dnorm(0,0.001)
+    #ann[y] ~ dnorm(0,0.001)
+    #ann_day[y] ~ dnorm(0,0.001)
     
   }
   
   # first-difference harvest and activity variance priors
-  # sdyear <- 1/pow(tauyear,0.5)
-  # tauyear ~ dgamma(0.001,0.001)
-  # sdyear_day <- 1/pow(tauyear_day,0.5)
-  # tauyear_day ~ dgamma(0.001,0.001)
+   sdyear <- 1/pow(tauyear,0.5)
+ tauyear ~ dgamma(0.001,0.001)
+ sdyear_day <- 1/pow(tauyear_day,0.5)
+ tauyear_day ~ dgamma(0.001,0.001)
   # 
   
   

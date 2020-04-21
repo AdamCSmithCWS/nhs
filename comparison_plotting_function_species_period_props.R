@@ -1,0 +1,86 @@
+### 
+
+
+comp_plot_psy <- function(group = spgp,
+                             var = "pcomp_psy",
+                             prov = "",
+                             zone = "",
+                             M = out2,
+                             nspecies = jdat$nspecies,
+                          nperiods = jdat$nperiods,
+                          nparts_sy = jdat$nparts_sy){
+  
+  
+  
+  
+  dsum = as.data.frame(M$summary)
+  names(dsum)[3:7] <- c("lci","lqrt","med","uqrt","uci")
+  dsum$Parameter = row.names(dsum)
+  
+  d1 = filter(dsum,grepl(Parameter,pattern = paste0(var,"["),fixed = T))
+  
+  d1$yr = jags_dim(var = var,dat = d1)
+  d1$sp = jags_dim(var = var,dat = d1,dim = 2)
+  d1$year = d1$yr+(Y-(jdat$nyears))
+  
+  spls = sp.save.out[which(sp.save.out$PRHUNT == prov & sp.save.out$ZOHUNT == zone),]
+  d1 = merge(d1,spls,by.x = "sp",by.y = "spn")
+  d1 = merge(d1,provzone,by.x = c("PRHUNT","ZOHUNT"),by.y = c("prov","zone"))
+  d1 = merge(d1,species_web_names,by.x = "AOU",by.y = "sp",all.x = T)
+  d1$mod = "New"
+  
+  d2 = pubEsts_species[which(pubEsts_species$prov == unique(d1$province) & pubEsts_species$zone == zone),]
+  names(d2) <- c("AOU","species","province","ZOHUNT","year","mean","sd","lci","uci")
+  d2$mod = "Old"
+  
+  dd = bind_rows(d1,d2)
+  outggs <- list()
+  length(outggs) <- ceiling(nspecies/9)
+  
+  
+  
+  for(i in 1:nrow(dd)){
+      ss = dd[i,"sp"]
+     yy = dd[i,"yr"]
+    
+    dd[i,"nparts"] <- sum(nparts_sy[ss,yy])
+  }
+  
+  
+  
+
+# part counts to plot ---------------------------------------------------
+
+  
+  ulim = max(dd$uci)
+  ddb = dd[which(dd$vers == "retrans"),]
+  ddb$hunterplot <- (ddb$nhunter/max(ddb$nhunter))*(ulim/2)
+  ddbmx = tapply(ddb$nhunter,ddb$castes,max)
+  wm = NULL
+  ddbmn = tapply(ddb$nhunter,ddb$castes,min)
+  wmn = NULL
+  
+  for(j in 1:length(ddbmx)){
+    wm[j] <- which(ddb$nhunter == ddbmx[j] & ddb$castes == names(ddbmx)[j])
+    wmn[j] <- which(ddb$nhunter == ddbmn[j] & ddb$castes == names(ddbmn)[j])
+  }
+  
+############## end hunter counts
+  
+for(pp in 1:(ceiling(nspecies/9))){
+  outgg = ggplot(data = dd,aes(x = year,y = mean,group = mod,fill = mod))+
+    geom_point(aes(colour = mod),size = 0.5)+
+    geom_line(aes(colour = mod))+
+    labs(title = paste0("species level harvest ",prov," zn",zone," (mean and 95 CI)"))+
+    geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
+    scale_y_continuous(limits = c(0,NA))+
+    scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
+    theme_classic()+
+    facet_wrap_paginate(facets = ~AOU,nrow = 3,ncol = 3,scales = "free",page = pp)
+  outggs[[pp]] <- outgg
+}
+  
+  return(outggs)
+}
+
+

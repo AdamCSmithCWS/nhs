@@ -801,7 +801,8 @@ parms = c("NACTIVE_y",
           "cst_day",
           "ann",
           "ann_day",
-          "axcomp_axsy")
+          "axcomp_axsy",
+          "pcomp_psy")
 
 #adaptSteps = 200              # Number of steps to "tune" the samplers.
 burnInSteps = 5000            # Number of steps to "burn-in" the samplers.
@@ -860,7 +861,7 @@ if(class(out2) != "try-error"){
 
 
 save(list = c("out2","jdat","sp.save.out"),
-     file = paste("output/full harvest",pr,z,spgp,"mod.RData"))
+     file = paste("output/full harvest",pr,z,spgp,"alt mod.RData"))
 
 rm(list = "out2")
 
@@ -877,6 +878,7 @@ stopCluster(cl = cluster)
 # plotting comparisons to published estimates -----------------------------
 
 source("comparison_plotting_function_caste_year.R")
+source("comparison_plotting_function_species_agesex.R")
 source("comparison_plotting_function_species.R")
 source("comparison_plotting_function.R")
 source("utility_functions.R")
@@ -970,13 +972,20 @@ for(spgp in c("goose","duck","murre")){
   cst_list <-  list() 
   
   
+  jjpsy = 1
+  psy_list <-  list() 
+  
+  jjpaxsy = 1
+  paxsy_list <- list()
+  
   for(pr in provs2){
     zns <- unique(period[which(period$pr == pr),"zo"])
     for(z in zns){
-      if(file.exists(paste("output/full harvest",pr,z,spgp,"mod.RData"))){
-load(paste("output/full harvest",pr,z,spgp,"mod.RData"))
-#        load(paste("output/full harvest caste time",pr,z,spgp,"mod.RData"))
-        
+#       if(file.exists(paste("output/full harvest",pr,z,spgp,"mod.RData"))){
+# load(paste("output/full harvest",pr,z,spgp,"mod.RData"))
+        if(file.exists(paste("output/full harvest",pr,z,spgp,"alt mod.RData"))){
+          load(paste("output/full harvest",pr,z,spgp,"alt mod.RData"))#        load(paste("output/full harvest caste time",pr,z,spgp,"mod.RData"))
+
         var_pair = data.frame(new = c("NACTIVE_y",
                               "NSUCC_y",
                               "kill_y",
@@ -1015,13 +1024,21 @@ jjsimcomp <- jjsimcomp + 1
 # species comparisons -----------------------------------------------------
 
 spplts_list[[jjsp]] <- comp_plot_species(prov = pr,
-                            zone = z,
-                            nspecies = jdat$nspecies)
+                            zone = z)
 
 jjsp = jjsp +1
 # pdf(paste0("output/species_level_harvests_",pr,z,".pdf"),width = 8,height = 10)
 # for(pp in 1:length(spplts)){print(spplts[[pp]])}
 # dev.off()
+
+
+# species composition by period -------------------------
+
+
+paxsy_list[[jjpaxsy]] <- comp_plot_axsy(prov = pr,
+                                        zone = z)
+
+  jjpaxsy = jjpaxsy + 1
 
 # caste comparisons -----------------------------------------------------
 
@@ -1201,7 +1218,9 @@ jjcomp = jjcomp +1
 
 }#pr
 
-  pdf(paste0("output/retransformation comparison.pdf"),
+  asuf <- c("")
+  #asuf <- c(" alt")
+  pdf(paste0("output/retransformation comparison",asuf,".pdf"),
       width = 8,
       height = 6)
   for(jj in 1:length(compps)){
@@ -1209,7 +1228,18 @@ jjcomp = jjcomp +1
   }
   dev.off()
   
-  pdf(paste0("output/caste effects.pdf"),
+  pdf(paste0("output/age sex",asuf,".pdf"),
+      width = 8,
+      height = 6)
+  for(pp in 1:length(paxsy_list)){
+    plt = paxsy_list[[pp]]
+    for(j in 1:length(plt)){
+      print(plt[[j]])
+    }}
+  dev.off()
+  
+  
+  pdf(paste0("output/caste effects",asuf,".pdf"),
       width = 8,
       height = 6)
   for(jj in 1:length(cst_list)){
@@ -1218,7 +1248,7 @@ jjcomp = jjcomp +1
   dev.off()
   
   
-  pdf(paste0("output/species_level_harvests.pdf"),width = 8,height = 10)
+  pdf(paste0("output/species_level_harvests",asuf,".pdf"),width = 8,height = 10)
   for(pp in 1:length(spplts_list)){
     plt = spplts_list[[pp]]
     for(j in 1:length(plt)){
@@ -1228,7 +1258,7 @@ jjcomp = jjcomp +1
   
   
   
-  pdf(paste("output/comparison graphs simple.pdf"))
+  pdf(paste("output/comparison graphs simple",asuf,".pdf"))
   
   for(pp in 1:length(simcomp_list)){
     plt = simcomp_list[[pp]]
