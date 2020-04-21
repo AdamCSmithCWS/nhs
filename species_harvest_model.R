@@ -8,7 +8,7 @@
 # #spcies composition components
 # w_psy = partsarray, # w_psy[nperiods,nspecies,nyears] wings by period species year
 # nparts_py = nparts_py, # nparts_py[nperiods,nyears] sum parts across species by period and year
-# nparts_sy = nparts_sy, # nparts_sy[nspecies,nyears] sum parts species and year
+# nparts_sy = nparts_sy, # nparts_sy[nspecies,nyears] sum parts species and year that have age and sex info
 # kill_pyh = periodkill, # kill_pyh[nperiods,nyears,max(nhunters[y])] hunter-level total harvest by period from the calendars(separate hunter id caste doesn't matter)
 # nkill_yh = nkill_yh, # nkill_yh[nyears,max(nhunters[y])] hunter-level summed harvest from calendar (separate hunter id caste doesn't matter)
 # # demographic data for age and sex component of the model
@@ -107,7 +107,7 @@ model {
    
  
      cst[c,1] <- CCST[c] #fixed value in first year, to help separately estimate the cst effects from ann
-     cst_day[c,1] ~ CCST_day[c] #fixed value in first year, to help separately estimate the cst_day effects from ann_day
+     cst_day[c,1] <- CCST_day[c] #fixed value in first year, to help separately estimate the cst_day effects from ann_day
    
    for(y in 2:nyears){  ### random effects for caste effects, allowing them to vary randomly by year
      
