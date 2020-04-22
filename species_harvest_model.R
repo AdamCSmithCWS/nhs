@@ -47,7 +47,7 @@ model {
     NACTIVE_cy[c,y] <- pactive[c,y]*pops[c,y]
     
     nsucc[c,y] ~ dbinom(psucc[c,y],nactive[c,y])
-    NSUCC_cy[c,y] <- psucc[c,y]*pops[c,y] 
+    NSUCC_cy[c,y] <- psucc[c,y]*NACTIVE_cy[c,y] 
     
   }
    NSUCC_y[y] <- sum(NSUCC_cy[castes,y]) 
@@ -290,7 +290,7 @@ model {
   
 #####################################################################
   #### proportional distribution of all birds killed across periods
-  ### this component ignores hunter and caste specific variation in the seasonal spread of the hunt
+  ### this component ignores caste specific variation in the seasonal spread of the hunt
   ### multinomial distribution across periods  
   ### kill_pyh and nkill_yh[y,h] are data
   for (y in 1:nyears) {

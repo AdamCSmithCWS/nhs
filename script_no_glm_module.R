@@ -179,7 +179,12 @@ dupuni = allkill$uniperm[duplicated(allkill$uniperm)]
 # dupdf = allkill[which(allkill$uniperm %in% dupuni),]
 # dupdf = dupdf[order(dupdf$uniperm),]
 
+wmigoo <- which(allkill$PRHUNTG == "")
+allkill[wmigoo,"PRHUNTG"] <- allkill[wmigoo,"PRHUNT"]
+allkill[wmigoo,"ZOHUNTG"] <- allkill[wmigoo,"ZOHUNTG"]
 
+  
+  
 wsud = which(allkill$TODUK > 0)
 allkill$SUTODU <- "N"
 allkill[wsud,"SUTODU"] <- "Y"
@@ -388,7 +393,7 @@ sumkill$year = sumkill$YEAR-(minyr-1)
     yrspersp <- tapply(prts1$YEAR,prts1$AOU,luni)
 
 # removing species that only show up in <half of years --------------------
-    prts1 <- prts1[which(prts1$AOU %in% names(yrspersp)[which(yrspersp > (0.33*length(years)))]),]
+    prts1 <- prts1[which(prts1$AOU %in% names(yrspersp)[which(yrspersp > 3)]),]
     
     
     for(per in periods$period){
@@ -994,6 +999,10 @@ for(spgp in c("goose","duck","murre")){
                                "SUTODU",
                                "TODUK",
                                "DAYWF"),
+                      goose = c("ACTIWF",
+                               "SUTOGO",
+                               "TOGOK",
+                               "DAYWF"),
                       stringsAsFactors = F) ## add ofther spgp columns to match
 
 plts = list()
@@ -1220,7 +1229,7 @@ jjcomp = jjcomp +1
 
   asuf <- c("")
   #asuf <- c(" alt")
-  pdf(paste0("output/retransformation comparison",asuf,".pdf"),
+  pdf(paste0("output/retransformation comparison",asuf," ",spgp,".pdf"),
       width = 8,
       height = 6)
   for(jj in 1:length(compps)){
@@ -1228,7 +1237,7 @@ jjcomp = jjcomp +1
   }
   dev.off()
   
-  pdf(paste0("output/age sex",asuf,".pdf"),
+  pdf(paste0("output/age sex",asuf," ",spgp,".pdf"),
       width = 8,
       height = 6)
   for(pp in 1:length(paxsy_list)){
@@ -1239,7 +1248,7 @@ jjcomp = jjcomp +1
   dev.off()
   
   
-  pdf(paste0("output/caste effects",asuf,".pdf"),
+  pdf(paste0("output/caste effects",asuf," ",spgp,".pdf"),
       width = 8,
       height = 6)
   for(jj in 1:length(cst_list)){
@@ -1248,7 +1257,7 @@ jjcomp = jjcomp +1
   dev.off()
   
   
-  pdf(paste0("output/species_level_harvests",asuf,".pdf"),width = 8,height = 10)
+  pdf(paste0("output/species_level_harvests",asuf," ",spgp,".pdf"),width = 8,height = 10)
   for(pp in 1:length(spplts_list)){
     plt = spplts_list[[pp]]
     for(j in 1:length(plt)){
@@ -1258,7 +1267,7 @@ jjcomp = jjcomp +1
   
   
   
-  pdf(paste("output/comparison graphs simple",asuf,".pdf"))
+  pdf(paste("output/comparison graphs simple",asuf," ",spgp,".pdf"))
   
   for(pp in 1:length(simcomp_list)){
     plt = simcomp_list[[pp]]
