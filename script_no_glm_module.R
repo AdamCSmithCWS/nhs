@@ -45,7 +45,8 @@
 
 
 Y <- 2018
-years <- 1975:Y
+FY = 1976
+years <- FY:Y
 
 names(years) <- paste(years)
 
@@ -179,7 +180,12 @@ dupuni = allkill$uniperm[duplicated(allkill$uniperm)]
 # dupdf = allkill[which(allkill$uniperm %in% dupuni),]
 # dupdf = dupdf[order(dupdf$uniperm),]
 
+wmigoo <- which(allkill$PRHUNTG == "")
+allkill[wmigoo,"PRHUNTG"] <- allkill[wmigoo,"PRHUNT"]
+allkill[wmigoo,"ZOHUNTG"] <- allkill[wmigoo,"ZOHUNTG"]
 
+  
+  
 wsud = which(allkill$TODUK > 0)
 allkill$SUTODU <- "N"
 allkill[wsud,"SUTODU"] <- "Y"
@@ -275,7 +281,7 @@ for(spgp in c("duck","goose","murre")){
     wact = "ACTIVEWF"
     wsucc = "SUTOGO"
     wday = "DAYWF"
-    years = 1975:Y
+    years = FY:Y
     nyears = length(years)
     demog = data.frame(BSEX = rep(c("U","U"),each = 1),
                        BAGE = rep(c("A","I"),times = 1),
@@ -296,7 +302,7 @@ for(spgp in c("duck","goose","murre")){
     wact = "ACTIVEWF"
     wsucc = "SUTODU"
     wday = "DAYWF"
-    years = 1975:Y
+    years = FY:Y
     nyears = length(years)
     demog = data.frame(BSEX = rep(c("F","M"),each = 2),
                        BAGE = rep(c("A","I"),times = 2),
@@ -370,7 +376,7 @@ sumkill = allkill[which(allkill[,phunt] == pr &
                              allkill[,zhunt] == z &
                              allkill$YEAR %in% years),]
 
-if(minyr != 1975){
+if(minyr != FY){
 sumkill$year = sumkill$YEAR-(minyr-1)
 }
   nperiods <- max(periods$period)
@@ -388,7 +394,7 @@ sumkill$year = sumkill$YEAR-(minyr-1)
     yrspersp <- tapply(prts1$YEAR,prts1$AOU,luni)
 
 # removing species that only show up in <half of years --------------------
-    prts1 <- prts1[which(prts1$AOU %in% names(yrspersp)[which(yrspersp > (0.33*length(years)))]),]
+    prts1 <- prts1[which(prts1$AOU %in% names(yrspersp)[which(yrspersp > 2)]),]
     
     
     for(per in periods$period){
@@ -901,7 +907,7 @@ for(spgp in c("goose","duck","murre")){
     wact = "ACTIVEWF"
     wsucc = "SUCCWF"
     wday = "DAYWF"
-    years = 1975:Y
+    years = FY:Y
     nyears = length(years)
     demog = data.frame(BSEX = rep(c("U","U"),each = 1),
                        BAGE = rep(c("A","I"),times = 1),
@@ -922,7 +928,7 @@ for(spgp in c("goose","duck","murre")){
     wact = "ACTIVEWF"
     wsucc = "SUCCWF"
     wday = "DAYWF"
-    years = 1975:Y
+    years = FY:Y
     nyears = length(years)
     demog = data.frame(BSEX = rep(c("F","M"),each = 2),
                        BAGE = rep(c("A","I"),times = 2),
@@ -993,6 +999,10 @@ for(spgp in c("goose","duck","murre")){
                       duck = c("ACTIWF",
                                "SUTODU",
                                "TODUK",
+                               "DAYWF"),
+                      goose = c("ACTIWF",
+                               "SUTOGO",
+                               "TOGOK",
                                "DAYWF"),
                       stringsAsFactors = F) ## add ofther spgp columns to match
 
@@ -1220,7 +1230,7 @@ jjcomp = jjcomp +1
 
   asuf <- c("")
   #asuf <- c(" alt")
-  pdf(paste0("output/retransformation comparison",asuf,".pdf"),
+  pdf(paste0("output/retransformation comparison",asuf," ",spgp,".pdf"),
       width = 8,
       height = 6)
   for(jj in 1:length(compps)){
@@ -1228,7 +1238,7 @@ jjcomp = jjcomp +1
   }
   dev.off()
   
-  pdf(paste0("output/age sex",asuf,".pdf"),
+  pdf(paste0("output/age sex",asuf," ",spgp,".pdf"),
       width = 8,
       height = 6)
   for(pp in 1:length(paxsy_list)){
@@ -1239,7 +1249,7 @@ jjcomp = jjcomp +1
   dev.off()
   
   
-  pdf(paste0("output/caste effects",asuf,".pdf"),
+  pdf(paste0("output/caste effects",asuf," ",spgp,".pdf"),
       width = 8,
       height = 6)
   for(jj in 1:length(cst_list)){
@@ -1248,7 +1258,7 @@ jjcomp = jjcomp +1
   dev.off()
   
   
-  pdf(paste0("output/species_level_harvests",asuf,".pdf"),width = 8,height = 10)
+  pdf(paste0("output/species_level_harvests",asuf," ",spgp,".pdf"),width = 8,height = 10)
   for(pp in 1:length(spplts_list)){
     plt = spplts_list[[pp]]
     for(j in 1:length(plt)){
@@ -1258,7 +1268,7 @@ jjcomp = jjcomp +1
   
   
   
-  pdf(paste("output/comparison graphs simple",asuf,".pdf"))
+  pdf(paste("output/comparison graphs simple",asuf," ",spgp,".pdf"))
   
   for(pp in 1:length(simcomp_list)){
     plt = simcomp_list[[pp]]
