@@ -394,7 +394,7 @@ sumkill$year = sumkill$YEAR-(minyr-1)
     yrspersp <- tapply(prts1$YEAR,prts1$AOU,luni)
 
 # removing species that only show up in <half of years --------------------
-    prts1 <- prts1[which(prts1$AOU %in% names(yrspersp)[which(yrspersp > 3)]),]
+    prts1 <- prts1[which(prts1$AOU %in% names(yrspersp)[which(yrspersp > 2)]),]
     
     
     for(per in periods$period){
