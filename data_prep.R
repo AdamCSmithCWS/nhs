@@ -8,7 +8,7 @@
 
 
 Y <- 2018
-years <- 1975:Y
+years <- 1976:Y
 
 names(years) <- paste(years)
 home.fold1 <- "m:/My Documents/Harvest Survey A146/"
@@ -154,6 +154,9 @@ for (y in years){
 
 
 
+# Fix species AOU values incl Eiders --------------------------------------
+
+outscse[which(outscse$AOU == 1600),"AOU"] <- 1590 #cod for COEI changed in ~1990
 
 #define periods across all years
 

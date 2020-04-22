@@ -45,7 +45,8 @@
 
 
 Y <- 2018
-years <- 1975:Y
+FY = 1976
+years <- FY:Y
 
 names(years) <- paste(years)
 
@@ -280,7 +281,7 @@ for(spgp in c("duck","goose","murre")){
     wact = "ACTIVEWF"
     wsucc = "SUTOGO"
     wday = "DAYWF"
-    years = 1975:Y
+    years = FY:Y
     nyears = length(years)
     demog = data.frame(BSEX = rep(c("U","U"),each = 1),
                        BAGE = rep(c("A","I"),times = 1),
@@ -301,7 +302,7 @@ for(spgp in c("duck","goose","murre")){
     wact = "ACTIVEWF"
     wsucc = "SUTODU"
     wday = "DAYWF"
-    years = 1975:Y
+    years = FY:Y
     nyears = length(years)
     demog = data.frame(BSEX = rep(c("F","M"),each = 2),
                        BAGE = rep(c("A","I"),times = 2),
@@ -375,7 +376,7 @@ sumkill = allkill[which(allkill[,phunt] == pr &
                              allkill[,zhunt] == z &
                              allkill$YEAR %in% years),]
 
-if(minyr != 1975){
+if(minyr != FY){
 sumkill$year = sumkill$YEAR-(minyr-1)
 }
   nperiods <- max(periods$period)
@@ -906,7 +907,7 @@ for(spgp in c("goose","duck","murre")){
     wact = "ACTIVEWF"
     wsucc = "SUCCWF"
     wday = "DAYWF"
-    years = 1975:Y
+    years = FY:Y
     nyears = length(years)
     demog = data.frame(BSEX = rep(c("U","U"),each = 1),
                        BAGE = rep(c("A","I"),times = 1),
@@ -927,7 +928,7 @@ for(spgp in c("goose","duck","murre")){
     wact = "ACTIVEWF"
     wsucc = "SUCCWF"
     wday = "DAYWF"
-    years = 1975:Y
+    years = FY:Y
     nyears = length(years)
     demog = data.frame(BSEX = rep(c("F","M"),each = 2),
                        BAGE = rep(c("A","I"),times = 2),
