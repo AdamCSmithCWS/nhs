@@ -58,7 +58,7 @@ model {
   for(i in 1:nhs){
     
     
-   ### successful hunters, alternative zero inflated approach
+   ### successful hunters, 
     ############ loop only includes active hunters because if days[i] = 0 (i.e., they're not active), then there is no uncertainty about kill[i] (kill must = 0)
     
     ### number harvested
