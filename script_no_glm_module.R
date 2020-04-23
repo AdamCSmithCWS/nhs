@@ -568,10 +568,41 @@ tmp1$yearhunt = tmp1$YEAR
 
 
 
+
+
+# Correction factors for inter-provincial hunting -------------------------
+sumkillall = allkill[which(((allkill[,phunt] == pr &
+                               allkill[,zhunt] == z)|(allkill[,"PRSAMP"] == pr &
+                                                        allkill[,"ZOSAMP"] == z)) &
+                             allkill$YEAR %in% years),]
+
+arrive_hunt_cf <- matrix(1,nrow = nyears,ncol = 2)
+leave_hunt_cf <- matrix(1,nrow = nyears,ncol = 2)
+
+
+for(y in years){
+  yi = y-(FY-1)
+  tmp = table(sumkillall[which(sumkillall$YEAR == y),c("PRSAMP",phunt)])
+  
+  
+ nsampprov = sum(tmp[pr,])
+ nhuntprov = sum(tmp[,pr])
+ 
+  nsampprov_huntaltprov = nsampprov-sum(tmp[pr,pr])
+  nhuntprov_sampaltprov = nhuntprov-sum(tmp[pr,pr])
+  
+  leave_hunt_cf[yi,1] <- nsampprov_huntaltprov
+  leave_hunt_cf[yi,2] <- nsampprov
+  
+  arrive_hunt_cf[yi,1] <- nhuntprov_sampaltprov
+  arrive_hunt_cf[yi,2] <- nhuntprov
+  
+  
+}
+
+
+
 # collecting and sorting the total kill by caste for the zone -------------
-
-
-
 
 
 if(paste(pr,z) %in% non_res_combine){
@@ -782,7 +813,9 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
             kill = kill, # vector(length = nhs), total group (ducks, geese, murres) harvest of nhs response
             year = year, # vector(length = nhs), year of response
             caste = caste, # vector(length = nhs), caste of response
-            days = days)# vector(length = nhs), number of days spent hunting
+            days = days, #vector(length = nhs), number of days spent hunting
+            arrive_hunt_cf = arrive_hunt_cf,# 
+            leave_hunt_cf = leave_hunt_cf)#
 
 
 
@@ -810,7 +843,9 @@ parms = c("NACTIVE_y",
           "ann",
           "ann_day",
           "axcomp_axsy",
-          "pcomp_psy")
+          "pcomp_psy",
+          "parrive",
+          "pleave")
 
 #adaptSteps = 200              # Number of steps to "tune" the samplers.
 burnInSteps = 5000            # Number of steps to "burn-in" the samplers.

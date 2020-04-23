@@ -42,12 +42,35 @@ model {
   #nactive = data (number of active hunters in a given caste and year)
   #npotential = data (number of potential hunters in a given caste and year)
   for(y in 1:nyears){
+    
+    ## two correction factors to account for the inter-province hunting
+    ## parrive = proportion of hunting values that were sampled in another province (i.e., the proportion of hunters hunting in prov that are not included in pops, 1+parrive = factor by which pops should be increased)
+    ## pleave = proportion of permit population that hunted somewhere else (i.e, the proportion of the pops that are hunting somewhere else and should be removed, factor by which pops should be reduced)
+    arrive_hunt_cf[y,1] ~ dbinom(parrive[y],arrive_hunt_cf[y,2])
+    leave_hunt_cf[y,1] ~ dbinom(pleave[y],leave_hunt_cf[y,2])
+    
+    
+    #priors for parrive and pleave simple beta distribution
+    alpha_pleave[y] ~ dunif(1,3)
+    beta_pleave[y] ~ dunif(1,3)
+    
+    alpha_parrive[y] ~ dunif(1,3)
+    beta_parrive[y] ~ dunif(1,3)
+    
+    parrive[y] ~ dbeta(alpha_parrive[y],beta_parrive[y])
+    
+    pleave[y] ~ dbeta(alpha_pleave[y],beta_pleave[y])
+    
   for(c in 1:ncastes){
+    
+    pops_cor[c,y] <- pops[c,y]+(pops[c,y]*(1+parrive[y]))-(pops[c,y]*pleave[y])
+    
+    
     nactive[c,y] ~ dbinom(pactive[c,y],npotential[c,y])
-    NACTIVE_cy[c,y] <- pactive[c,y]*pops[c,y]
+    NACTIVE_cy[c,y] <- pactive[c,y]*pops_cor[c,y] #NACTIVE_cy used to rescale all per-hunter values in the derived quantities
     
     nsucc[c,y] ~ dbinom(psucc[c,y],nactive[c,y])
-    NSUCC_cy[c,y] <- psucc[c,y]*NACTIVE_cy[c,y] 
+    NSUCC_cy[c,y] <- psucc[c,y]*NACTIVE_cy[c,y]
     
   }
    NSUCC_y[y] <- sum(NSUCC_cy[castes,y]) 
@@ -152,6 +175,8 @@ model {
       alpha_pactive[c,y] ~ dunif(1,3)
       beta_pactive[c,y] ~ dunif(1,3)
       
+
+      
       # alpha_psucc[c,y] = phi_psucc[c] * mu_psucc[c,y]
       # beta_psucc[c,y] = phi_psucc[c] * (1 - mu_psucc[c,y])
       # logit(mu_psucc[c,y]) <- mmu_psucc[c] + dnorm(0,tau_mu_psucc[c])
@@ -250,11 +275,11 @@ model {
   for(y in 1:nyears){
    
     for(c in 1:ncastes){
-      kill_cy[c,y] <- mean_totkill_yc[y,c]*pops[c,y] * pactive[c,y] #total kill by caste and year
-      days_cy[c,y] <- mean_totdays_yc[y,c]*pops[c,y] * pactive[c,y] #total days by caste and year
+      kill_cy[c,y] <- mean_totkill_yc[y,c]*NACTIVE_cy[c,y] #total kill by caste and year
+      days_cy[c,y] <- mean_totdays_yc[y,c]*NACTIVE_cy[c,y] #total days by caste and year
       
       for(s in 1:nspecies){
-  kill_cys[c,y,s] <- sum(mean_kill_pcys[1:nperiods,c,y,s]) * pops[c,y] * pactive[c,y]
+  kill_cys[c,y,s] <- sum(mean_kill_pcys[1:nperiods,c,y,s]) * NACTIVE_cy[c,y]
       }#s
     }#c
     
