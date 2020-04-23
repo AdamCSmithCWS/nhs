@@ -186,7 +186,7 @@ dupuni = allkill$uniperm[duplicated(allkill$uniperm)]
 
 wmigoo <- which(allkill$PRHUNTG == "")
 allkill[wmigoo,"PRHUNTG"] <- allkill[wmigoo,"PRHUNT"]
-allkill[wmigoo,"ZOHUNTG"] <- allkill[wmigoo,"ZOHUNTG"]
+allkill[wmigoo,"ZOHUNTG"] <- allkill[wmigoo,"ZOHUNT"]
 
   
   
@@ -262,8 +262,6 @@ outscse[which(outscse$BSEX %in% c("")),"BSEX"] <- "U"
 
 
 
-
-########## consider if the renewing hunters adjustment is necessary.
 
 
 for(spgp in c("duck","goose","murre")){
