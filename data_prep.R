@@ -109,6 +109,8 @@ for (y in years){
                   sascmd = file.path(sashome, "sas.exe"))
 
 
+ ### if desired to swap BAGE for PAGE (geese), then scsYY is required, instead of scsYYe
+ ### but then additional changes are needed to align with old data
   fil.yr <- paste0("scs",substring(y,3,4),"e")
   tmp <- read.ssd(libname = dir.yr,
                                       sectionnames = fil.yr,
@@ -132,6 +134,7 @@ for (y in years){
   # }
 
   miscls = cls[-which(cls %in% names(tmp))]
+
 
 
   tmp = tmp[,cls]
