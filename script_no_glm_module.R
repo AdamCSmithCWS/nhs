@@ -134,7 +134,11 @@ cls = c("PERMIT",
    "ACTIVE",
    "ACTIVEWF",
    "ACTIVEM",
-   "POTNTL")
+   "POTNTL",
+   "PRSALE",
+   "ZOSALE",
+   "PRSAMP",
+   "ZOSAMP")
 allkill <- NULL
 
 for(y in years){
@@ -168,10 +172,10 @@ if(length(trem)>0){
 }### removes a single permit from 1985 with no permit number
 
 
-tkp = which(allkill$PRHUNT %in% c("AB","BC","MB","NB","NF","NS","NT","ON","PE","PQ","SK","YT","")) #drops NU and non provincial values
-if(length(tkp)>0){
-  allkill = allkill[tkp,]
-}### 
+# tkp = which(allkill$PRHUNT %in% c("AB","BC","MB","NB","NF","NS","NT","ON","PE","PQ","SK","YT","")) #drops NU and non provincial values
+# if(length(tkp)>0){
+#   allkill = allkill[tkp,]
+# }### 
 
 
 
