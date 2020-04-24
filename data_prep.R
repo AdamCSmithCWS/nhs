@@ -60,6 +60,7 @@ cls = c("PRHUNT",
         "DAYH",
         "BAGE",
         "BSEX",
+        "PAGE",
         "SAMPLE",
         "PERMIT",
         "YEAR",
@@ -115,6 +116,12 @@ for (y in years){
   tmp <- read.ssd(libname = dir.yr,
                                       sectionnames = fil.yr,
                                       sascmd = file.path(sashome, "sas.exe"))
+  # fil.yr <- paste0("scs",substring(y,3,4)) 
+  # tmp2 <- read.ssd(libname = dir.yr,
+  #                  sectionnames = fil.yr,
+  #                  sascmd = file.path(sashome, "sas.exe"))
+  # 
+  # tmp2u <- unique(tmp2[,c("PRHUNT","ZOHUNT","AOU","MONH","DAYH","BAGE","BSEX","PAGE","PERMIT")])
 
   tmp[which(tmp$PRHUNT == ""),"PRHUNT"] <- tmp[which(tmp$PRHUNT == ""),"PRSALE"]
   tmp[which(tmp$PRHUNT == ""),"ZOHUNT"] <- tmp[which(tmp$PRHUNT == ""),"ZOSALE"]
@@ -135,8 +142,13 @@ for (y in years){
 
   miscls = cls[-which(cls %in% names(tmp))]
 
-
-
+  if(length(miscls) > 0){
+    
+  if(miscls == "PAGE"){
+    tmp$PAGE <- ""
+  }
+  }
+  
   tmp = tmp[,cls]
 
   if(y == years[1]) {
@@ -150,7 +162,7 @@ for (y in years){
     }
   #
 
-
+print(y)
 
   }#y
 
