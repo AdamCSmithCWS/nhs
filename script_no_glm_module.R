@@ -90,6 +90,11 @@ pubEsts_species$uci = ceiling(pubEsts_species$mean+(1.96*pubEsts_species$sd))
 pubEsts_species[which(pubEsts_species$lci < 0),"lci"] <- 0
 
 species_web_names = unique(pubEsts_species[,c("sp","species")])
+
+
+pubEsts_age_sex = read.csv("data/enp_nhs_c_by_zone_20200416.csv",stringsAsFactors = F)
+names(pubEsts_species) <- c("sp","species","prov","zone","year","age_ratio")
+
 # compile total harvest estimates into a dataframe ------------------------
 
 ### compile total harvest estimates into a dataframe of
@@ -780,7 +785,13 @@ for(y in 1:nyears){
   }
 }
 
-
+if(ndemog == 4){
+  demof <- c(1,2)
+  demoa <- c(1,3)
+}else{
+  demof <- 1
+  demoa <- 1
+}
 
 # compiling JAGS data object ----------------------------------------------
 
@@ -815,7 +826,9 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
             caste = caste, # vector(length = nhs), caste of response
             days = days, #vector(length = nhs), number of days spent hunting
             arrive_hunt_cf = arrive_hunt_cf,# 
-            leave_hunt_cf = leave_hunt_cf)#
+            leave_hunt_cf = leave_hunt_cf,
+            demof = demof,
+            demoa = demoa)#
 
 
 
@@ -923,6 +936,7 @@ stopCluster(cl = cluster)
 source("comparison_plotting_function_caste_year.R")
 source("comparison_plotting_function_species_agesex.R")
 source("comparison_plotting_function_species.R")
+source("comparison_plotting_function_species_period_props.R")
 source("comparison_plotting_function.R")
 source("utility_functions.R")
 for(spgp in c("goose","duck","murre")){
@@ -1068,7 +1082,7 @@ jjsimcomp <- jjsimcomp + 1
 
 
 
-# species comparisons -----------------------------------------------------
+# species harvests -----------------------------------------------------
 
 spplts_list[[jjsp]] <- comp_plot_species(prov = pr,
                             zone = z)
@@ -1079,7 +1093,16 @@ jjsp = jjsp +1
 # dev.off()
 
 
-# species composition by period -------------------------
+
+
+# Species composition -----------------------------------------------------
+
+
+psy_list[[jjpsy]] <- comp_plot_psy(prov = pr,
+              zone = z)
+
+jjpsy <- jjpsy+1
+# age and sex composition -------------------------
 
 
 paxsy_list[[jjpaxsy]] <- comp_plot_axsy(prov = pr,
@@ -1265,6 +1288,11 @@ jjcomp = jjcomp +1
 
 }#pr
 
+  
+
+# plotting pdfs -----------------------------------------------------------
+
+  
   asuf <- c("")
   #asuf <- c(" alt")
   pdf(paste0("output/retransformation comparison",asuf," ",spgp,".pdf"),
@@ -1280,6 +1308,17 @@ jjcomp = jjcomp +1
       height = 6)
   for(pp in 1:length(paxsy_list)){
     plt = paxsy_list[[pp]]
+    for(j in 1:length(plt)){
+      print(plt[[j]])
+    }}
+  dev.off()
+  
+  
+  pdf(paste0("output/species proportions by period",asuf," ",spgp,".pdf"),
+      width = 8,
+      height = 6)
+  for(pp in 1:length(psy_list)){
+    plt = psy_list[[pp]]
     for(j in 1:length(plt)){
       print(plt[[j]])
     }}
