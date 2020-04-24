@@ -61,9 +61,10 @@ model {
     
     pleave[y] ~ dbeta(alpha_pleave[y],beta_pleave[y])
     
+    prov_flow[y] <- parrive[y]-pleave[y] #difference in proportion of hunters coming and going, negative values indicate permits purchased in zone tend to hunt somewhere else
   for(c in 1:ncastes){
     
-    pops_cor[c,y] <- pops[c,y]+(pops[c,y]*(1+parrive[y]))-(pops[c,y]*pleave[y])
+    pops_cor[c,y] <- pops[c,y]+(pops[c,y]*(parrive[y]))-(pops[c,y]*pleave[y])
     
     
     nactive[c,y] ~ dbinom(pactive[c,y],npotential[c,y])
@@ -148,14 +149,14 @@ model {
     retrans_hunter[c] <- 0.5*(1/tauhunter[c])
     sdhunter[c] <- 1/pow(tauhunter[c],0.5)
     tauhunter[c] ~ dgamma(0.01,0.01)
-    nu[c] ~ dgamma(2,0.1)
+    nu[c] ~ dgamma(2,0.2)
     ## caste specific intercept priors
    
     #activity (days) priors
     retrans_hunter_day[c] <- 0.5*(1/tauhunter_day[c])
     sdhunter_day[c] <- 1/pow(tauhunter_day[c],0.5)
     tauhunter_day[c] ~ dgamma(0.01,0.01)
-    nu_day[c] ~ dgamma(2,0.1)
+    nu_day[c] ~ dgamma(2,0.2)
     ## caste specific intercept priors
     
     
@@ -269,7 +270,7 @@ model {
   }#c
   
   
-  
+
   #total harvest estimate by species year and caste
   ## mean harvest and days * population sizes of each caste and year * esimated proportion of population that is active to generate final harvest estimates.
   for(y in 1:nyears){
@@ -291,6 +292,8 @@ model {
             ### kill_ysax = total harvest by age/sex species and year (e.g., number of adult female mallards killed)
           kill_ysax[d,s,y] <- axcomp_axsy[d,s,y]*kill_ys[y,s]
         }#d
+      padult_sy[s,y] <- sum(axcomp_axsy[demoa,s,y])
+      pfemale_sy[s,y] <- sum(axcomp_axsy[demof,s,y])
     }#s
     
     #### summed total harvest and activity (e.g., all ducks) across all species and castes in a given year

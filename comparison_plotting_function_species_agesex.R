@@ -34,10 +34,7 @@ comp_plot_axsy <- function(group = spgp,
   d1$demo = paste(d1$BAGE,d1$BSEX,sep = "_")
   
   dd = d1
-  outggs <- list()
-  length(outggs) <- ceiling(nspecies/9)
-  
-  
+
   
   for(i in 1:nrow(dd)){
       ss = dd[i,"sp"]
@@ -61,13 +58,20 @@ comp_plot_axsy <- function(group = spgp,
   ddb = dd
   for(ss in 1:nspecies){
     ws = which(ddb$sp == ss)
+    ddb[ws,"partsplot"] <- (ddb[ws,"nparts"]/max(ddb[ws,"nparts"]))*(ulim/2)
+    if(max(ddb[ws,"nparts"]) == 0){
+      ddb[ws,"partsplot"] <- 0
+      
+    }
   ddb[ws,"partsplot"] <- (ddb[ws,"nparts"]/max(ddb[ws,"nparts"]))*(ulim/2)
   }
   
   ddb = unique(ddb[,c("AOU","year","nparts","partsplot")])
   ddbmx = tapply(ddb$partsplot,ddb$AOU,max)
+  if(any(is.na(ddbmx))){ddbmx[which(is.na(ddbmx))] <- 0}
   wm = NULL
   ddbmn = tapply(ddb$partsplot,ddb$AOU,min)
+  if(any(is.na(ddbmn))){ddbmn[which(is.na(ddbmn))] <- 0}
   wmn = NULL
   
   for(j in 1:length(ddbmx)){
@@ -76,11 +80,16 @@ comp_plot_axsy <- function(group = spgp,
   }
   ddbm = ddb[c(wm,wmn),]
   
+  if(ndemog == 4){
   outggs <- list()
   length(outggs) <- nspecies
+  }else{
+    outggs <- list()
+    length(outggs) <- ceiling(nspecies/ndemog)
+  }
 ############## end parts plot counts
   
-for(pp in 1:nspecies){
+for(pp in 1:length(outggs)){
   outgg = ggplot(data = dd,aes(x = year,y = mean,group = demo,fill = demo))+
     geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = partsplot),fill = grey(0.7),alpha = 1,stat = "identity",width = 0.2)+
     #geom_point(aes(colour = demo),size = 0.5)+
@@ -91,7 +100,7 @@ for(pp in 1:nspecies){
     scale_y_continuous(limits = c(0,NA))+
     scale_color_viridis_d(aesthetics = c("colour","fill"),end = 0.7)+
     theme_classic()+
-    geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = partsplot,label = nparts),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
+    #geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = partsplot,label = nparts),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
     facet_wrap_paginate(facets = ~AOU+demo,nrow = 2,ncol = 2,scales = "fixed",page = pp)
   outggs[[pp]] <- outgg
 }
