@@ -239,6 +239,11 @@ aou.murre <- sps[which(sps$group == "murre"),"AOU"]
 
 # correcting the age and sex indicators -----------------------------------
 
+outscse[which(outscse$PAGE != ""),"BAGE"] <- outscse[which(outscse$PAGE != ""),"PAGE"]
+# outscse[which(outscse$BAGE %in% c("2")),"BAGE"] <- "I"
+# outscse[which(outscse$BAGE %in% c("3")),"BAGE"] <- "U"
+# outscse[which(outscse$BAGE %in% c("")),"BAGE"] <- "U"
+
 
 
 outscse[which(outscse$BAGE %in% c("1","S","T")),"BAGE"] <- "A"
