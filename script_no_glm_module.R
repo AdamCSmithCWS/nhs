@@ -875,7 +875,7 @@ nIter = ceiling( ( (numSavedSteps * thinSteps )+burnInSteps) / nChains ) # Steps
 t1 = Sys.time()
 #if(spgp == "duck"){
  # mod.file = "species_harvest_model_noann.R" # I think this should work for geese and murres too
-  mod.file = "species_harvest_model.R" # I think this should work for geese and murres too
+  mod.file = "species_harvest_model_time_sdhunter.R" # I think this should work for geese and murres too
   #}
    
 
@@ -922,7 +922,7 @@ if(class(out2) != "try-error"){
 
 
 save(list = c("out2","jdat","sp.save.out"),
-     file = paste("output/full harvest",pr,z,spgp,"alt mod.RData"))
+     file = paste("output/full harvest time sdhunter",pr,z,spgp,"alt mod.RData"))
 
 rm(list = "out2")
 
