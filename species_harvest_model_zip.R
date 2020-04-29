@@ -88,7 +88,9 @@ model {
     
     ### number harvested
     kill[i] ~ dpois(lambda[i]) #kill is data - each hunter's estimate of the total number of ducks killed 
-    log(lambda[i]) <- elambda1[i] #*succ[caste[i]] + 0.0001 #cheat to avoid non-zero values from zero-mean poisson
+    lambda[i] <- lambda1[i]*z[i] + 0.00001 ## hack required for Rjags -- otherwise 'incompatible'-error
+    z[i] ~ dbern(psi[year[i]]) #proportion of non-zeros for each year
+    log(lambda1[i]) <- elambda1[i] #*succ[caste[i]] + 0.0001 #cheat to avoid non-zero values from zero-mean poisson
     elambda1[i] <- ann[year[i]] + cst[caste[i],year[i]] + hntr[caste[i],year[i],hunter[i]] + elambda_day[i] #elambda_day[i] acts as an offset on effort
     
     ## ann[y] is a yearly intercept for all species kill
@@ -111,6 +113,11 @@ model {
     
   }#i
   
+  ### zip priors 
+  ### psi is the estimated annual proportion of waterfowl hunters that hunt geese
+  for(y in 1:nyears){
+    psi[y] ~ dunif(0,1)
+  }
   
   # dif_1_2[1] <- cst[1]-cst[2] #temporary parameters to assess the difference between castes D and B all results suggest significant differences
   # dif_1_2[2] <- cst_day[1]-cst_day[2]
@@ -244,7 +251,7 @@ model {
         for(h in 1:nhunter_cy[c,y]){
 
         #hunter-level predictions of mean kill
-        totkill_hcy[y,c,h] <- exp(ann[y] + cst[c,y] + hntr[c,y,h] + ann_day[y] + cst_day[c,y] + hntr_day[c,y,h])
+        totkill_hcy[y,c,h] <- exp(ann[y] + cst[c,y] + hntr[c,y,h] + ann_day[y] + cst_day[c,y] + hntr_day[c,y,h]) *psi[y]
         totdays_hcy[y,c,h] <- exp(ann_day[y] + cst_day[c,y] + hntr_day[c,y,h])
         }
       #mean per-hunter kill and days by year and caste
@@ -252,7 +259,7 @@ model {
       mean_totdays_yc_alt[y,c] <- mean(totdays_hcy[y,c,1:nhunter_cy[c,y]]) #mean days per active hunter
 
       #mean per-hunter kill and days by year and caste - alternative estimate
-      mean_totkill_yc[y,c] <- exp(ann[y] + cst[c,y] + ann_day[y] + cst_day[c,y] + retrans_hunter_day[c] + retrans_hunter[c])
+      mean_totkill_yc[y,c] <- exp(ann[y] + cst[c,y] + ann_day[y] + cst_day[c,y] + retrans_hunter_day[c] + retrans_hunter[c]) *psi[y]
       mean_totdays_yc[y,c] <- exp(ann_day[y] + cst_day[c,y] + retrans_hunter_day[c])
       
       for(p in 1:nperiods){

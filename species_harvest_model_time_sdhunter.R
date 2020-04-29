@@ -151,29 +151,29 @@ model {
     
     
 ### alternate time-series approach  
-   #  logtauhunter[c,1] <- mulogtauhunter[c]  
-   #  
-   #  for(y in 2:nyears){
-   #    logtauhunter[c,y] ~ dnorm(logtauhunter[c,y-1],taulogtauhunter[c])
-   # }
+    logtauhunter[c,1] <- mulogtauhunter[c]
+
+    for(y in 2:nyears){
+      logtauhunter[c,y] ~ dnorm(logtauhunter[c,y-1],taulogtauhunter[c])
+   }
     
 ###################
     
     
 ### alternate random effects approach
-    for(y in 1:nyears){
-      logtauhunter[c,y] ~ dnorm(mulogtauhunter[c],taulogtauhunter[c])
-    }
+    # for(y in 1:nyears){
+    #   logtauhunter[c,y] ~ dnorm(mulogtauhunter[c],taulogtauhunter[c])
+    # }
 ###################    
     
     for(y in 1:nyears){
       log(tauhunter[c,y]) <- logtauhunter[c,y]
       retrans_hunter[c,y] <- 0.5*(1/tauhunter[c,y])
-      
+      sdhunter[c,y] <- (1/pow(tauhunter[c,y],0.5))
     }
     
 
-    nu_m[c] ~ dgamma(2,0.2)
+    nu[c] ~ dgamma(2,0.2)
     ## caste specific intercept priors
    
     #activity (days) priors
