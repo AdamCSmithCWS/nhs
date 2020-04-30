@@ -301,7 +301,7 @@ for(spgp in c("duck","goose","murre")){
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    mod.file = "species_harvest_model_zip.R" # 
+    mod.file = "species_harvest_model_zip2.R" # 
     
     
   }
@@ -323,7 +323,7 @@ for(spgp in c("duck","goose","murre")){
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    mod.file = "species_harvest_model.R" #
+    mod.file = "species_harvest_model_zip.R" #
     
   }
   
@@ -567,7 +567,7 @@ tmp1$yearhunt = tmp1$YEAR
       wks2 = periods[which(periods$period == per),"endweek"]
       wt2 = which(tmp2$week %in% c(wks1:wks2))
       if(length(wt2) == 0){next}
-      periodkill[per,yn,h] <- sum(tmp2[wt2,"COUNT"])
+      periodkill[per,yn,h] <- round(sum(tmp2[wt2,"COUNT"]))
     
   }#per
   }#h
@@ -869,9 +869,9 @@ parms = c("NACTIVE_y",
           "pcomp_psy",
           "parrive",
           "pleave")
-if(spgp == "goose"){
+#if(spgp == "goose"){
   parms = c(parms,"psi")
-}
+#}
 
 #adaptSteps = 200              # Number of steps to "tune" the samplers.
 burnInSteps = 5000            # Number of steps to "burn-in" the samplers.
@@ -928,14 +928,14 @@ if(class(out2) != "try-error"){
 
 
 
-if(spgp == "goose"){
+# if(spgp == "goose"){
   save(list = c("out2","jdat","sp.save.out"),
        file = paste("output/full harvest zip",pr,z,spgp,"alt mod.RData"))
   
-}else{
-save(list = c("out2","jdat","sp.save.out"),
-     file = paste("output/full harvest",pr,z,spgp,"alt mod.RData"))
-}
+# }else{
+# save(list = c("out2","jdat","sp.save.out"),
+#      file = paste("output/full harvest",pr,z,spgp,"alt mod.RData"))
+# }
 rm(list = "out2")
 
 }
@@ -1232,10 +1232,10 @@ for(spgp in c("goose","duck","murre")){
       
       if(spgp == "goose"){
         
-             mod.saved = paste("output/full harvest zip",pr,z,spgp,"alt mod.RData")
+             mod.saved = paste("output/full harvest zip2",pr,z,spgp,"alt mod.RData")
         
       }else{
-             mod.saved = paste("output/full harvest",pr,z,spgp,"alt mod.RData")
+             mod.saved = paste("output/full harvest zip2",pr,z,spgp,"alt mod.RData")
       }
       
       #mod.saved = paste("output/full harvest time sdhunter",pr,z,spgp,"alt mod.RData") #paste("output/full harvest",pr,z,spgp,"alt mod.RData")
@@ -1273,7 +1273,7 @@ zone = z,
 M = out2)
 
 
-#print(plts[[i]])
+print(plts[[i]])
 }
 
 
@@ -1297,7 +1297,7 @@ jjsp = jjsp +1
 
 # caterpillar plots -------------------------------------------------------
 gg = ggs(out2$samples)
-pdf(file = paste0("output/converge/caterpillar ",spgp,pr,z,".pdf"), 
+pdf(file = paste0("output/converge/caterpillar 2",spgp,pr,z,".pdf"), 
     height = 22,width = 8.5)
 for(pps in c("nu","sdhunter","cst","parrive","pleave","kill_cy","ann","psi")){
   print(ggs_caterpillar(gg,family = pps))
@@ -1558,7 +1558,7 @@ jjcomp = jjcomp +1
   
   
   
-  asuf <- c("ZIP")
+  asuf <- c("ZIP2")
   
   pdf(paste0("output/sdhunter timeseries",asuf," ",spgp,".pdf"),
   width = 8,
