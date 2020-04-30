@@ -1,4 +1,5 @@
 ############################### model
+############### ZIP time-series version - alternate to the standard ZIP
 ### data required
 # pops = pops, # pops[c.y] total populations of permits by caste and year used to rescale all perhunter estimates to totals 
 # #component that estimates p_active etc. to generate totals of active and successful hunters by year

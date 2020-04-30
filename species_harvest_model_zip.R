@@ -50,7 +50,7 @@ model {
     leave_hunt_cf[y,1] ~ dbinom(pleave[y],leave_hunt_cf[y,2])
     
     
-    #priors for parrive and pleave simple beta distribution
+    #priors for parrive and pleave simple beta distribution = beta-binomial sub-model
     alpha_pleave[y] ~ dunif(1,3)
     beta_pleave[y] ~ dunif(1,3)
     
@@ -62,6 +62,8 @@ model {
     pleave[y] ~ dbeta(alpha_pleave[y],beta_pleave[y])
     
     prov_flow[y] <- parrive[y]-pleave[y] #difference in proportion of hunters coming and going, negative values indicate permits purchased in zone tend to hunt somewhere else
+    
+    #### corrections to account for the inter-provincial hunting, and the proportion of the permit-population that are active
   for(c in 1:ncastes){
     
     pops_cor[c,y] <- pops[c,y]+(pops[c,y]*(parrive[y]))-(pops[c,y]*pleave[y])
@@ -87,10 +89,10 @@ model {
     ############ loop only includes active hunters because if days[i] = 0 (i.e., they're not active), then there is no uncertainty about kill[i] (kill must = 0)
     
     ### number harvested
-    kill[i] ~ dpois(lambda[i]) #kill is data - each hunter's estimate of the total number of ducks killed 
+    kill[i] ~ dpois(lambda[i]) #kill is data - each hunter's estimate of the total number killed 
     lambda[i] <- lambda1[i]*z[i] + 0.00001 ## hack required for Rjags -- otherwise 'incompatible'-error
-    z[i] ~ dbern(psi[year[i]]) #proportion of non-zeros for each year
-    log(lambda1[i]) <- elambda1[i] #*succ[caste[i]] + 0.0001 #cheat to avoid non-zero values from zero-mean poisson
+    z[i] ~ dbern(psi[year[i]]) #psi = proportion of non-zeros for each year = should be very similar to psucc, after removing the Poisson-related zeros
+    log(lambda1[i]) <- elambda1[i] #
     elambda1[i] <- ann[year[i]] + cst[caste[i],year[i]] + hntr[caste[i],year[i],hunter[i]] + elambda_day[i] #elambda_day[i] acts as an offset on effort
     
     ## ann[y] is a yearly intercept for all species kill

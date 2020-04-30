@@ -264,96 +264,38 @@ outscse[which(outscse$BSEX %in% c("")),"BSEX"] <- "U"
 
 
 
-### for a given species and year, need estimates of the sex and age structure
-## assume independence of age and sex?
-## use a strongly informative prior on the variance, given the small number of parts
-## or estimate all 4 (or 9 incl unknowns) categories independently, with an 
-## use the same time-series structure used for hte other multinomial sub-models
 
 
 
 
+others = c("COOTK","WOODK","SNIPK","DOVEK","PIGEK","CRANK","RAILK","MURRK")
 
-for(spgp in c("duck","goose","murre")){
-### begining of loop through provinces only engage this loop if running the full analysis
-### for a single province and zone, skip the next 4 lines
-### and enter something like the following (e.g., to run Ontario-zone 3)
+prov_otherk <- read.csv(stringsAsFactors = F,"data/OTHERK_by_Prov.csv")
+
+for(spgp in others){
 
 # group data set up -------------------------------------------------------
 
-  
-  
-  if(spgp == "goose"){
-    aou.spgp = aou.goose
-    period = period.goose
-    cal.spgp = calg
-    allkill = allkill
-    phunt = "PRHUNTG"
-    zhunt = "ZOHUNTG"
-    wkill = "TOGOK"
-    wact = "ACTIVEWF"
-    wsucc = "SUTOGO"
-    wday = "DAYWF"
-    years = FY:Y
-    nyears = length(years)
-    demog = data.frame(BSEX = rep(c("U","U"),each = 1),
-                       BAGE = rep(c("A","I"),times = 1),
-                       stringsAsFactors = F)
-    minyr <- min(years)
-    provs2 <- provs
-    mod.file = "species_harvest_model_zip.R" # 
-    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
-    
-    
-  }
-  if(spgp == "duck"){
-    aou.spgp = aou.ducks
-    period = period.duck
-    cal.spgp = cald
+  if(spgp %in% prov_otherk$var){
+  provs2 <- unique(as.character(prov_otherk[which(prov_otherk$var == spgp),-1]))
+  provs2 <- provs2[which(provs2 != "")]
+  }else{
+  provs2 = provs
+}
     allkill = allkill
     phunt = "PRHUNT"
     zhunt = "ZOHUNT"
-    wkill = "TODUK"
-    wact = "ACTIVEWF"
-    wsucc = "SUTODU"
-    wday = "DAYWF"
+    wkill = spgp
+    wact = "ACTIVEOT"
+    wsucc = paste0("SU",gsub(spgp,pattern = "K",replacement = ""))
+    wday = "DAYOT"
     years = FY:Y
     nyears = length(years)
-    demog = data.frame(BSEX = rep(c("F","M"),each = 2),
-                       BAGE = rep(c("A","I"),times = 2),
-                       stringsAsFactors = F)
+
     minyr <- min(years)
-    provs2 <- provs
-    mod.file = "species_harvest_model_zip.R" #
-    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
+    mod.file = "simple_group_model_zip.R" # 
+    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
     
-  }
-  
-  
-  
-  if(spgp == "murre"){
-    aou.spgp = aou.murre
-    period = period.murre
-    cal.spgp = calm
-    allkill = allkill
-    phunt = "PRHUNTM"
-    zhunt = "ZOHUNTM"
-    wkill = "MURRK"
-    wact = "ACTIVEM"
-    wsucc = "SUCCM"
-    wday = "DAYM" #?
-    years = 2014:Y #### previous years Murre harvest was calculated differently, pre 2013 only total MURRK, and in 2013 it was a mix of infor from DAYOT and calendars and species composition
-    nyears = length(years)
-    demog = data.frame(BSEX = rep(c("U","U"),each = 1),
-                       BAGE = rep(c("A","I"),times = 1),
-                       stringsAsFactors = F)
-    minyr <- 2014
-    provs2 = "NF"
-    mod.file = "species_harvest_model_zip.R" # I think this should work for murres too
-    
-    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
-    
-  }
 
   
   
@@ -379,7 +321,9 @@ for(spgp in c("duck","goose","murre")){
       
   pzcount = 0
   
-  zns <- unique(period[which(period$pr == pr),"zo"])
+  zns <- as.integer(unique(allkill[which(allkill[,phunt] == pr),zhunt]))
+  zns <- zns[which(zns > 0)]
+  
   for(z in zns){
 pzcount = pzcount + 1
 
@@ -390,7 +334,6 @@ pzcount = pzcount + 1
 # periods -----------------------------------------------------------------
 
 
-periods <- period[which(period$pr == pr & period$zo == z),]
 sumkill = allkill[which(allkill[,phunt] == pr &
                              allkill[,zhunt] == z &
                              allkill$YEAR %in% years),]
@@ -398,190 +341,103 @@ sumkill = allkill[which(allkill[,phunt] == pr &
 if(minyr != FY){
 sumkill$year = sumkill$YEAR-(minyr-1)
 }
-  nperiods <- max(periods$period)
     
     
     
-    prts1 <- outscse[which(outscse$PRHUNT == pr &
-                          outscse$ZOHUNT == z &
-                          outscse$AOU %in% aou.spgp &
-                            outscse$YEAR %in% years),]
     
-    luni <- function(x){
-      out <- length(unique(x))
-    }
-    yrspersp <- tapply(prts1$YEAR,prts1$AOU,luni)
-
-# removing species that only show up in <half of years --------------------
-    prts1 <- prts1[which(prts1$AOU %in% names(yrspersp)[which(yrspersp > 2)]),]
-    
-    
-    for(per in periods$period){
-      sy <- periods[which(periods$period == per),"startweek"]
-      ey <- periods[which(periods$period == per),"endweek"]
-    prts1[which(prts1$WEEK %in% c(sy:ey)),"period"] <- per
-    }
-      
-    prdspersp <- tapply(prts1$period,prts1$AOU,luni)#number of periods a species has been observed
-    #could use the above values and the line below to remove species
-    # that only appear in very few periods
-    #prts1 <- prts1[which(prts1$AOU %in% names(prdspersp)[which(prdspersp > 4)]),]
-    
-    prts1$spfact = factor(prts1$AOU)
-    prts1$spn = as.integer(prts1$spfact)
-    nspecies <- max(prts1$spn)
-    
-   #nyears <- length(min(prts1$YEAR,na.rm = T):max(prts1$YEAR,na.rm = T))
-   partsarray <- array(data = 0,dim = c(nperiods,nspecies,nyears))
-   ndemog = nrow(demog)
-   
-   agesexarray <- array(data = 0,dim = c(ndemog,nspecies,nyears))
-    
-   
-    sp.save = unique(prts1[,c("PRHUNT","ZOHUNT","AOU","spfact","spn")])
-    sp.save[,"PRHUNT"] <- as.character(sp.save[,"PRHUNT"])
-    sp.save[,"spfact"] <- as.character(sp.save[,"spfact"])
   
-   
-    for(sp in 1:nspecies){
-
-      for(y in 1:nyears){
-        yr <- y+(minyr-1)
-        
-    for(per in 1:nperiods){
-
-        partsarray[per,sp,y] <- nrow(prts1[which(prts1$period == per & prts1$spn == sp & prts1$YEAR == yr),])
-          
-           
-        }#per
-      
-        if(spgp == "duck"){
-        for(dg in 1:ndemog){
-          ag <- demog[dg,"BAGE"]
-          sx <- demog[dg,"BSEX"]
-          
-          agesexarray[dg,sp,y] <- nrow(prts1[which(prts1$BAGE == ag & prts1$BSEX == sx & prts1$spn == sp & prts1$YEAR == yr),])
-        }#dg
-        }
-        if(spgp %in% c("murre","goose")){ ### lumps all sexes including unknowns just tracks ages
-          for(dg in 1:ndemog){
-            ag <- demog[dg,"BAGE"]
-            
-            agesexarray[dg,sp,y] <- nrow(prts1[which(prts1$BAGE == ag & prts1$spn == sp & prts1$YEAR == yr),])
-          }#dg
-        }
-        
-        
-      }#y
-
-
-    }#sp
-   
-
-    if(pzcount == 1){
-      sp.save.out = sp.save
-    }else{
-      sp.save.out = rbind(sp.save.out,sp.save)
-    }
-    
-   
-   
-
-
-
-    
-#########################
-### 
-
-# compiling calendar info -------------------------------------------------
-
-    
-## generate an array 
-## periodkill[p,y,h] = total kill in period-x and year-y for each hunter-h
-## nhunter_y[y] = number of hunters with calendar information in year-y
-
-
-    nhunter_y = vector(length = nyears)
-names(nhunter_y) = as.character(years)
-
-for(y in years){
-
-  tmp <- cal.spgp[[as.character(y)]]
-  tmp1 <- tmp[which(tmp$PRHUNT == pr &
-                      tmp$ZOHUNT == z),]
-  nhunter_y[as.character(y)] <- length(unique(tmp1$PERMIT))
-  
-}
-
-periodkill = array(0,
-                   dim = c(nperiods,nyears,max(nhunter_y)))
-  ## the following loop is clumsy and slow, but it works
-NAcounts = list()
-length(NAcounts) <- nyears
-
-for(yn in 1:nyears){
-  y = years[yn]
-  tmp <- cal.spgp[[as.character(y)]]
-  tmp1 <- tmp[which(tmp$PRHUNT == pr &
-                      tmp$ZOHUNT == z),]
-  tmp1[which(tmp1$MONH >12),"MONH"] = tmp1[which(tmp1$MONH >12),"MONH"]-12
-tmp1$yearhunt = tmp1$YEAR
-  tmp1[which(tmp1$MONH < 9),"yearhunt"] = tmp1[which(tmp1$MONH < 9),"YEAR"]+1
-  tmp1$date = as.Date(paste(tmp1$yearhunt,
-                            tmp1$MONH,
-                            tmp1$DAYH,sep = "-"),
-          format = "%Y-%m-%d")
-
-  if(any(is.na(tmp1$date))){
-    for(jj in which(is.na(tmp1$date))){
-      ### if day is 31, then it's likely that the month doesn't have 31 days
-      ### fix below assumes that the month is correct and the day is wrong
-      if(tmp1[jj,"DAYH"] == 31){ tmp1[jj,"DAYH"] <- 30 
-      tmp1[jj,"date"] <- as.Date(paste(tmp1$yearhunt[jj],
-                                      tmp1$MONH[jj],
-                                      tmp1$DAYH[jj],sep = "-"),
-                                format = "%Y-%m-%d")
-      }
-      if(tmp1[jj,"DAYH"] == 29 & tmp1[jj,"MONH"] == 2){ tmp1[jj,"DAYH"] <- 28 
-      tmp1[jj,"date"] <- as.Date(paste(tmp1$yearhunt[jj],
-                                       tmp1$MONH[jj],
-                                       tmp1$DAYH[jj],sep = "-"),
-                                 format = "%Y-%m-%d")
-      }
-      }
-    }
-      
-    
-  tmp1$week = as.integer(ceiling((tmp1$date-(min(tmp1$date)-1))/7))
-  
-  tmp1$hunterf = as.integer(factor(tmp1$PERMIT))
-  
-  if(any(is.na(tmp1$COUNT))){
-    
-    NAcounts[[yn]] <- tmp1
-    tmp1[which(is.na(tmp1$COUNT)),"COUNT"] <- 1 ## decision to include a non-zero value because the rows include all of the relevant information (hunter, day, prov, week permit etc, just missing hte count, likely that the program in those few years made a mistake)
-  }
-  
-  for(h in 1:nhunter_y[yn]){
-  tmp2 = tmp1[which(tmp1$hunterf == h),]
-    for(per in 1:nperiods){
-      wks1 = periods[which(periods$period == per),"startweek"]
-      wks2 = periods[which(periods$period == per),"endweek"]
-      wt2 = which(tmp2$week %in% c(wks1:wks2))
-      if(length(wt2) == 0){next}
-      periodkill[per,yn,h] <- round(sum(tmp2[wt2,"COUNT"]))
-    
-  }#per
-  }#h
-}#yn
-
-### below can be commented out but prints the 
-### observed proportional composition of the hunt by years (rows) and periods (columns)
-### helps for checking that there are no missing data
-# for(y in 1:nyears){
-# print(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,],na.rm = F)),3))
-# if(any(is.na(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,],na.rm = F)),3)))){print(y)}
+# #########################
+# ### 
+# 
+# # compiling calendar info -------------------------------------------------
+# 
+#     
+# ## generate an array 
+# ## periodkill[p,y,h] = total kill in period-x and year-y for each hunter-h
+# ## nhunter_y[y] = number of hunters with calendar information in year-y
+# 
+# 
+#     nhunter_y = vector(length = nyears)
+# names(nhunter_y) = as.character(years)
+# 
+# for(y in years){
+# 
+#   tmp <- cal.spgp[[as.character(y)]]
+#   tmp1 <- tmp[which(tmp$PRHUNT == pr &
+#                       tmp$ZOHUNT == z),]
+#   nhunter_y[as.character(y)] <- length(unique(tmp1$PERMIT))
+#   
+# }
+# 
+# periodkill = array(0,
+#                    dim = c(nperiods,nyears,max(nhunter_y)))
+#   ## the following loop is clumsy and slow, but it works
+# NAcounts = list()
+# length(NAcounts) <- nyears
+# 
+# for(yn in 1:nyears){
+#   y = years[yn]
+#   tmp <- cal.spgp[[as.character(y)]]
+#   tmp1 <- tmp[which(tmp$PRHUNT == pr &
+#                       tmp$ZOHUNT == z),]
+#   tmp1[which(tmp1$MONH >12),"MONH"] = tmp1[which(tmp1$MONH >12),"MONH"]-12
+# tmp1$yearhunt = tmp1$YEAR
+#   tmp1[which(tmp1$MONH < 9),"yearhunt"] = tmp1[which(tmp1$MONH < 9),"YEAR"]+1
+#   tmp1$date = as.Date(paste(tmp1$yearhunt,
+#                             tmp1$MONH,
+#                             tmp1$DAYH,sep = "-"),
+#           format = "%Y-%m-%d")
+# 
+#   if(any(is.na(tmp1$date))){
+#     for(jj in which(is.na(tmp1$date))){
+#       ### if day is 31, then it's likely that the month doesn't have 31 days
+#       ### fix below assumes that the month is correct and the day is wrong
+#       if(tmp1[jj,"DAYH"] == 31){ tmp1[jj,"DAYH"] <- 30 
+#       tmp1[jj,"date"] <- as.Date(paste(tmp1$yearhunt[jj],
+#                                       tmp1$MONH[jj],
+#                                       tmp1$DAYH[jj],sep = "-"),
+#                                 format = "%Y-%m-%d")
+#       }
+#       if(tmp1[jj,"DAYH"] == 29 & tmp1[jj,"MONH"] == 2){ tmp1[jj,"DAYH"] <- 28 
+#       tmp1[jj,"date"] <- as.Date(paste(tmp1$yearhunt[jj],
+#                                        tmp1$MONH[jj],
+#                                        tmp1$DAYH[jj],sep = "-"),
+#                                  format = "%Y-%m-%d")
+#       }
+#       }
+#     }
+#       
+#     
+#   tmp1$week = as.integer(ceiling((tmp1$date-(min(tmp1$date)-1))/7))
+#   
+#   tmp1$hunterf = as.integer(factor(tmp1$PERMIT))
+#   
+#   if(any(is.na(tmp1$COUNT))){
+#     
+#     NAcounts[[yn]] <- tmp1
+#     tmp1[which(is.na(tmp1$COUNT)),"COUNT"] <- 1 ## decision to include a non-zero value because the rows include all of the relevant information (hunter, day, prov, week permit etc, just missing hte count, likely that the program in those few years made a mistake)
 #   }
+#   
+#   for(h in 1:nhunter_y[yn]){
+#   tmp2 = tmp1[which(tmp1$hunterf == h),]
+#     for(per in 1:nperiods){
+#       wks1 = periods[which(periods$period == per),"startweek"]
+#       wks2 = periods[which(periods$period == per),"endweek"]
+#       wt2 = which(tmp2$week %in% c(wks1:wks2))
+#       if(length(wt2) == 0){next}
+#       periodkill[per,yn,h] <- round(sum(tmp2[wt2,"COUNT"]))
+#     
+#   }#per
+#   }#h
+# }#yn
+# 
+# ### below can be commented out but prints the 
+# ### observed proportional composition of the hunt by years (rows) and periods (columns)
+# ### helps for checking that there are no missing data
+# # for(y in 1:nyears){
+# # print(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,],na.rm = F)),3))
+# # if(any(is.na(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,],na.rm = F)),3)))){print(y)}
+# #   }
 
 
 
@@ -687,12 +543,13 @@ for(y in 1:nyears){
 
 
 
-
+sumkill[,wsucc] <- "N"
+sumkill[which(sumkill[,wkill] > 0),wsucc] <- "Y"
 
 
 npotential <- as.matrix(table(sumkill$caste,sumkill$year))
 succ = sumkill[which(sumkill[,wsucc] == "Y"),]
-nsucc <- as.matrix(table(succ$caste,succ$year))
+nsucct <- as.matrix(table(succ$caste,succ$year))
 
 
 sumkill_active = sumkill[which(sumkill[,wact] == "Y"),]
@@ -704,7 +561,37 @@ if(any(is.na(sumkill_active[,wkill]) & spgp == "goose")){
 }
 
 
-nactive <- as.matrix(table(sumkill_active$caste,sumkill_active$year))
+nactivet <- as.matrix(table(sumkill_active$caste,sumkill_active$year))
+
+if(length(nactivet) != max(castes)*nyears){
+nactive <- matrix(nrow = max(castes),ncol = nyears,dimnames = list(as.character(castes),as.character(1:nyears)))
+for(cc in castes){
+  ccn = as.character(cc)
+  for(yy in 1:nyears){
+    yyn = as.character(yy)
+    nactive[ccn,yyn] <- ifelse(nactivet[ccn,yyn], )
+  }
+}
+}else{
+  nactive <- nactivet
+}
+
+
+
+if(length(nsucct) != max(castes)*nyears){
+  nsucc <- matrix(nrow = max(castes),ncol = nyears,dimnames = list(as.character(levels(sumkill$caste)),as.character(1:nyears)))
+  for(cc in castes){
+    ccn = as.character(levels(sumkill$caste)[cc])
+    for(yy in 1:nyears){
+      yyn = as.character(yy)
+      nsucc[ccn,yyn] <- ifelse((ccn %in% names(nsucct[,1]) & yyn %in% names(nsucct[1,]) ), nsucct[ccn,yyn] , 0)
+    }
+  }
+}else{
+  nsucc <- nsucct
+}
+
+
 
 if(any(sumkill_active[,wday] < 1 & spgp == "murre")){
   sumkill_active[which(sumkill_active[,wday] < 1),wday] <- sumkill_active[which(sumkill_active[,wday] < 1),"DAYOT"]
@@ -760,13 +647,13 @@ hunter_n_cy = sumkill_active$hunter_n_cy
 # total number of parts by year and period --------------------------------
 
 
-nparts_py = matrix(nrow = nperiods,
-           ncol = nyears)
-for(p in 1:nperiods){
-  for(y in 1:nyears){
-    nparts_py[p,y] <- sum(partsarray[p,,y],na.rm = T)# yearl and period sums of all parts
-  }
-}
+# nparts_py = matrix(nrow = nperiods,
+#            ncol = nyears)
+# for(p in 1:nperiods){
+#   for(y in 1:nyears){
+#     nparts_py[p,y] <- sum(partsarray[p,,y],na.rm = T)# yearl and period sums of all parts
+#   }
+# }
 
 #### still need a predictive array to generate the PEFs 
 #### still need a predictive array to generate the PEFs 
@@ -777,33 +664,33 @@ for(p in 1:nperiods){
 # total number of parts by species and period --------------------------------
 
 
-nparts_sy = matrix(nrow = nspecies,
-                   ncol = nyears)
-for(s in 1:nspecies){
-  for(y in 1:nyears){
-    nparts_sy[s,y] <- sum(agesexarray[,s,y],na.rm = T)# yearl and species sums of all parts for age and sex
-  }
-}
+# nparts_sy = matrix(nrow = nspecies,
+#                    ncol = nyears)
+# for(s in 1:nspecies){
+#   for(y in 1:nyears){
+#     nparts_sy[s,y] <- sum(agesexarray[,s,y],na.rm = T)# yearl and species sums of all parts for age and sex
+#   }
+# }
 
 
-# total harvest by year and hunter ----------------------------------------
-
-
-nkill_yh = matrix(nrow = nyears,
-               ncol = max(nhunter_y))
-for(y in 1:nyears){
-  for(h in 1:nhunter_y[y]){
-    nkill_yh[y,h] <- sum(periodkill[,y,h],na.rm = T) #simple sum of the data
-  }
-}
-
-if(ndemog == 4){
-  demof <- c(1,2)
-  demoa <- c(1,3)
-}else{
-  demof <- 1
-  demoa <- 1
-}
+# total harvest by year and hunter from calendars ----------------------------------------
+# 
+# 
+# nkill_yh = matrix(nrow = nyears,
+#                ncol = max(nhunter_y))
+# for(y in 1:nyears){
+#   for(h in 1:nhunter_y[y]){
+#     nkill_yh[y,h] <- sum(periodkill[,y,h],na.rm = T) #simple sum of the data
+#   }
+# }
+# 
+# if(ndemog == 4){
+#   demof <- c(1,2)
+#   demoa <- c(1,3)
+# }else{
+#   demof <- 1
+#   demoa <- 1
+# }
 
 # compiling JAGS data object ----------------------------------------------
 
@@ -814,19 +701,7 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
             npotential = npotential, # npotential[c,y] number of potential hunters (respondents who bought a permit this year) by caste and year
             nsucc = nsucc, # nsucc[c,y] number of successful hunters by caste and year (active hunters with harvest > 0)
             #spcies composition components
-            w_psy = partsarray, # w_psy[nperiods,nspecies,nyears] wings by period species year
-            nparts_py = nparts_py, # nparts_py[nperiods,nyears] sum parts across species by period and year
-            nparts_sy = nparts_sy, # nparts_sy[nspecies,nyears] sum parts species and year
-            kill_pyh = periodkill, # kill_pyh[nperiods,nyears,max(nhunters[y])] hunter-level total harvest by period from the calendars(separate hunter id caste doesn't matter)
-            nkill_yh = nkill_yh, # nkill_yh[nyears,max(nhunters[y])] hunter-level summed harvest from calendar (separate hunter id caste doesn't matter)
-            # demographic data for age and sex component of the model
-            w_axsy = agesexarray, # w_axsy[ndemog,nspecies,nyears] wings by age-sex species year
-            #indicators
-            ndemog = ndemog, # 2 if geese (A and I) 4 if ducks (AF, IF, AM, IM) number of demographic units (age-sex combinations)
-            nspecies = nspecies, # integer length = 1 number of species
             nyears = nyears, #integer length = 1 number of years
-            nperiods = nperiods, # integer length = 1 number of periods
-            nhunter_y = nhunter_y, # nhunter_y[nyears] number active hunters by year
             nhunter_cy = nhunter_cy, # nhunter_cy[castes,nyears] number active hunters by caste and year
             ncastes = max(castes), # castes (numeric, 1:4)
             castes = castes, # castes (numeric, 1:4)
@@ -838,9 +713,8 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
             caste = caste, # vector(length = nhs), caste of response
             days = days, #vector(length = nhs), number of days spent hunting
             arrive_hunt_cf = arrive_hunt_cf,# 
-            leave_hunt_cf = leave_hunt_cf,
-            demof = demof,
-            demoa = demoa)#
+            leave_hunt_cf = leave_hunt_cf
+            )#
 
 
 
@@ -858,7 +732,6 @@ parms = c("NACTIVE_y",
           "mean_totkill_yc_alt",
           "mean_totdays_yc_alt",
           "kill_cy",
-          "kill_ys",
           "kill_y",
           "days_y",
           "nu",
@@ -867,8 +740,6 @@ parms = c("NACTIVE_y",
           "cst_day",
           "ann",
           "ann_day",
-          "axcomp_axsy",
-          "pcomp_psy",
           "parrive",
           "pleave",
           "psi")
@@ -882,28 +753,7 @@ thinSteps=10                   # Number of steps to "thin" (1=keep every step).
 nIter = ceiling( ( (numSavedSteps * thinSteps )+burnInSteps) / nChains ) # Steps per chain.
 
 t1 = Sys.time()
-#if(spgp == "duck"){
- # mod.file = "species_harvest_model_noann.R" # I think this should work for geese and murres too
- # mod.file = "species_harvest_model_time_sdhunter.R" # I think this should work for geese and murres too
-  #}
-   
 
-# out2 = try(jags.model( file = mod.file, 
-#                    data= jdat ,  
-#                    #inits= newinits,  
-#                    n.chains= nChains , 
-#                    n.adapt= adaptSteps ),silent = F)
-# if(class(out2) != "try-error"){
-# 
-# # Burn-in:
-# cat( "Burning in the MCMC chain...\n" )
-# update( out2 , n.iter=burnInSteps )
-# # The saved MCMC chain:
-# cat( "Sampling final MCMC chain...\n" )
-# codaSamples = coda.samples( out2 , variable.names=parms ,
-#                             n.iter=nIter , thin=thinSteps )
-# #codaSamples = coda.samples( jagsMod , variable.names=parms ,
-# #                            n.iter=50 , thin=1 )
 
   
   out2 = try(jagsUI(data = jdat,
