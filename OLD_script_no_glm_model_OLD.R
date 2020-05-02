@@ -350,6 +350,7 @@ for(spgp in c("duck","goose","murre")){
     minyr <- 2014
     provs2 = "NF"
     mod.file = "species_harvest_model_zip.R" # I think this should work for murres too
+    FY = 2014
     
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
     
@@ -983,6 +984,7 @@ for(spgp in c("goose","duck","murre")){
     minyr <- min(years)
     provs2 <- provs
     mod.file = "species_harvest_model_zip.R" # I think this should work for geese and murres too
+    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
     
     
   }
@@ -1005,6 +1007,9 @@ for(spgp in c("goose","duck","murre")){
     minyr <- min(years)
     provs2 <- provs
     mod.file = "species_harvest_model.R" # I think this should work for geese and murres too
+    
+    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
+    
     
   }
   
@@ -1030,13 +1035,13 @@ for(spgp in c("goose","duck","murre")){
     provs2 = "NF"
     mod.file = "species_harvest_model.R" # I think this should work for geese and murres too
     
+    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
+    
+    
     
   }
   
-  
-  non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
-  
-  
+ 
   
 # Set up parallel stuff
 n_cores <- length(provs2)
@@ -1149,6 +1154,8 @@ for(spgp in c("goose","duck","murre")){
     minyr <- min(years)
     provs2 <- provs
     sps.spgp <- aou.goose
+    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
+    
     
   }
   if(spgp == "duck"){
@@ -1170,6 +1177,10 @@ for(spgp in c("goose","duck","murre")){
     minyr <- min(years)
     provs2 <- provs
     sps.spgp <- aou.ducks
+    
+    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
+    
+    
   }
   
   
@@ -1193,6 +1204,10 @@ for(spgp in c("goose","duck","murre")){
     minyr <- 2014
     provs2 = "NF"
     sps.spgp <- aou.murre
+    
+    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
+    
+    
     
   }
   
@@ -1221,9 +1236,9 @@ for(spgp in c("goose","duck","murre")){
   paxsy_list <- list()
   
   
-  jjsdhunter = 1
-  sdhunter_list <- list()
-  
+  # jjsdhunter = 1
+  # sdhunter_list <- list()
+  # 
   
   for(pr in provs2){
     zns <- unique(period[which(period$pr == pr),"zo"])
@@ -1233,10 +1248,10 @@ for(spgp in c("goose","duck","murre")){
       
       if(spgp == "goose"){
         
-             mod.saved = paste("output/full harvest zip2",pr,z,spgp,"alt mod.RData")
+             mod.saved = paste("output/full harvest zip",pr,z,spgp,"alt mod.RData")
         
       }else{
-             mod.saved = paste("output/full harvest zip2",pr,z,spgp,"alt mod.RData")
+             mod.saved = paste("output/full harvest zip",pr,z,spgp,"alt mod.RData")
       }
       
       #mod.saved = paste("output/full harvest time sdhunter",pr,z,spgp,"alt mod.RData") #paste("output/full harvest",pr,z,spgp,"alt mod.RData")
@@ -1297,23 +1312,23 @@ jjsp = jjsp +1
 
 
 # caterpillar plots -------------------------------------------------------
-gg = ggs(out2$samples)
-pdf(file = paste0("output/converge/caterpillar 2",spgp,pr,z,".pdf"), 
-    height = 22,width = 8.5)
-for(pps in c("nu","sdhunter","cst","parrive","pleave","kill_cy","ann","psi")){
-  print(ggs_caterpillar(gg,family = pps))
-}
-dev.off()
+# gg = ggs(out2$samples)
+# pdf(file = paste0("output/converge/caterpillar zip",spgp,pr,z,".pdf"), 
+#     height = 22,width = 8.5)
+# for(pps in c("nu","sdhunter","parrive","pleave","ann","psi")){
+#   print(ggs_caterpillar(gg,family = pps))
+# }
+# dev.off()
+# 
 
 
 
 
 
-
-sdhunter_list[[jjsdhunter]] <- comp_plot_sdhunter_year(prov = pr,
-                                         zone = z)
-
-jjsdhunter = jjsdhunter +1
+# sdhunter_list[[jjsdhunter]] <- comp_plot_sdhunter_year(prov = pr,
+#                                          zone = z)
+# 
+# jjsdhunter = jjsdhunter +1
 
 # Species composition -----------------------------------------------------
 
@@ -1524,50 +1539,50 @@ jjcomp = jjcomp +1
 # plotting hunter effects -------------------------------------------------
 
 
- 
-  
-  jjhunter = 1
-  hunter_list <- list()
-  
-  
-  for(pr in provs2){
-    zns <- unique(period[which(period$pr == pr),"zo"])
-    for(z in zns){
-      #       if(file.exists(paste("output/full harvest",pr,z,spgp,"mod.RData"))){
-      # load(paste("output/full harvest",pr,z,spgp,"mod.RData"))
-        if(file.exists(paste("output/hunter_effects",pr,z,spgp,"alt mod.RData"))){
-          
-          load(paste("output/hunter_effects",pr,z,spgp,"alt mod.RData"))#        load(paste("output/full harvest caste time",pr,z,spgp,"mod.RData"))
-          
-          
-          
-          
-          
-          
-          hunter_list[[jjhunter]] <- comp_plot_hunter(prov = pr,zone = z)
-          
-          jjhunter = 1+jjhunter      
-        }
-        
-      rm(out3)   
-    
-    }
-  }
+  # 
+  # 
+  # jjhunter = 1
+  # hunter_list <- list()
+  # 
+  # 
+  # for(pr in provs2){
+  #   zns <- unique(period[which(period$pr == pr),"zo"])
+  #   for(z in zns){
+  #     #       if(file.exists(paste("output/full harvest",pr,z,spgp,"mod.RData"))){
+  #     # load(paste("output/full harvest",pr,z,spgp,"mod.RData"))
+  #       if(file.exists(paste("output/hunter_effects",pr,z,spgp,"alt mod.RData"))){
+  #         
+  #         load(paste("output/hunter_effects",pr,z,spgp,"alt mod.RData"))#        load(paste("output/full harvest caste time",pr,z,spgp,"mod.RData"))
+  #         
+  #         
+  #         
+  #         
+  #         
+  #         
+  #         hunter_list[[jjhunter]] <- comp_plot_hunter(prov = pr,zone = z)
+  #         
+  #         jjhunter = 1+jjhunter      
+  #       }
+  #       
+  #     rm(out3)   
+  #   
+  #   }
+  # }
 
   
   # plotting pdfs -----------------------------------------------------------
   
   
   
-  asuf <- c("ZIP2")
+  asuf <- c("ZIP")
   
-  pdf(paste0("output/sdhunter timeseries",asuf," ",spgp,".pdf"),
-  width = 8,
-  height = 6)
-for(jj in 1:length(sdhunter_list)){
-  print(sdhunter_list[[jj]])
-}
-dev.off()
+#   pdf(paste0("output/sdhunter timeseries",asuf," ",spgp,".pdf"),
+#   width = 8,
+#   height = 6)
+# for(jj in 1:length(sdhunter_list)){
+#   print(sdhunter_list[[jj]])
+# }
+# dev.off()
 
 
   #asuf <- c(" alt")
@@ -1579,29 +1594,20 @@ dev.off()
   }
   dev.off()
   
-  pdf(paste0("output/age sex",asuf," ",spgp,".pdf"),
-      width = 8,
-      height = 6)
-  for(pp in 1:length(paxsy_list)){
-    plt = paxsy_list[[pp]]
-    for(j in 1:length(plt)){
-      print(plt[[j]])
-    }}
-  dev.off()
-  
 
   
+  pdf(paste("output/comparison graphs simple",asuf," ",spgp,".pdf"))
   
-  pdf(paste0("output/species proportions by period",asuf," ",spgp,".pdf"),
-      width = 8,
-      height = 6)
-  for(pp in 1:length(psy_list)){
-    plt = psy_list[[pp]]
+  for(pp in 1:length(simcomp_list)){
+    plt = simcomp_list[[pp]]
     for(j in 1:length(plt)){
       print(plt[[j]])
     }}
   dev.off()
   
+  
+  
+ 
   
   pdf(paste0("output/caste effects",asuf," ",spgp,".pdf"),
       width = 8,
@@ -1621,11 +1627,13 @@ dev.off()
   dev.off()
   
   
+
   
-  pdf(paste("output/comparison graphs simple",asuf," ",spgp,".pdf"))
-  
-  for(pp in 1:length(simcomp_list)){
-    plt = simcomp_list[[pp]]
+  pdf(paste0("output/age sex",asuf," ",spgp,".pdf"),
+      width = 8,
+      height = 6)
+  for(pp in 1:length(paxsy_list)){
+    plt = paxsy_list[[pp]]
     for(j in 1:length(plt)){
       print(plt[[j]])
     }}
@@ -1633,25 +1641,34 @@ dev.off()
   
   
   
+  pdf(paste0("output/species proportions by period",asuf," ",spgp,".pdf"),
+      width = 8,
+      height = 6)
+  for(pp in 1:length(psy_list)){
+    plt = psy_list[[pp]]
+    for(j in 1:length(plt)){
+      print(plt[[j]])
+    }}
+  dev.off()
   
   
   
 
 # plotting hunter effects if necessary ------------------------------------
 
-  
-  pdf(paste0("output/hunter effects",asuf," ",spgp,".pdf"),
-      width = 8,
-      height = 6)
-  for(pp in 1:length(hunter_list)){
-    plt = hunter_list[[pp]]
-    for(j in 1:length(plt)){
-      print(plt[[j]])
-    }}
-  dev.off()
-  
-  
-  
+  # 
+  # pdf(paste0("output/hunter effects",asuf," ",spgp,".pdf"),
+  #     width = 8,
+  #     height = 6)
+  # for(pp in 1:length(hunter_list)){
+  #   plt = hunter_list[[pp]]
+  #   for(j in 1:length(plt)){
+  #     print(plt[[j]])
+  #   }}
+  # dev.off()
+  # 
+  # 
+  # 
   
    
   

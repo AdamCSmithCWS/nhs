@@ -780,7 +780,7 @@ if(class(out2) != "try-error"){
 
 
 # if(spgp == "goose"){
-  save(list = c("out2","jdat","sp.save.out"),
+  save(list = c("out2","jdat"),
        file = paste("output/full harvest zip",pr,z,spgp,"alt mod.RData"))
   
 # }else{
