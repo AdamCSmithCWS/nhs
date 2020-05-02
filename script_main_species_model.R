@@ -301,7 +301,7 @@ for(spgp in c("duck","goose","murre")){
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    mod.file = "species_harvest_model_zip.R" # 
+    mod.file = "models/species_harvest_model_zip.R" # 
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
     
     
@@ -324,7 +324,7 @@ for(spgp in c("duck","goose","murre")){
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    mod.file = "species_harvest_model_zip.R" #
+    mod.file = "models/species_harvest_model_zip.R" #
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
     
   }
@@ -349,7 +349,7 @@ for(spgp in c("duck","goose","murre")){
                        stringsAsFactors = F)
     minyr <- 2014
     provs2 = "NF"
-    mod.file = "species_harvest_model_zip.R" # I think this should work for murres too
+    mod.file = "models/species_harvest_model_zip.R" # I think this should work for murres too
     FY = 2014
     
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
@@ -883,28 +883,9 @@ thinSteps=10                   # Number of steps to "thin" (1=keep every step).
 nIter = ceiling( ( (numSavedSteps * thinSteps )+burnInSteps) / nChains ) # Steps per chain.
 
 t1 = Sys.time()
-#if(spgp == "duck"){
- # mod.file = "species_harvest_model_noann.R" # I think this should work for geese and murres too
- # mod.file = "species_harvest_model_time_sdhunter.R" # I think this should work for geese and murres too
-  #}
+
    
 
-# out2 = try(jags.model( file = mod.file, 
-#                    data= jdat ,  
-#                    #inits= newinits,  
-#                    n.chains= nChains , 
-#                    n.adapt= adaptSteps ),silent = F)
-# if(class(out2) != "try-error"){
-# 
-# # Burn-in:
-# cat( "Burning in the MCMC chain...\n" )
-# update( out2 , n.iter=burnInSteps )
-# # The saved MCMC chain:
-# cat( "Sampling final MCMC chain...\n" )
-# codaSamples = coda.samples( out2 , variable.names=parms ,
-#                             n.iter=nIter , thin=thinSteps )
-# #codaSamples = coda.samples( jagsMod , variable.names=parms ,
-# #                            n.iter=50 , thin=1 )
 
   
   out2 = try(jagsUI(data = jdat,
@@ -983,7 +964,7 @@ for(spgp in c("goose","duck","murre")){
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    mod.file = "species_harvest_model_zip.R" # I think this should work for geese and murres too
+    mod.file = "models/species_harvest_model_zip.R" # I think this should work for geese and murres too
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
     
     
@@ -1006,7 +987,7 @@ for(spgp in c("goose","duck","murre")){
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    mod.file = "species_harvest_model.R" # I think this should work for geese and murres too
+    mod.file = "models/species_harvest_model_zip.R" # I think this should work for geese and murres too
     
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
     
@@ -1033,7 +1014,7 @@ for(spgp in c("goose","duck","murre")){
                        stringsAsFactors = F)
     minyr <- 2014
     provs2 = "NF"
-    mod.file = "species_harvest_model.R" # I think this should work for geese and murres too
+    mod.file = "models/species_harvest_model_zip.R" # I think this should work for geese and murres too
     
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
     
@@ -1112,15 +1093,15 @@ stopCluster(cl = cluster)
 }#spgp
 # plotting comparisons to published estimates -----------------------------
 
-source("comparison_plotting_function_caste_year.R")
-source("comparison_plotting_function_sdhunter_year.R")
-source("comparison_plotting_function_species_agesex.R")
-source("comparison_plotting_function_species.R")
-source("comparison_plotting_function_species_period_props.R")
-source("comparison_plotting_function.R")
-source("comparison_plotting_function_hunter_distr.R")
+source("functions/comparison_plotting_function_caste_year.R")
+source("functions/comparison_plotting_function_sdhunter_year.R")
+source("functions/comparison_plotting_function_species_agesex.R")
+source("functions/comparison_plotting_function_species.R")
+source("functions/comparison_plotting_function_species_period_props.R")
+source("functions/comparison_plotting_function.R")
+source("functions/comparison_plotting_function_hunter_distr.R")
 
-source("utility_functions.R")
+source("functions/utility_functions.R")
 
 
 
