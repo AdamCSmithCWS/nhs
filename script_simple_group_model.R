@@ -293,8 +293,10 @@ for(spgp in others){
     nyears = length(years)
 
     minyr <- min(years)
-    mod.file = "simple_group_model_zip.R" # 
-    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
+    mod.file = "models/simple_group_model_zip.R" # 
+    #non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
+    non_res_combine = paste(rep(provs2,each = 3),rep(c(1,2,3),times = length(provs2)))
+    
     
 
   
@@ -805,252 +807,198 @@ stopCluster(cl = cluster)
 
 # re_sample to examine hunter effect distribution -------------------------
 
+# 
+# for(spgp in c("goose","duck","murre")){
+#   ### begining of loop through provinces only engage this loop if running the full analysis
+#   ### for a single province and zone, skip the next 4 lines
+#   ### and enter something like the following (e.g., to run Ontario-zone 3)
+#   
+#   # group data set up -------------------------------------------------------
+#   
+#   
+#   if(spgp == "goose"){
+#     aou.spgp = aou.goose
+#     period = period.goose
+#     cal.spgp = calg
+#     allkill = allkill
+#     phunt = "PRHUNTG"
+#     zhunt = "ZOHUNTG"
+#     wkill = "TOGOK"
+#     wact = "ACTIVEWF"
+#     wsucc = "SUTOGO"
+#     wday = "DAYWF"
+#     years = FY:Y
+#     nyears = length(years)
+#     demog = data.frame(BSEX = rep(c("U","U"),each = 1),
+#                        BAGE = rep(c("A","I"),times = 1),
+#                        stringsAsFactors = F)
+#     minyr <- min(years)
+#     provs2 <- provs
+#     mod.file = "species_harvest_model_zip.R" # I think this should work for geese and murres too
+#     
+#     
+#   }
+#   if(spgp == "duck"){
+#     aou.spgp = aou.ducks
+#     period = period.duck
+#     cal.spgp = cald
+#     allkill = allkill
+#     phunt = "PRHUNT"
+#     zhunt = "ZOHUNT"
+#     wkill = "TODUK"
+#     wact = "ACTIVEWF"
+#     wsucc = "SUTODU"
+#     wday = "DAYWF"
+#     years = FY:Y
+#     nyears = length(years)
+#     demog = data.frame(BSEX = rep(c("F","M"),each = 2),
+#                        BAGE = rep(c("A","I"),times = 2),
+#                        stringsAsFactors = F)
+#     minyr <- min(years)
+#     provs2 <- provs
+#     mod.file = "species_harvest_model.R" # I think this should work for geese and murres too
+#     
+#   }
+#   
+#   
+#   
+#   if(spgp == "murre"){
+#     aou.spgp = aou.murre
+#     period = period.murre
+#     cal.spgp = calm
+#     allkill = allkill
+#     phunt = "PRHUNTM"
+#     zhunt = "ZOHUNTM"
+#     wkill = "MURRK"
+#     wact = "ACTIVEM"
+#     wsucc = "SUCCM"
+#     wday = "DAYM" #?
+#     years = 2014:Y #### previous years Murre harvest was calculated differently, pre 2013 only total MURRK, and in 2013 it was a mix of infor from DAYOT and calendars and species composition
+#     nyears = length(years)
+#     demog = data.frame(BSEX = rep(c("U","U"),each = 1),
+#                        BAGE = rep(c("A","I"),times = 1),
+#                        stringsAsFactors = F)
+#     minyr <- 2014
+#     provs2 = "NF"
+#     mod.file = "species_harvest_model.R" # I think this should work for geese and murres too
+#     
+#     
+#   }
+#   
+#   
+#   non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
+#   
+#   
+#   
+# # Set up parallel stuff
+# n_cores <- length(provs2)
+# cluster <- makeCluster(n_cores, type = "PSOCK")
+# registerDoParallel(cluster)
+# 
+# 
+# 
+# sdhunter <- foreach(pr = provs2,
+#                     .packages = c("jagsUI","tidyverse"),
+#                     .inorder = FALSE,
+#                     .errorhandling = "pass") %dopar%
+#   {
+#     
+#     pzcount = 0
+#     
+#     zns <- unique(period[which(period$pr == pr),"zo"])
+#     for(z in zns){
+#       pzcount = pzcount + 1
+#       
+#       load(paste("output/full harvest",pr,z,spgp,"alt mod.RData"))#        load(paste("output/full harvest caste time",pr,z,spgp,"mod.RData"))
+#       
+#       new.inits <- list()
+#       length(new.inits) <- 3
+#       
+#       new.inits[[1]] <- as.list(out2$model$cluster1$state()[[1]])
+#       new.inits[[2]] <- as.list(out2$model$cluster2$state()[[1]])
+#       new.inits[[3]] <- as.list(out2$model$cluster3$state()[[1]])
+#       #
+#       
+#       
+#       out3 = try(jagsUI(data = jdat,
+#                         parameters.to.save = c("hntr","hntr_day"),
+#                         n.chains = 3,
+#                         n.burnin = 0,
+#                         n.thin = 10,
+#                         n.iter = 3000,
+#                         inits = new.inits,
+#                         parallel = T,
+#                         modules = NULL,
+#                         model.file = mod.file),silent = F)
+#       
+#       
+#       
+#       if(class(out2) != "try-error"){
+#         
+#         
+#         # g = ggs(out2$samples)
+#         # for(pp in parms){
+#         #   gg = filter(g,grepl(Parameter,pattern = pp))
+#         #   ggmcmc(gg,file = paste("output/converge",pr,z,spgp,pp,"mcmc.pdf"))
+#         # }
+#         
+#         
+#         
+#         
+#         save(list = c("out3","jdat"),
+#              file = paste("output/hunter_effects",pr,z,spgp,"alt mod.RData"))
+#       }
+#       
+#     }#z
+#     
+#     
+#   }#pr
+# stopCluster(cl = cluster)
+# 
+# 
+# }#spgp
+# # plotting comparisons to published estimates -----------------------------
 
-for(spgp in c("goose","duck","murre")){
-  ### begining of loop through provinces only engage this loop if running the full analysis
-  ### for a single province and zone, skip the next 4 lines
-  ### and enter something like the following (e.g., to run Ontario-zone 3)
-  
-  # group data set up -------------------------------------------------------
-  
-  
-  if(spgp == "goose"){
-    aou.spgp = aou.goose
-    period = period.goose
-    cal.spgp = calg
-    allkill = allkill
-    phunt = "PRHUNTG"
-    zhunt = "ZOHUNTG"
-    wkill = "TOGOK"
-    wact = "ACTIVEWF"
-    wsucc = "SUTOGO"
-    wday = "DAYWF"
-    years = FY:Y
-    nyears = length(years)
-    demog = data.frame(BSEX = rep(c("U","U"),each = 1),
-                       BAGE = rep(c("A","I"),times = 1),
-                       stringsAsFactors = F)
-    minyr <- min(years)
-    provs2 <- provs
-    mod.file = "species_harvest_model_zip.R" # I think this should work for geese and murres too
-    
-    
-  }
-  if(spgp == "duck"){
-    aou.spgp = aou.ducks
-    period = period.duck
-    cal.spgp = cald
-    allkill = allkill
-    phunt = "PRHUNT"
-    zhunt = "ZOHUNT"
-    wkill = "TODUK"
-    wact = "ACTIVEWF"
-    wsucc = "SUTODU"
-    wday = "DAYWF"
-    years = FY:Y
-    nyears = length(years)
-    demog = data.frame(BSEX = rep(c("F","M"),each = 2),
-                       BAGE = rep(c("A","I"),times = 2),
-                       stringsAsFactors = F)
-    minyr <- min(years)
-    provs2 <- provs
-    mod.file = "species_harvest_model.R" # I think this should work for geese and murres too
-    
-  }
-  
-  
-  
-  if(spgp == "murre"){
-    aou.spgp = aou.murre
-    period = period.murre
-    cal.spgp = calm
-    allkill = allkill
-    phunt = "PRHUNTM"
-    zhunt = "ZOHUNTM"
-    wkill = "MURRK"
-    wact = "ACTIVEM"
-    wsucc = "SUCCM"
-    wday = "DAYM" #?
-    years = 2014:Y #### previous years Murre harvest was calculated differently, pre 2013 only total MURRK, and in 2013 it was a mix of infor from DAYOT and calendars and species composition
-    nyears = length(years)
-    demog = data.frame(BSEX = rep(c("U","U"),each = 1),
-                       BAGE = rep(c("A","I"),times = 1),
-                       stringsAsFactors = F)
-    minyr <- 2014
-    provs2 = "NF"
-    mod.file = "species_harvest_model.R" # I think this should work for geese and murres too
-    
-    
-  }
-  
-  
-  non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
-  
-  
-  
-# Set up parallel stuff
-n_cores <- length(provs2)
-cluster <- makeCluster(n_cores, type = "PSOCK")
-registerDoParallel(cluster)
+source("functions/comparison_plotting_function_caste_year.R")
+source("functions/comparison_plotting_function_sdhunter_year.R")
+source("functions/comparison_plotting_function_species_agesex.R")
+source("functions/comparison_plotting_function_species.R")
+source("functions/comparison_plotting_function_species_period_props.R")
+source("functions/comparison_plotting_function.R")
+source("functions/comparison_plotting_function_hunter_distr.R")
 
-
-
-sdhunter <- foreach(pr = provs2,
-                    .packages = c("jagsUI","tidyverse"),
-                    .inorder = FALSE,
-                    .errorhandling = "pass") %dopar%
-  {
-    
-    pzcount = 0
-    
-    zns <- unique(period[which(period$pr == pr),"zo"])
-    for(z in zns){
-      pzcount = pzcount + 1
-      
-      load(paste("output/full harvest",pr,z,spgp,"alt mod.RData"))#        load(paste("output/full harvest caste time",pr,z,spgp,"mod.RData"))
-      
-      new.inits <- list()
-      length(new.inits) <- 3
-      
-      new.inits[[1]] <- as.list(out2$model$cluster1$state()[[1]])
-      new.inits[[2]] <- as.list(out2$model$cluster2$state()[[1]])
-      new.inits[[3]] <- as.list(out2$model$cluster3$state()[[1]])
-      #
-      
-      
-      out3 = try(jagsUI(data = jdat,
-                        parameters.to.save = c("hntr","hntr_day"),
-                        n.chains = 3,
-                        n.burnin = 0,
-                        n.thin = 10,
-                        n.iter = 3000,
-                        inits = new.inits,
-                        parallel = T,
-                        modules = NULL,
-                        model.file = mod.file),silent = F)
-      
-      
-      
-      if(class(out2) != "try-error"){
-        
-        
-        # g = ggs(out2$samples)
-        # for(pp in parms){
-        #   gg = filter(g,grepl(Parameter,pattern = pp))
-        #   ggmcmc(gg,file = paste("output/converge",pr,z,spgp,pp,"mcmc.pdf"))
-        # }
-        
-        
-        
-        
-        save(list = c("out3","jdat"),
-             file = paste("output/hunter_effects",pr,z,spgp,"alt mod.RData"))
-      }
-      
-    }#z
-    
-    
-  }#pr
-stopCluster(cl = cluster)
-
-
-}#spgp
-# plotting comparisons to published estimates -----------------------------
-
-source("comparison_plotting_function_caste_year.R")
-source("comparison_plotting_function_sdhunter_year.R")
-source("comparison_plotting_function_species_agesex.R")
-source("comparison_plotting_function_species.R")
-source("comparison_plotting_function_species_period_props.R")
-source("comparison_plotting_function.R")
-source("comparison_plotting_function_hunter_distr.R")
-
-source("utility_functions.R")
-
-
+source("functions/utility_functions.R")
 
 
-for(spgp in c("goose","duck","murre")){
-  ### begining of loop through provinces only engage this loop if running the full analysis
-  ### for a single province and zone, skip the next 4 lines
-  ### and enter something like the following (e.g., to run Ontario-zone 3)
+
+
+others = c("WOODK","SNIPK","DOVEK","PIGEK","CRANK","RAILK","MURRK","COOTK")
+
+prov_otherk <- read.csv(stringsAsFactors = F,"data/OTHERK_by_Prov.csv")
+
+
+
+for(spgp in others){
   
-  
-  
-  # group data set up -------------------------------------------------------
-  
-  
-  if(spgp == "goose"){
-    aou.spgp = aou.goose
-    period = period.goose
-    cal.spgp = calg
-    allkill = allkill
-    phunt = "PRHUNTG"
-    zhunt = "ZOHUNTG"
-    wkill = "TOGOK"
-    wact = "ACTIVEWF"
-    wsucc = "SUCCWF"
-    wday = "DAYWF"
-    years = FY:Y
-    nyears = length(years)
-    demog = data.frame(BSEX = rep(c("U","U"),each = 1),
-                       BAGE = rep(c("A","I"),times = 1),
-                       stringsAsFactors = F)
-    minyr <- min(years)
-    provs2 <- provs
-    sps.spgp <- aou.goose
-    
-  }
-  if(spgp == "duck"){
-    aou.spgp = aou.ducks
-    period = period.duck
-    cal.spgp = cald
-    allkill = allkill
-    phunt = "PRHUNT"
-    zhunt = "ZOHUNT"
-    wkill = "TODUK"
-    wact = "ACTIVEWF"
-    wsucc = "SUCCWF"
-    wday = "DAYWF"
-    years = FY:Y
-    nyears = length(years)
-    demog = data.frame(BSEX = rep(c("F","M"),each = 2),
-                       BAGE = rep(c("A","I"),times = 2),
-                       stringsAsFactors = F)
-    minyr <- min(years)
-    provs2 <- provs
-    sps.spgp <- aou.ducks
-  }
-  
-  
-  
-  if(spgp == "murre"){
-    aou.spgp = aou.murre
-    period = period.murre
-    cal.spgp = calm
-    allkill = allkill
-    phunt = "PRHUNTM"
-    zhunt = "ZOHUNTM"
-    wkill = "MURRK"
-    wact = "ACTIVEM"
-    wsucc = "SUCCM"
-    wday = "DAYM" #?
-    years = 2014:Y #### previous years Murre harvest was calculated differently, pre 2013 only total MURRK, and in 2013 it was a mix of infor from DAYOT and calendars and species composition
-    nyears = length(years)
-    demog = data.frame(BSEX = rep(c("U","U"),each = 1),
-                       BAGE = rep(c("A","I"),times = 1),
-                       stringsAsFactors = F)
-    minyr <- 2014
-    provs2 = "NF"
-    sps.spgp <- aou.murre
-    
-  }
-  
- 
 
 # plotting loop -----------------------------------------------------------
 
-   
+  allkill = allkill
+  phunt = "PRHUNT"
+  zhunt = "ZOHUNT"
+  wkill = spgp
+  wact = "ACTIVEOT"
+  wsucc = paste0("SU",gsub(spgp,pattern = "K",replacement = ""))
+  wday = "DAYOT"
+  years = FY:Y
+  nyears = length(years)
+  
+  minyr <- min(years)
+  mod.file = "simple_group_model_zip.R" # 
+  non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
+  
+  
+  
   jjcomp = 1
   compps <-  list() 
   
@@ -1075,19 +1023,24 @@ for(spgp in c("goose","duck","murre")){
   sdhunter_list <- list()
   
   
+  if(spgp %in% prov_otherk$var){
+    provs2 <- unique(as.character(prov_otherk[which(prov_otherk$var == spgp),-1]))
+    provs2 <- provs2[which(provs2 != "")]
+  }else{
+    provs2 = provs
+  }
+
+
   for(pr in provs2){
-    zns <- unique(period[which(period$pr == pr),"zo"])
-    for(z in zns){
+    zns <- as.integer(unique(allkill[which(allkill[,phunt] == pr),zhunt]))
+    zns <- zns[which(zns > 0)]
+    
+       for(z in zns){
 #       if(file.exists(paste("output/full harvest",pr,z,spgp,"mod.RData"))){
 # load(paste("output/full harvest",pr,z,spgp,"mod.RData"))
-      
-      if(spgp == "goose"){
-        
-             mod.saved = paste("output/full harvest zip2",pr,z,spgp,"alt mod.RData")
-        
-      }else{
-             mod.saved = paste("output/full harvest zip2",pr,z,spgp,"alt mod.RData")
-      }
+
+             mod.saved = paste("output/full harvest zip",pr,z,spgp,"alt mod.RData")
+
       
       #mod.saved = paste("output/full harvest time sdhunter",pr,z,spgp,"alt mod.RData") #paste("output/full harvest",pr,z,spgp,"alt mod.RData")
         if(file.exists(mod.saved)){
@@ -1100,17 +1053,20 @@ for(spgp in c("goose","duck","murre")){
                               "NSUCC_y",
                               "kill_y",
                               "days_y"),
-                      duck = c("ACTIWF",
-                               "SUTODU",
-                               "TODUK",
-                               "DAYWF"),
-                      goose = c("ACTIWF",
-                               "SUTOGO",
-                               "TOGOK",
-                               "DAYWF"),
+                      spgp = c("ACTIOT",
+                               paste0("SU",str_sub(spgp,1,4)),
+                               spgp,
+                               "DAYOT"),
+                      
                       stringsAsFactors = F) ## add ofther spgp columns to match
 
-plts = list()
+          names(var_pair)[2] <- spgp
+
+          
+          
+          
+          
+          plts = list()
 length(plts) = nrow(var_pair)
 #pdf(paste("output/comparison graphs",pr,z,"simple.pdf"))
 
@@ -1135,15 +1091,6 @@ jjsimcomp <- jjsimcomp + 1
 
 
 
-# species harvests -----------------------------------------------------
-
-spplts_list[[jjsp]] <- comp_plot_species(prov = pr,
-                            zone = z)
-
-jjsp = jjsp +1
-# pdf(paste0("output/species_level_harvests_",pr,z,".pdf"),width = 8,height = 10)
-# for(pp in 1:length(spplts)){print(spplts[[pp]])}
-# dev.off()
 
 
 # caterpillar plots -------------------------------------------------------
@@ -1160,25 +1107,6 @@ dev.off()
 
 
 
-sdhunter_list[[jjsdhunter]] <- comp_plot_sdhunter_year(prov = pr,
-                                         zone = z)
-
-jjsdhunter = jjsdhunter +1
-
-# Species composition -----------------------------------------------------
-
-
-psy_list[[jjpsy]] <- comp_plot_psy(prov = pr,
-              zone = z)
-
-jjpsy <- jjpsy+1
-# age and sex composition -------------------------
-
-
-paxsy_list[[jjpaxsy]] <- comp_plot_axsy(prov = pr,
-                                        zone = z)
-
-  jjpaxsy = jjpaxsy + 1
 
 # caste comparisons -----------------------------------------------------
 
@@ -1373,51 +1301,44 @@ jjcomp = jjcomp +1
 ########## add a time-series plot of hte sd hunter values across castes (maybe possible to have a single sdhunter for all but caste 4)
 # plotting hunter effects -------------------------------------------------
 
-
- 
+# 
+#  
+#   
+#   jjhunter = 1
+#   hunter_list <- list()
+#   
+#   
+#   for(pr in provs2){
+#     zns <- unique(period[which(period$pr == pr),"zo"])
+#     for(z in zns){
+#       #       if(file.exists(paste("output/full harvest",pr,z,spgp,"mod.RData"))){
+#       # load(paste("output/full harvest",pr,z,spgp,"mod.RData"))
+#         if(file.exists(paste("output/hunter_effects",pr,z,spgp,"alt mod.RData"))){
+#           
+#           load(paste("output/hunter_effects",pr,z,spgp,"alt mod.RData"))#        load(paste("output/full harvest caste time",pr,z,spgp,"mod.RData"))
+#           
+#           
+#           
+#           
+#           
+#           
+#           hunter_list[[jjhunter]] <- comp_plot_hunter(prov = pr,zone = z)
+#           
+#           jjhunter = 1+jjhunter      
+#         }
+#         
+#       rm(out3)   
+#     
+#     }
+#   }
+# 
+#   
+#   # plotting pdfs -----------------------------------------------------------
   
-  jjhunter = 1
-  hunter_list <- list()
   
   
-  for(pr in provs2){
-    zns <- unique(period[which(period$pr == pr),"zo"])
-    for(z in zns){
-      #       if(file.exists(paste("output/full harvest",pr,z,spgp,"mod.RData"))){
-      # load(paste("output/full harvest",pr,z,spgp,"mod.RData"))
-        if(file.exists(paste("output/hunter_effects",pr,z,spgp,"alt mod.RData"))){
-          
-          load(paste("output/hunter_effects",pr,z,spgp,"alt mod.RData"))#        load(paste("output/full harvest caste time",pr,z,spgp,"mod.RData"))
-          
-          
-          
-          
-          
-          
-          hunter_list[[jjhunter]] <- comp_plot_hunter(prov = pr,zone = z)
-          
-          jjhunter = 1+jjhunter      
-        }
-        
-      rm(out3)   
-    
-    }
-  }
-
+  asuf <- c("ZIP")
   
-  # plotting pdfs -----------------------------------------------------------
-  
-  
-  
-  asuf <- c("ZIP2")
-  
-  pdf(paste0("output/sdhunter timeseries",asuf," ",spgp,".pdf"),
-  width = 8,
-  height = 6)
-for(jj in 1:length(sdhunter_list)){
-  print(sdhunter_list[[jj]])
-}
-dev.off()
 
 
   #asuf <- c(" alt")
@@ -1429,29 +1350,7 @@ dev.off()
   }
   dev.off()
   
-  pdf(paste0("output/age sex",asuf," ",spgp,".pdf"),
-      width = 8,
-      height = 6)
-  for(pp in 1:length(paxsy_list)){
-    plt = paxsy_list[[pp]]
-    for(j in 1:length(plt)){
-      print(plt[[j]])
-    }}
-  dev.off()
-  
-
-  
-  
-  pdf(paste0("output/species proportions by period",asuf," ",spgp,".pdf"),
-      width = 8,
-      height = 6)
-  for(pp in 1:length(psy_list)){
-    plt = psy_list[[pp]]
-    for(j in 1:length(plt)){
-      print(plt[[j]])
-    }}
-  dev.off()
-  
+ 
   
   pdf(paste0("output/caste effects",asuf," ",spgp,".pdf"),
       width = 8,
@@ -1461,16 +1360,7 @@ dev.off()
   }
   dev.off()
   
-  
-  pdf(paste0("output/species_level_harvests",asuf," ",spgp,".pdf"),width = 8,height = 10)
-  for(pp in 1:length(spplts_list)){
-    plt = spplts_list[[pp]]
-    for(j in 1:length(plt)){
-    print(plt[[j]])
-    }}
-  dev.off()
-  
-  
+
   
   pdf(paste("output/comparison graphs simple",asuf," ",spgp,".pdf"))
   
@@ -1489,19 +1379,19 @@ dev.off()
 
 # plotting hunter effects if necessary ------------------------------------
 
-  
-  pdf(paste0("output/hunter effects",asuf," ",spgp,".pdf"),
-      width = 8,
-      height = 6)
-  for(pp in 1:length(hunter_list)){
-    plt = hunter_list[[pp]]
-    for(j in 1:length(plt)){
-      print(plt[[j]])
-    }}
-  dev.off()
-  
-  
-  
+  # 
+  # pdf(paste0("output/hunter effects",asuf," ",spgp,".pdf"),
+  #     width = 8,
+  #     height = 6)
+  # for(pp in 1:length(hunter_list)){
+  #   plt = hunter_list[[pp]]
+  #   for(j in 1:length(plt)){
+  #     print(plt[[j]])
+  #   }}
+  # dev.off()
+  # 
+  # 
+  # 
   
    
   
