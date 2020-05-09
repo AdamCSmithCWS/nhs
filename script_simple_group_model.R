@@ -293,7 +293,7 @@ for(spgp in others){
     nyears = length(years)
 
     minyr <- min(years)
-    mod.file = "models/simple_group_model_zip.R" # 
+    mod.file = "models/simple_group_model_zip2.R" # 
     #non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
     non_res_combine = paste(rep(provs2,each = 3),rep(c(1,2,3),times = length(provs2)))
     
@@ -994,8 +994,9 @@ for(spgp in others){
   nyears = length(years)
   
   minyr <- min(years)
-  mod.file = "simple_group_model_zip.R" # 
-  non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
+  mod.file = "models/simple_group_model_zip.R" # 
+  #non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
+  non_res_combine = paste(rep(provs2,each = 3),rep(c(1,2,3),times = length(provs2)))
   
   
   
