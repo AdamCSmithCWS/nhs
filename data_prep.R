@@ -1,31 +1,25 @@
 
-####### the following commented out lines ~ 400 lines
-## represent the add-hoc processes required to load all the 
-## historical harvest survey data
-## the line :load("full data prep updated harvest model.RData")
-## on about line-400 will load everything created below
+
+# running the new harvest analysis with the full historical databa --------
 
 
-
-Y <- 2018
+Y <- 2019
 years <- 1976:Y
 
 names(years) <- paste(years)
-home.fold1 <- "m:/My Documents/Harvest Survey A146/"
-# 
-home.fold <- getwd()
-# setwd(home.fold)
 
-library(foreign)
+
 library(runjags)
 library(rjags)
+library(tidyverse)
+library(lubridate)
 
 
-sashome <- "C:\\Program Files\\SASHome\\SASFoundation\\9.4"
+
 provs = c("AB","BC","SK","MB","ON","PQ","NS","PE","NB","NF")#,"NU","NT","YT") #All prov
 #ignoring territories above
 
-sps <- read.csv(paste(home.fold,"/data/Bird names 2010.csv", sep = ""))
+sps <- read.csv(paste("data/Bird names 2010.csv", sep = ""))
                           species <- unique(sps[which(sps$group %in% c("duck","goose","murre")),"specieslevelenglish"])
                           species <- species[-which(species == "Hybrid Mallard/Northern Pintail")]
                           gnames <- unique(sps[which(sps$group == "goose"),"specieslevelenglish"])
@@ -39,10 +33,80 @@ murre <- T      #change to fales if no murre species should be included
 zone <- T           ### change to false, if provincial summaries are desired
 # #
 # #
-# ############## extracting harvest survey data for all years
+# ############## base tables
 #
 provzone = read.csv("data/province and zone table.csv",stringsAsFactors = F)
 casteslist = read.csv("data/caste table.csv",stringsAsFactors = F)
+
+
+
+# Permit files -------------------------------------------------------------
+tmp <- readLines("data/Permits.tsv")
+nrs = length(tmp)
+perm = read.table("data/Permits.tsv",
+                  stringsAsFactors = F,skipNul = T, blank.lines.skip = F,comment.char = "",
+                  nrows = nrs,
+                  header = TRUE,
+                  sep = "\t",
+                  quote = "",
+                  dec = ".",
+                  strip.white = F)
+perm.o <- perm
+
+tmp <- readLines("data/PermitHistorical.tsv")
+nrs = length(tmp)
+permh = read.table("data/PermitHistorical.tsv",
+                   stringsAsFactors = F,skipNul = T, blank.lines.skip = F,comment.char = "",
+                   nrows = nrs,
+                   header = TRUE,
+                   sep = "\t",
+                   quote = "",
+                   dec = ".",
+                   strip.white = F)
+permh.o <- permh
+
+intcols = c("SMONTH",
+            "SDAY",
+            "SALEZONE",
+            "SALELAT",
+            "SALELON",
+            "HUNTING_LATITUDE",
+            "HUNTING_LONGITUDE",
+            "HUNTING_ZONE",
+            "RESIDENCE_LATITUDE",
+            "RESIDENCE_LONGITUDE",
+            "RESIDENCE_ZONE",
+            "SAMPLING_ZONE")
+for(i in intcols){
+  perm[,i] <- as.integer(perm[,i])
+}
+
+perm[which(perm$SDAY == 0 | is.na(perm$SDAY) | perm$SDAY > 31),"SDAY"] <- 1 #if missing sale day info, assume first of month
+perm[which(perm$SMONTH == 0| is.na(perm$SMONTH) | perm$SMONTH > 12),"SMONTH"] <- 9 #if missing sale month info, assume September
+perm[which(perm$SMONTH %in% c(4,6,9,11) & perm$SDAY == 31),"SMONTH"] <- perm[which(perm$SMONTH %in% c(4,6,9,11) & perm$SDAY == 31),"SMONTH"]-1  #if day = 31 and month is wrong, set month back by 1
+perm[which(perm$SMONTH %in% c(2) & perm$SDAY > 28),"SDAY"] <- 28 #if day is February 29 set to feb 28 (weird, but avoids the odd record with feb 29 as date but not in leap year)
+
+perm$fdy <- paste(perm$SYEAR,perm$SMONTH,perm$SDAY,sep = "-")
+#perm$dy <- paste(2016,perm$SMONTH,perm$SDAY,sep = "-")
+
+perm <- mutate(perm,full_date = ymd(fdy),
+         doy = yday(ymd(fdy))) 
+
+
+cutoff_date <- yday(ymd("2016-3-10")) #this is the last day on the harvest calendars (March 10)
+start_date <- yday(ymd("2016-7-31")) #August 1 is the earliest day that one can purchase a new permit for the coming year
+
+perm <- filter(perm,(doy < cutoff_date | doy > start_date))
+
+perm$year_season <- perm$SYEAR
+perm[which(perm$doy < cutoff_date),"year_season"] <- perm[which(perm$doy < cutoff_date),"year_season"]-1
+
+py = table(perm$year_season)
+py2 = table(perm$SYEAR)
+
+
+
+
 
 #
 #

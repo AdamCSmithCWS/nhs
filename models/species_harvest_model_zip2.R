@@ -132,13 +132,7 @@ model {
     
   }
   
-  # dif_1_2[1] <- cst[1]-cst[2] #temporary parameters to assess the difference between castes D and B all results suggest significant differences
-  # dif_1_2[2] <- cst_day[1]-cst_day[2]
-  # 
-  # dif_1_2[3] <- sdhunter[1]-sdhunter[2]
-  # dif_1_2[4] <- sdhunter_day[1]-sdhunter_day[2]
-  # 
-  # dif_1_2[5] <- nu_day[1]-nu_day[2]
+
   # 
   
  CCST[1] <- 0
@@ -167,49 +161,61 @@ model {
   
   for(c in 1:ncastes){
     ## harvest rate priors
-    retrans_hunter[c] <- 0.5*(1/tauhunter[c])
+    retrans_hunter[c] <- 0.5*(1/tauhunter[c])/nu_ret[c] 
     sdhunter[c] <- 1/pow(tauhunter[c],0.5)
     tauhunter[c] ~ dgamma(0.01,0.01)
     nu[c] ~ dgamma(2,0.2)
+    nu_ret[c] <- (1.422*nu[c]^0.906)/(1+(1.422*nu[c]^0.906)) #approximate retransformation to equate a t-distribution to a normal distribution - see appendix of Link et al. 2020 BBS model selection paper
+    
+    
     ## caste specific intercept priors
    
     #activity (days) priors
-    retrans_hunter_day[c] <- 0.5*(1/tauhunter_day[c])
+    retrans_hunter_day[c] <- 0.5*(1/tauhunter_day[c])/nu_day_ret[c]
     sdhunter_day[c] <- 1/pow(tauhunter_day[c],0.5)
     tauhunter_day[c] ~ dgamma(0.01,0.01)
     nu_day[c] ~ dgamma(2,0.2)
+    nu_day_ret[c] <- (1.422*nu_day[c]^0.906)/(1+(1.422*nu_day[c]^0.906)) #approximate retransformation to equate a t-distribution to a normal distribution - see appendix of Link et al. 2020 BBS model selection paper
+    
     ## caste specific intercept priors
     
     
-    # mmu_psucc[c] ~ dnorm(0,1)
+     mmu_psucc[c,1] ~ dt(0, 1/2.5^2, 1) # cauchy(0, 2.5) prior (Gelman et al., 2008) doi:10.1214/08-AOAS191
     # phi_psucc[c] ~ dgamma(0.001,0.001)
-    # tau_mu_psucc[c] ~ dgamma(0.001,0.001)
-    # 
-    # mmu_pactive[c] ~ dnorm(0,1)
-    # phi_pactive[c] ~ dgamma(0.001,0.001)
-    # tau_mu_pactive[c] ~ dgamma(0.001,0.001)
-    # 
-    
+     tau_mmu_psucc[c] ~ dscaled.gamma(1,50)#time-series variance
+     # 
+     mmu_pactive[c,1] ~ dt(0, 1/2.5^2, 1) # cauchy(0, 2.5) prior (Gelman et al., 2008) doi:10.1214/08-AOAS191
+     #phi_pactive[c] ~ dscaled.gamma(0.5,50) #
+     tau_mu_pactive[c] ~ dscaled.gamma(1,50) #time-series variance
+     
+     ##time series model for the proportion that are active
+     for(y in 2:nyears){
+       mmu_psucc[c,y] ~ dnorm(mmu_psucc[c,y-1],tau_mmu_psucc[c])
+       mmu_pactive[c,y] ~ dnorm(mmu_pactive[c,y-1],tau_mu_pactive[c])
+     }
+     
     for(y in 1:nyears){
       
-      alpha_psucc[c,y] ~ dunif(1,3) #very simple priors for the parameters of the beta priors on pactive and psucc
-      beta_psucc[c,y] ~ dunif(1,3)
-      alpha_pactive[c,y] ~ dunif(1,3)
-      beta_pactive[c,y] ~ dunif(1,3)
-      
+      # alpha_psucc[c,y] ~ dunif(1,3) #very simple priors for the parameters of the beta priors on pactive and psucc
+      # beta_psucc[c,y] ~ dunif(1,3)
+      # alpha_pactive[c,y] ~ dunif(1,3)
+      # beta_pactive[c,y] ~ dunif(1,3)
+      # 
 
       
       # alpha_psucc[c,y] = phi_psucc[c] * mu_psucc[c,y]
       # beta_psucc[c,y] = phi_psucc[c] * (1 - mu_psucc[c,y])
       # logit(mu_psucc[c,y]) <- mmu_psucc[c] + dnorm(0,tau_mu_psucc[c])
       # psucc[c,y] ~ dbeta(alpha_psucc[c,y],beta_psucc[c,y])
-      psucc[c,y] ~ dbeta(alpha_psucc[c,y],beta_psucc[c,y])
+      #psucc[c,y] ~ dbeta(alpha_psucc[c,y],beta_psucc[c,y])
+      logit(psucc[c,y]) <- mmu_psucc[c,y]
       
       # alpha_pactive[c,y] = phi_pactive[c] * mu_pactive[c,y]
       # beta_pactive[c,y] = phi_pactive[c] * (1 - mu_pactive[c,y])
       # logit(mu_pactive[c,y]) <- mmu_pactive[c] + dnorm(0,tau_mu_pactive[c])
       # pactive[c,y] ~ dbeta(alpha_pactive[c,y],beta_pactive[c,y])
-      pactive[c,y] ~ dbeta(alpha_pactive[c,y],beta_pactive[c,y])
+      #pactive[c,y] ~ dbeta(alpha_pactive[c,y],beta_pactive[c,y])
+      logit(pactive[c,y]) <- mmu_pactive[c,y]
       
       
       ############# hunter-specific effects

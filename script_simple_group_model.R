@@ -44,7 +44,7 @@
 #   The ratio corresponds to the number of males per female bird in the sample. Ratios were calculated if the total sample equals or exceeds 20 parts.
 
 
-Y <- 2018
+Y <- 2019
 FY = 1976
 years <- FY:Y
 
@@ -227,42 +227,42 @@ popsiz_perm = unique(popsiz_perm)
 
 ### species lists
 
-aou.ducks <- sps[which(sps$group == "duck"),"AOU"]
-aou.goose <- sps[which(sps$group == "goose"),"AOU"]
-aou.murre <- sps[which(sps$group == "murre"),"AOU"]
-
-
-
-
-
-
-
-# correcting the age and sex indicators -----------------------------------
-
-outscse[which(outscse$PAGE != ""),"BAGE"] <- outscse[which(outscse$PAGE != ""),"PAGE"]
+# aou.ducks <- sps[which(sps$group == "duck"),"AOU"]
+# aou.goose <- sps[which(sps$group == "goose"),"AOU"]
+# aou.murre <- sps[which(sps$group == "murre"),"AOU"]
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# # correcting the age and sex indicators -----------------------------------
+# 
+# outscse[which(outscse$PAGE != ""),"BAGE"] <- outscse[which(outscse$PAGE != ""),"PAGE"]
+# # outscse[which(outscse$BAGE %in% c("2")),"BAGE"] <- "I"
+# # outscse[which(outscse$BAGE %in% c("3")),"BAGE"] <- "U"
+# # outscse[which(outscse$BAGE %in% c("")),"BAGE"] <- "U"
+# 
+# 
+# 
+# outscse[which(outscse$BAGE %in% c("1","S","T")),"BAGE"] <- "A"
 # outscse[which(outscse$BAGE %in% c("2")),"BAGE"] <- "I"
 # outscse[which(outscse$BAGE %in% c("3")),"BAGE"] <- "U"
 # outscse[which(outscse$BAGE %in% c("")),"BAGE"] <- "U"
-
-
-
-outscse[which(outscse$BAGE %in% c("1","S","T")),"BAGE"] <- "A"
-outscse[which(outscse$BAGE %in% c("2")),"BAGE"] <- "I"
-outscse[which(outscse$BAGE %in% c("3")),"BAGE"] <- "U"
-outscse[which(outscse$BAGE %in% c("")),"BAGE"] <- "U"
-
-outscse[which(outscse$BSEX %in% c("1")),"BSEX"] <- "M"
-outscse[which(outscse$BSEX %in% c("2")),"BSEX"] <- "F"
-outscse[which(outscse$BSEX %in% c("3")),"BSEX"] <- "U"
-outscse[which(outscse$BSEX %in% c("")),"BSEX"] <- "U"
-
-#outscse$BAGE = factor(outscse$BAGE)
-#round(prop.table(table(outscse$BAGE,outscse$AOU),2),2)
-
-#outscse$BSEX = factor(outscse$BSEX)
-#round(prop.table(table(outscse$BSEX,outscse$AOU),2),2)
-
-
+# 
+# outscse[which(outscse$BSEX %in% c("1")),"BSEX"] <- "M"
+# outscse[which(outscse$BSEX %in% c("2")),"BSEX"] <- "F"
+# outscse[which(outscse$BSEX %in% c("3")),"BSEX"] <- "U"
+# outscse[which(outscse$BSEX %in% c("")),"BSEX"] <- "U"
+# 
+# #outscse$BAGE = factor(outscse$BAGE)
+# #round(prop.table(table(outscse$BAGE,outscse$AOU),2),2)
+# 
+# #outscse$BSEX = factor(outscse$BSEX)
+# #round(prop.table(table(outscse$BSEX,outscse$AOU),2),2)
+# 
+# 
 
 
 
@@ -270,18 +270,19 @@ outscse[which(outscse$BSEX %in% c("")),"BSEX"] <- "U"
 
 others = c("COOTK","WOODK","SNIPK","DOVEK","PIGEK","CRANK","RAILK","MURRK")
 
-prov_otherk <- read.csv(stringsAsFactors = F,"data/OTHERK_by_Prov.csv")
+#prov_otherk <- read.csv(stringsAsFactors = F,"data/OTHERK_by_Prov.csv")
 
 for(spgp in others){
 
+  regs_other <- read.csv(file = paste0("data/reg_",spgp,".csv"))
 # group data set up -------------------------------------------------------
-
-  if(spgp %in% prov_otherk$var){
-  provs2 <- unique(as.character(prov_otherk[which(prov_otherk$var == spgp),-1]))
-  provs2 <- provs2[which(provs2 != "")]
-  }else{
-  provs2 = provs
-}
+  names(regs_other)[which(names(regs_other) == "QC")] <- "PQ"
+  regs_other <- regs_other[,c("YEAR",provs)]
+  
+  pps <- colSums(regs_other[,-1])
+ 
+  provs2 <- names(pps)[which(pps > 0)]
+  
     allkill = allkill
     phunt = "PRHUNT"
     zhunt = "ZOHUNT"
@@ -289,10 +290,9 @@ for(spgp in others){
     wact = "ACTIVEOT"
     wsucc = paste0("SU",gsub(spgp,pattern = "K",replacement = ""))
     wday = "DAYOT"
-    years = FY:Y
-    nyears = length(years)
+    
 
-    minyr <- min(years)
+
     mod.file = "models/simple_group_model_zip2.R" # 
     #non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
     non_res_combine = paste(rep(provs2,each = 3),rep(c(1,2,3),times = length(provs2)))
@@ -306,25 +306,43 @@ for(spgp in others){
 # Province and Zone loop --------------------------------------------------
 
   
-#for(pr in provs2[c(3,5,6)]){
-  
-  # Set up parallel stuff
-  n_cores <- length(provs2)
-  cluster <- makeCluster(n_cores, type = "PSOCK")
-  registerDoParallel(cluster)
-  
-  
-  
-  fullrun <- foreach(pr = provs2,
-                      .packages = c("jagsUI","tidyverse"),
-                      .inorder = FALSE,
-                      .errorhandling = "pass") %dopar%
-    {
+ for(pr in provs2){
+#   
+  #Set up parallel stuff
+  # n_cores <- 2
+  # cluster <- makeCluster(n_cores, type = "PSOCK")
+  # registerDoParallel(cluster)
+  # 
+  # 
+  # 
+  # fullrun <- foreach(pr = provs2,
+  #                     .packages = c("jagsUI","tidyverse"),
+  #                     .inorder = FALSE,
+  #                     .errorhandling = "pass") %dopar%
+  #   {
       
   pzcount = 0
   
   zns <- as.integer(unique(allkill[which(allkill[,phunt] == pr),zhunt]))
   zns <- zns[which(zns > 0)]
+  
+  
+  # selecting years ---------------------------------------------------------
+  years = regs_other[which(regs_other[,pr] > 0),"YEAR"]
+  years <- years[which(years >= FY)]
+  if(spgp == "MURRK"){
+    years <- 2006:2013
+  }
+  
+  if(spgp == "SNIPK"){
+    years <- 1991:Y
+  }
+  
+  nyears = length(years)
+  minyr <- min(years)
+  
+  
+  
   
   for(z in zns){
 pzcount = pzcount + 1
@@ -341,7 +359,10 @@ sumkill = allkill[which(allkill[,phunt] == pr &
                              allkill$YEAR %in% years),]
 
 if(minyr != FY){
+  FY1 <- minyr
 sumkill$year = sumkill$YEAR-(minyr-1)
+}else{
+  FY1 = FY
 }
     
     
@@ -456,7 +477,7 @@ leave_hunt_cf <- matrix(1,nrow = nyears,ncol = 2)
 
 
 for(y in years){
-  yi = y-(FY-1)
+  yi = y-(FY1-1)
   tmp = table(sumkillall[which(sumkillall$YEAR == y),c("PRSAMP",phunt)])
   
   
@@ -487,6 +508,7 @@ if(paste(pr,z) %in% non_res_combine){
   ##### now with sharing of info through time, this is worth reconsidering...
   
 sumkill[which(sumkill$CASTE == "E"),"CASTE"] <- "A" 
+
 sumkill$caste = factor(as.character(sumkill$CASTE),ordered = T,levels = c("D","B","A")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter) plus the few nonresidents
 
 }else{
@@ -709,7 +731,7 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
             castes = castes, # castes (numeric, 1:4)
             nhs = nhs, # integer length = 1 number of active hunters over all years (nrow for sumkill_active)
             #main data for overall harvest estimates
-            hunter = hunter_n_cy, # vector(length = nhs) unique numeric indicator for active hunters by caste and year 
+            hunter = hunter_n_cy, # vector(length = nhs) unique numeric indicator for active hunters by caste and year - same as nactive, but only needed for hunter-level predictions
             kill = kill, # vector(length = nhs), total group (ducks, geese, murres) harvest of nhs response
             year = year, # vector(length = nhs), year of response
             caste = caste, # vector(length = nhs), caste of response
@@ -750,9 +772,9 @@ parms = c("NACTIVE_y",
 #adaptSteps = 200              # Number of steps to "tune" the samplers.
 burnInSteps = 5000            # Number of steps to "burn-in" the samplers.
 nChains = 3                   # Number of chains to run.
-numSavedSteps=6000          # Total number of steps in chains to save.
+numSavedSteps=1000          # Total number of steps in each chain to save.
 thinSteps=10                   # Number of steps to "thin" (1=keep every step).
-nIter = ceiling( ( (numSavedSteps * thinSteps )+burnInSteps) / nChains ) # Steps per chain.
+nIter = ceiling( ( (numSavedSteps * thinSteps )+burnInSteps)) # Steps per chain.
 
 t1 = Sys.time()
 
@@ -765,30 +787,28 @@ t1 = Sys.time()
                     n.thin = thinSteps,
                     n.iter = nIter,
                     parallel = T,
-                    modules = NULL,
+                    #modules = "glm",
                     model.file = mod.file),silent = F)
 
   
   t2 = Sys.time()
 if(class(out2) != "try-error"){
 
-
-# g = ggs(out2$samples)
-# for(pp in parms){
-#   gg = filter(g,grepl(Parameter,pattern = pp))
-#   ggmcmc(gg,file = paste("output/converge",pr,z,spgp,pp,"mcmc.pdf"))
-# }
-
-
-
-# if(spgp == "goose"){
+  pgg_psi = ggs(out2$samples,family = "psi")
+  pgg_sdhunter = ggs(out2$samples,family = "sdhunter")
+  pgg_ann = ggs(out2$samples,family = "ann")
+  pgg_nu = ggs(out2$samples,family = "nu")
+  pgg_ky = ggs(out2$samples,family = "kill_y")
+  pgg_ky = filter(pgg_ky,!grepl(pattern = "alt",Parameter))
+  pgg <- rbind(pgg_psi,pgg_ann,pgg_sdhunter,pgg_nu,pgg_ky)
+  try(ggmcmc(pgg,file = paste0("output/conv/",pr,z,spgp,".pdf")),silent = T)
+  
+ 
+  
+  
   save(list = c("out2","jdat"),
        file = paste("output/full harvest zip",pr,z,spgp,"alt mod.RData"))
   
-# }else{
-# save(list = c("out2","jdat","sp.save.out"),
-#      file = paste("output/full harvest",pr,z,spgp,"alt mod.RData"))
-# }
 rm(list = "out2")
 
 }
@@ -974,15 +994,22 @@ source("functions/utility_functions.R")
 
 others = c("WOODK","SNIPK","DOVEK","PIGEK","CRANK","RAILK","MURRK","COOTK")
 
-prov_otherk <- read.csv(stringsAsFactors = F,"data/OTHERK_by_Prov.csv")
-
-
 
 for(spgp in others){
   
 
 # plotting loop -----------------------------------------------------------
 
+  
+  regs_other <- read.csv(file = paste0("data/reg_",spgp,".csv"))
+  # group data set up -------------------------------------------------------
+  names(regs_other)[which(names(regs_other) == "QC")] <- "PQ"
+  regs_other <- regs_other[,c("YEAR",provs)]
+  
+  pps <- colSums(regs_other[,-1])
+  
+  provs2 <- names(pps)[which(pps > 0)]
+  
   allkill = allkill
   phunt = "PRHUNT"
   zhunt = "ZOHUNT"
@@ -990,13 +1017,14 @@ for(spgp in others){
   wact = "ACTIVEOT"
   wsucc = paste0("SU",gsub(spgp,pattern = "K",replacement = ""))
   wday = "DAYOT"
-  years = FY:Y
-  nyears = length(years)
   
-  minyr <- min(years)
+  
+  
   mod.file = "models/simple_group_model_zip2.R" # 
   #non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
   non_res_combine = paste(rep(provs2,each = 3),rep(c(1,2,3),times = length(provs2)))
+  
+  
   
   
   
@@ -1024,18 +1052,47 @@ for(spgp in others){
   sdhunter_list <- list()
   
   
-  if(spgp %in% prov_otherk$var){
-    provs2 <- unique(as.character(prov_otherk[which(prov_otherk$var == spgp),-1]))
-    provs2 <- provs2[which(provs2 != "")]
-  }else{
-    provs2 = provs
-  }
-
-
+  
+  # Province and Zone loop --------------------------------------------------
+  
+  
   for(pr in provs2){
+    #   
+    #Set up parallel stuff
+    # n_cores <- 2
+    # cluster <- makeCluster(n_cores, type = "PSOCK")
+    # registerDoParallel(cluster)
+    # 
+    # 
+    # 
+    # fullrun <- foreach(pr = provs2,
+    #                     .packages = c("jagsUI","tidyverse"),
+    #                     .inorder = FALSE,
+    #                     .errorhandling = "pass") %dopar%
+    #   {
+    
+    pzcount = 0
+    
     zns <- as.integer(unique(allkill[which(allkill[,phunt] == pr),zhunt]))
     zns <- zns[which(zns > 0)]
     
+    
+    # selecting years ---------------------------------------------------------
+    years = regs_other[which(regs_other[,pr] > 0),"YEAR"]
+    years <- years[which(years >= FY)]
+    if(spgp == "MURRK"){
+      years <- 2006:2013
+    }
+    
+    if(spgp == "SNIPK"){
+      years <- 1991:Y
+    }
+    
+    nyears = length(years)
+    minyr <- min(years)
+    
+    
+  
        for(z in zns){
 #       if(file.exists(paste("output/full harvest",pr,z,spgp,"mod.RData"))){
 # load(paste("output/full harvest",pr,z,spgp,"mod.RData"))

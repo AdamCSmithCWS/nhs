@@ -102,7 +102,7 @@ model {
   }#i
   
   ### zip priors 
-  ### psi is the estimated annual proportion of waterfowl hunters that hunt this group - i.e., the zero component that's in addition to the over-dispersed Poisson-distribution
+  ### psi is the estimated annual proportion of active other hunters that hunt this group - i.e., the zero component that's in addition to the over-dispersed Poisson-distribution
   # for(y in 1:nyears){
   #   psi[y] ~ dunif(0,1)
   # }
@@ -110,70 +110,96 @@ model {
   
   #logistic random-walk time series model for psi
   
-  
-  tau_alpha_psi ~ dgamma(2,0.02)
-  alpha_psi[1] ~ dnorm(0,0.01)
+  #tau_alpha_psi ~ dscaled.gamma(0.05,100) #implicit prior on sigma of a half-t dist: sigma = 0.05*t(df = 100) , i.e., 95% prob sd < 0.1
+  #tau_alpha_psi ~ dgamma(2,0.02)
+  alpha_psi[1] ~ dt(0, 1/2.5^2, 1) # cauchy(0, 2.5) prior (Gelman et al., 2008)
   
   logit(psi[1]) <- alpha_psi[1]
   
   for(y in 2:nyears){
     
-    alpha_psi[y] ~ dnorm(alpha_psi[y-1],tau_alpha_psi) 
+    # alpha_psi[y] ~ dnorm(alpha_psi[y-1],tau_alpha_psi) 
+    # logit(psi[y]) <- alpha_psi[y]
+    # 
+    alpha_psi[y] <- alpha_psi[1]
     logit(psi[y]) <- alpha_psi[y]
-    
     
   }
   
-  # dif_1_2[1] <- cst[1]-cst[2] #temporary parameters to assess the difference between castes D and B all results suggest significant differences
-  # dif_1_2[2] <- cst_day[1]-cst_day[2]
-  # 
-  # dif_1_2[3] <- sdhunter[1]-sdhunter[2]
-  # dif_1_2[4] <- sdhunter_day[1]-sdhunter_day[2]
-  # 
-  # dif_1_2[5] <- nu_day[1]-nu_day[2]
-  # 
+ 
   
  CCST[1] <- 0
  CCST_day[1] <- 0
-  for(c in 2:ncastes){
+ CCST[2] <- 0
+ CCST_day[2] <- 0
+ 
+  for(c in 3:ncastes){
   CCST[c] ~ dnorm(0,16) #strongly informative, shrinkage prior sd = 0.25
   CCST_day[c] ~ dnorm(0,0.001)
   }
 
- for(c in 1:ncastes){
-   
+ tau_cst_day[1] ~ dscaled.gamma(0.25,50) #~ dgamma(0.001,0.001)
+ tau_cst_day[2] <- 5#never used just filling an empty vector index
  
-     cst[c,1] <- CCST[c] #fixed value in first year, to help separately estimate the cst effects from ann
-     cst_day[c,1] <- CCST_day[c] #fixed value in first year, to help separately estimate the cst_day effects from ann_day
+
+   cst[1,1] <- CCST[1] #fixed value in first year, to help separately estimate the cst effects from ann
+   cst_day[1,1] <- CCST_day[1] #fixed value in first year, to help separately estimate the cst_day effects from ann_day
    
    for(y in 2:nyears){  ### random effects for caste effects, allowing them to vary randomly by year
      
-    # cst[c,y] ~ dnorm(CCST[c],tau_cst[c])
-    # cst_day[c,y] ~ dnorm(CCST_day[c],tau_cst_day[c])
-     cst[c,y] <- CCST[c] # fixed caste effect through time.
-    cst_day[c,y] ~ dnorm(CCST_day[c],tau_cst_day[c])
+     # cst[c,y] ~ dnorm(CCST[c],tau_cst[c])
+     # cst_day[c,y] ~ dnorm(CCST_day[c],tau_cst_day[c])
+     cst[1,y] <- CCST[1] # fixed caste effect through time.
+     cst_day[1,y] ~ dnorm(CCST_day[1],tau_cst_day[1])
+   }
+
+   cst[2,1] <- cst[1,1] #fixed value in first year, to help separately estimate the cst effects from ann
+   cst_day[2,1] <- cst_day[1,1] #fixed value in first year, to help separately estimate the cst_day effects from ann_day
+   
+   for(y in 2:nyears){  ### random effects for caste effects, allowing them to vary randomly by year
+     
+     # cst[c,y] ~ dnorm(CCST[c],tau_cst[c])
+     # cst_day[c,y] ~ dnorm(CCST_day[c],tau_cst_day[c])
+     cst[2,y] <- cst[1,y] # fixed caste effect through time.
+     cst_day[2,y] <- cst_day[1,y]
+   }
+   
+
+ 
+     cst[3,1] <- CCST[3] #fixed value in first year, to help separately estimate the cst effects from ann
+     cst_day[3,1] <- CCST_day[3] #fixed value in first year, to help separately estimate the cst_day effects from ann_day
+   
+   for(y in 2:nyears){  ### random effects for caste effects, allowing them to vary randomly by year
+     
+
+     cst[3,y] <- CCST[3] # fixed caste effect through time.
+    cst_day[3,y] ~ dnorm(CCST_day[3],tau_cst_day[3])
    }
    # tau_cst[c] ~ dgamma(0.001,0.001) # assumption that the
-    tau_cst_day[c] ~ dgamma(0.001,0.001)
+    tau_cst_day[3] ~ dgamma(0.001,0.001)
     
-  }
-  
+
   
  ############################### forcing a single estimate of hunter level variance from caste D onto all other castes
- retrans_hunter[1] <- 0.5*(1/tauhunter[1])
+ retrans_hunter[1] <- (0.5*(1/tauhunter[1]))/nu_ret[1]
+
  sdhunter[1] <- 1/pow(tauhunter[1],0.5)
- tauhunter[1] ~ dgamma(0.01,0.01)
+ #tauhunter[1] ~ dgamma(0.01,0.01)
+ tauhunter[1] ~ dscaled.gamma(1,50) #implicit prior on sigma of a half-t dist: sigma = 1*t(df = 50) , i.e., 99% prob sd < 2
+ 
  nu[1] ~ dgamma(2,0.2)
+ 
+ nu_ret <- (1.422*nu[1]^0.906)/(1+(1.422*nu[1]^0.906)) #approximate retransformation to equate a t-distribution to a normal distribution - see appendix of Link et al. 2020 BBS model selection paper
+ 
  ## caste specific intercept priors
  for(c in 2:ncastes){
    ## harvest rate priors
-   retrans_hunter[c] <- 0.5*(1/tauhunter[1])
+   retrans_hunter[c] <-  retrans_hunter[1]
    sdhunter[c] <- 1/pow(tauhunter[1],0.5)
    tauhunter[c] <- tauhunter[1]
    nu[c] <- nu[1]
  }
- ############################### forcing a single estimate of hunter level variance from caste D onto all other castes
- 
+
   for(c in 1:ncastes){
     ## harvest rate priors
     # retrans_hunter[c] <- 0.5*(1/tauhunter[c])
@@ -183,43 +209,51 @@ model {
     ## caste specific intercept priors
    
     #activity (days) priors
-    retrans_hunter_day[c] <- 0.5*(1/tauhunter_day[c])
+    retrans_hunter_day[c] <- (0.5*(1/tauhunter_day[c]))/nu_day_ret[c]
     sdhunter_day[c] <- 1/pow(tauhunter_day[c],0.5)
-    tauhunter_day[c] ~ dgamma(0.01,0.01)
+    #tauhunter_day[c] ~ dgamma(0.01,0.01)
+    tauhunter_day[c] ~ dscaled.gamma(0.5,50) #implicit prior on sigma of a half-t dist: sigma = 1*t(df = 50) , i.e., 99% prob sd < 1
     nu_day[c] ~ dgamma(2,0.2)
+    nu_day_ret[c] <- (1.422*nu_day[c]^0.906)/(1+(1.422*nu_day[c]^0.906)) #approximate retransformation to equate a t-distribution to a normal distribution - see appendix of Link et al. 2020 BBS model selection paper
+    
     ## caste specific intercept priors
     
     
-    # mmu_psucc[c] ~ dnorm(0,1)
-    # phi_psucc[c] ~ dgamma(0.001,0.001)
-    # tau_mu_psucc[c] ~ dgamma(0.001,0.001)
+     mmu_psucc[c,1] ~ dt(0, 1/2.5^2, 1) # cauchy(0, 2.5) prior (Gelman et al., 2008) doi:10.1214/08-AOAS191
+     # phi_psucc[c] ~ dscaled.gamma(0.5,50)
+     tau_mmu_psucc[c] ~ dscaled.gamma(0.5,50)#time-series variance
     # 
-    # mmu_pactive[c] ~ dnorm(0,1)
-    # phi_pactive[c] ~ dgamma(0.001,0.001)
-    # tau_mu_pactive[c] ~ dgamma(0.001,0.001)
+    mmu_pactive[c,1] ~ dt(0, 1/2.5^2, 1) # cauchy(0, 2.5) prior (Gelman et al., 2008) doi:10.1214/08-AOAS191
+    #phi_pactive[c] ~ dscaled.gamma(0.5,50) #
+    tau_mu_pactive[c] ~ dscaled.gamma(0.5,50) #time-series variance
     # 
+    
+     for(y in 2:nyears){
+       mmu_psucc[c,y] ~ dnorm(mmu_psucc[c,y-1],tau_mmu_psucc[c])
+       mmu_pactive[c,y] ~ dnorm(mmu_pactive[c,y-1],tau_mu_pactive[c])
+     }
     
     for(y in 1:nyears){
       
-      alpha_psucc[c,y] ~ dunif(1,3) #very simple priors for the parameters of the beta priors on pactive and psucc
-      beta_psucc[c,y] ~ dunif(1,3)
-      alpha_pactive[c,y] ~ dunif(1,3)
-      beta_pactive[c,y] ~ dunif(1,3)
-      
+      # alpha_psucc[c,y] ~ dunif(1,3) #very simple priors for the parameters of the beta priors on pactive and psucc
+      # beta_psucc[c,y] ~ dunif(1,3)
+      # alpha_pactive[c,y] ~ dunif(1,3)
+      # beta_pactive[c,y] ~ dunif(1,3)
+      # 
 
-      #alternative priors that are no neccessary here but might help with some time-series or other assumption to model these proportions
-      # alpha_psucc[c,y] = phi_psucc[c] * mu_psucc[c,y]
-      # beta_psucc[c,y] = phi_psucc[c] * (1 - mu_psucc[c,y])
-      # logit(mu_psucc[c,y]) <- mmu_psucc[c] + dnorm(0,tau_mu_psucc[c])
-      # psucc[c,y] ~ dbeta(alpha_psucc[c,y],beta_psucc[c,y])
-      psucc[c,y] ~ dbeta(alpha_psucc[c,y],beta_psucc[c,y])
+      #alternative time-series priors for other groups where the number of active and successful has very sparse data
+       # alpha_psucc[c,y] <- phi_psucc[c] * mu_psucc[c,y]
+       # beta_psucc[c,y] <- phi_psucc[c] * (1 - mu_psucc[c,y])
+       # logit(mu_psucc[c,y]) <- mmu_psucc[c,y]
+     # psucc[c,y] ~ dbeta(alpha_psucc[c,y],beta_psucc[c,y])
+      logit(psucc[c,y]) <- mmu_psucc[c,y]
       
       # alpha_pactive[c,y] = phi_pactive[c] * mu_pactive[c,y]
       # beta_pactive[c,y] = phi_pactive[c] * (1 - mu_pactive[c,y])
       # logit(mu_pactive[c,y]) <- mmu_pactive[c] + dnorm(0,tau_mu_pactive[c])
       # pactive[c,y] ~ dbeta(alpha_pactive[c,y],beta_pactive[c,y])
-      pactive[c,y] ~ dbeta(alpha_pactive[c,y],beta_pactive[c,y])
-      
+      #pactive[c,y] ~ dbeta(alpha_pactive[c,y],beta_pactive[c,y])
+      logit(pactive[c,y]) <- mmu_psucc[c,y]
       
       ############# hunter-specific effects
       for(h in 1:nhunter_cy[c,y]){

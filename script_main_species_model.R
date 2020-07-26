@@ -44,7 +44,7 @@
 #   The ratio corresponds to the number of males per female bird in the sample. Ratios were calculated if the total sample equals or exceeds 20 parts.
 
 
-Y <- 2018
+Y <- 2019
 FY = 1976
 years <- FY:Y
 
@@ -878,9 +878,9 @@ parms = c("NACTIVE_y",
 #adaptSteps = 200              # Number of steps to "tune" the samplers.
 burnInSteps = 5000            # Number of steps to "burn-in" the samplers.
 nChains = 3                   # Number of chains to run.
-numSavedSteps=6000          # Total number of steps in chains to save.
+numSavedSteps=1000          # Total number of steps in chains to save.
 thinSteps=10                   # Number of steps to "thin" (1=keep every step).
-nIter = ceiling( ( (numSavedSteps * thinSteps )+burnInSteps) / nChains ) # Steps per chain.
+nIter = ceiling( ( (numSavedSteps * thinSteps )) ) # Steps per chain.
 
 t1 = Sys.time()
 
