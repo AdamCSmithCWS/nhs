@@ -363,26 +363,29 @@ for(spgp in c("duck","goose","murre")){
 # Province and Zone loop --------------------------------------------------
 
   
-#for(pr in provs2[c(3,5,6)]){
+for(pr in provs2){
+  
+
+      
+  #pzcount = 0
+  
+  zns <- unique(period[which(period$pr == pr),"zo"])
   
   # Set up parallel stuff
-  n_cores <- length(provs2)
+  n_cores <- length(zns)
   cluster <- makeCluster(n_cores, type = "PSOCK")
   registerDoParallel(cluster)
   
   
   
-  fullrun <- foreach(pr = provs2,
-                      .packages = c("jagsUI","tidyverse"),
-                      .inorder = FALSE,
-                      .errorhandling = "pass") %dopar%
+  fullrun <- foreach(z = zns,
+                     .packages = c("jagsUI","tidyverse"),
+                     .inorder = FALSE,
+                     .errorhandling = "pass") %dopar%
     {
       
-  pzcount = 0
-  
-  zns <- unique(period[which(period$pr == pr),"zo"])
-  for(z in zns){
-pzcount = pzcount + 1
+#  for(z in zns){
+#pzcount = pzcount + 1
 
 
 
@@ -442,7 +445,7 @@ sumkill$year = sumkill$YEAR-(minyr-1)
     sp.save = unique(prts1[,c("PRHUNT","ZOHUNT","AOU","spfact","spn")])
     sp.save[,"PRHUNT"] <- as.character(sp.save[,"PRHUNT"])
     sp.save[,"spfact"] <- as.character(sp.save[,"spfact"])
-  
+    # 
    
     for(sp in 1:nspecies){
 
@@ -479,11 +482,10 @@ sumkill$year = sumkill$YEAR-(minyr-1)
     }#sp
    
 
-    if(pzcount == 1){
+ 
       sp.save.out = sp.save
-    }else{
-      sp.save.out = rbind(sp.save.out,sp.save)
-    }
+ 
+ 
     
    
    
@@ -878,9 +880,9 @@ parms = c("NACTIVE_y",
 #adaptSteps = 200              # Number of steps to "tune" the samplers.
 burnInSteps = 5000            # Number of steps to "burn-in" the samplers.
 nChains = 3                   # Number of chains to run.
-numSavedSteps=1000          # Total number of steps in chains to save.
+numSavedSteps=1000          # Total number of steps in each chain to save.
 thinSteps=10                   # Number of steps to "thin" (1=keep every step).
-nIter = ceiling( ( (numSavedSteps * thinSteps )) ) # Steps per chain.
+nIter = ceiling( ( (numSavedSteps * thinSteps )+burnInSteps)) # Steps per chain.
 
 t1 = Sys.time()
 
@@ -895,7 +897,7 @@ t1 = Sys.time()
                     n.thin = thinSteps,
                     n.iter = nIter,
                     parallel = T,
-                    modules = NULL,
+                    #modules = "glm",
                     model.file = mod.file),silent = F)
 
   
@@ -924,10 +926,10 @@ rm(list = "out2")
 }
 
   }#z
+  stopCluster(cl = cluster)
   
 }#pr
 
-stopCluster(cl = cluster)
 
 
 }#spgp
