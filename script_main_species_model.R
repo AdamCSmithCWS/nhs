@@ -284,6 +284,13 @@ for(spgp in c("duck","goose","murre")){
   
   
   if(spgp == "goose"){
+    
+    Y <- 2019
+    FY = 1976
+    years <- FY:Y
+    
+    names(years) <- paste(years)
+    
     aou.spgp = aou.goose
     period = period.goose
     cal.spgp = calg
@@ -294,7 +301,6 @@ for(spgp in c("duck","goose","murre")){
     wact = "ACTIVEWF"
     wsucc = "SUTOGO"
     wday = "DAYWF"
-    years = FY:Y
     nyears = length(years)
     demog = data.frame(BSEX = rep(c("U","U"),each = 1),
                        BAGE = rep(c("A","I"),times = 1),
@@ -307,6 +313,12 @@ for(spgp in c("duck","goose","murre")){
     
   }
   if(spgp == "duck"){
+    
+    Y <- 2019
+    FY = 1976
+    years <- FY:Y
+    
+    names(years) <- paste(years)
     aou.spgp = aou.ducks
     period = period.duck
     cal.spgp = cald
@@ -317,7 +329,7 @@ for(spgp in c("duck","goose","murre")){
     wact = "ACTIVEWF"
     wsucc = "SUTODU"
     wday = "DAYWF"
-    years = FY:Y
+
     nyears = length(years)
     demog = data.frame(BSEX = rep(c("F","M"),each = 2),
                        BAGE = rep(c("A","I"),times = 2),
@@ -332,6 +344,13 @@ for(spgp in c("duck","goose","murre")){
   
   
   if(spgp == "murre"){
+    
+    Y <- 2019
+    FY = 2014#### previous years Murre harvest was calculated differently, pre 2013 only total MURRK, and in 2013 it was a mix of infor from DAYOT and calendars and species composition
+    years <- FY:Y
+    
+    names(years) <- paste(years)
+    
     aou.spgp = aou.murre
     period = period.murre
     cal.spgp = calm
@@ -342,15 +361,14 @@ for(spgp in c("duck","goose","murre")){
     wact = "ACTIVEM"
     wsucc = "SUCCM"
     wday = "DAYM" #?
-    years = 2014:Y #### previous years Murre harvest was calculated differently, pre 2013 only total MURRK, and in 2013 it was a mix of infor from DAYOT and calendars and species composition
-    nyears = length(years)
+     nyears = length(years)
     demog = data.frame(BSEX = rep(c("U","U"),each = 1),
                        BAGE = rep(c("A","I"),times = 1),
                        stringsAsFactors = F)
-    minyr <- 2014
+    minyr <- FY
     provs2 = "NF"
     mod.file = "models/species_harvest_model_zip.R" # I think this should work for murres too
-    FY = 2014
+ 
     
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
     
@@ -1118,6 +1136,13 @@ for(spgp in c("goose","duck","murre")){
   
   
   if(spgp == "goose"){
+    
+    Y <- 2019
+    FY = 1976
+    years <- FY:Y
+    
+    names(years) <- paste(years)
+    
     aou.spgp = aou.goose
     period = period.goose
     cal.spgp = calg
@@ -1126,21 +1151,26 @@ for(spgp in c("goose","duck","murre")){
     zhunt = "ZOHUNTG"
     wkill = "TOGOK"
     wact = "ACTIVEWF"
-    wsucc = "SUCCWF"
+    wsucc = "SUTOGO"
     wday = "DAYWF"
-    years = FY:Y
     nyears = length(years)
     demog = data.frame(BSEX = rep(c("U","U"),each = 1),
                        BAGE = rep(c("A","I"),times = 1),
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    sps.spgp <- aou.goose
+    mod.file = "models/species_harvest_model_zip.R" # 
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
     
     
   }
   if(spgp == "duck"){
+    
+    Y <- 2019
+    FY = 1976
+    years <- FY:Y
+    
+    names(years) <- paste(years)
     aou.spgp = aou.ducks
     period = period.duck
     cal.spgp = cald
@@ -1149,25 +1179,30 @@ for(spgp in c("goose","duck","murre")){
     zhunt = "ZOHUNT"
     wkill = "TODUK"
     wact = "ACTIVEWF"
-    wsucc = "SUCCWF"
+    wsucc = "SUTODU"
     wday = "DAYWF"
-    years = FY:Y
+    
     nyears = length(years)
     demog = data.frame(BSEX = rep(c("F","M"),each = 2),
                        BAGE = rep(c("A","I"),times = 2),
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    sps.spgp <- aou.ducks
-    
+    mod.file = "models/species_harvest_model_zip.R" #
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
-    
     
   }
   
   
   
   if(spgp == "murre"){
+    
+    Y <- 2019
+    FY = 2014#### previous years Murre harvest was calculated differently, pre 2013 only total MURRK, and in 2013 it was a mix of infor from DAYOT and calendars and species composition
+    years <- FY:Y
+    
+    names(years) <- paste(years)
+    
     aou.spgp = aou.murre
     period = period.murre
     cal.spgp = calm
@@ -1178,20 +1213,19 @@ for(spgp in c("goose","duck","murre")){
     wact = "ACTIVEM"
     wsucc = "SUCCM"
     wday = "DAYM" #?
-    years = 2014:Y #### previous years Murre harvest was calculated differently, pre 2013 only total MURRK, and in 2013 it was a mix of infor from DAYOT and calendars and species composition
     nyears = length(years)
     demog = data.frame(BSEX = rep(c("U","U"),each = 1),
                        BAGE = rep(c("A","I"),times = 1),
                        stringsAsFactors = F)
-    minyr <- 2014
+    minyr <- FY
     provs2 = "NF"
-    sps.spgp <- aou.murre
+    mod.file = "models/species_harvest_model_zip.R" # I think this should work for murres too
+    
     
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
     
-    
-    
   }
+  
   
  
 
