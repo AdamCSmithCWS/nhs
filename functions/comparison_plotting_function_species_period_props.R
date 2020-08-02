@@ -47,6 +47,9 @@ comp_plot_psy <- function(group = spgp,
   }
   
   
+
+  dd <- dd[which(dd$year >= FY),]
+  my_col <-  scale_color_viridis_d(aesthetics = c("colour","fill"), begin = 0.3,end = 0.9,option = "B",direction = -1)
   
   
   # part counts to plot ---------------------------------------------------
@@ -93,7 +96,7 @@ comp_plot_psy <- function(group = spgp,
       labs(title = paste0("Species proportions in SCS by period ",prov," zn",zone," (mean and 95 CI)"))+
       geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.03)+
       scale_y_continuous(limits = c(0,NA))+
-      scale_color_viridis_c(aesthetics = c("colour","fill"),end = 0.7)+
+      my_col+
       theme_classic()+
       geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = partsplot,label = nparts),size = 3,colour = grey(0.2),alpha = 0.75,position = position_dodge(width = 0.5))+
       facet_wrap_paginate(facets = ~AOU,nrow = 2,ncol = 2,scales = "free",page = pp)

@@ -24,13 +24,17 @@ comp_plot_sdhunter_year <- function(group = spgp,
   
   dd = d1
 
+  dd$mod <- factor(dd$mod,levels = c("Old","New"), ordered = T)
+  dd <- dd[which(dd$year >= FY),]
+  my_col <-  scale_color_viridis_d(aesthetics = c("colour","fill"), begin = 0.3,end = 0.9,option = "B",direction = -1)
+  
   outgg = ggplot(data = dd,aes(x = year,y = mean))+
     geom_point(aes(colour = mod),size = 0.5)+
     geom_line(aes(colour = mod))+
     labs(title = paste0("caste specific sdhunter ",prov," zn",zone," (mean and 95 CI)"))+
     geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
     #scale_y_continuous(limits = c(0,NA))+
-    scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
+    my_col+
     theme_classic()+
     facet_wrap(facets = ~caste,nrow = 2,ncol = 2,scales = "fixed")
 

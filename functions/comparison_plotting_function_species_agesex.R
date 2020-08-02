@@ -35,6 +35,10 @@ comp_plot_axsy <- function(group = spgp,
   
   dd = d1
 
+
+  dd <- dd[which(dd$year >= FY),]
+  my_col <-  scale_color_viridis_d(aesthetics = c("colour","fill"), begin = 0.3,end = 0.9,option = "B",direction = -1)
+  
   
   for(i in 1:nrow(dd)){
       ss = dd[i,"sp"]
@@ -98,7 +102,7 @@ for(pp in 1:length(outggs)){
     labs(title = paste0("Age and sex proportions ",prov," zn",zone," (mean and 95 CI)"))+
     geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.1)+
     scale_y_continuous(limits = c(0,NA))+
-    scale_color_viridis_d(aesthetics = c("colour","fill"),end = 0.7)+
+    my_col+
     theme_classic()+
     #geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = partsplot,label = nparts),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
     facet_wrap_paginate(facets = ~AOU+demo,nrow = 2,ncol = 2,scales = "fixed",page = pp)

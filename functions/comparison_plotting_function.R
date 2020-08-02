@@ -27,8 +27,14 @@ comp_plot_simple <- function(group = spgp,
     dd = d1
   }else{
   d2$mod = "Old"
-  dd = bind_rows(d1,d2)
+  dd = bind_rows(d2,d1)
   }
+  
+  
+  dd$mod <- factor(dd$mod,levels = c("Old","New"), ordered = T)
+  dd <- dd[which(dd$year >= FY),]
+  my_col <-  scale_color_viridis_d(aesthetics = c("colour","fill"), begin = 0.3,end = 0.9,option = "B",direction = -1)
+  
   
   if(any(!is.finite(dd$sd))){
   outgg = ggplot(data = dd,aes(x = year,y = med,group = mod,fill = mod))+
@@ -36,7 +42,7 @@ comp_plot_simple <- function(group = spgp,
     labs(title = paste0("Median and quartiles",var," vs ",oldvar," ",prov," zn",zone," (mean and 95 CI)"))+
     geom_ribbon(aes(ymax = uqrt,ymin = lqrt),alpha = 0.2)+
     scale_y_continuous(limits = c(0,NA))+
-    scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
+    my_col+
     theme_classic()
   }else{
   outgg = ggplot(data = dd,aes(x = year,y = mean,group = mod,fill = mod))+
@@ -44,7 +50,7 @@ comp_plot_simple <- function(group = spgp,
     labs(title = paste0(var," vs ",oldvar," ",prov," zn",zone," (mean and 95 CI)"))+
     geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
     scale_y_continuous(limits = c(0,NA))+
-    scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
+    my_col+
     theme_classic()
     }
   
