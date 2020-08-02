@@ -131,7 +131,7 @@ for(g in 1:ngroups){
   
   
   
-  
+  ######## caste effects
  CCST[1] <- 0
  CCST_day[1] <- 0
  CCST[2] <- 0
@@ -139,7 +139,7 @@ for(g in 1:ngroups){
  
   for(c in 3:ncastes){
   CCST[c] ~ dnorm(0,16) #strongly informative, shrinkage prior sd = 0.25
-  CCST_day[c] ~ dnorm(0,0.001)
+  CCST_day[c] ~ dnorm(0,0.01)
   }
 
  tau_cst_day[1] ~ dscaled.gamma(0.25,50) #~ dgamma(0.001,0.001)
@@ -149,7 +149,7 @@ for(g in 1:ngroups){
    cst[1,1] <- CCST[1] #fixed value in first year, to help separately estimate the cst effects from ann
    cst_day[1,1] <- CCST_day[1] #fixed value in first year, to help separately estimate the cst_day effects from ann_day
    
-   for(y in 2:nyears){  ### random effects for caste effects, allowing them to vary randomly by year
+   for(y in 2:nyears){  ### random effects for caste day, allowing them to vary randomly by year
      
      # cst[c,y] ~ dnorm(CCST[c],tau_cst[c])
      # cst_day[c,y] ~ dnorm(CCST_day[c],tau_cst_day[c])
@@ -260,7 +260,7 @@ for(g in 1:ngroups){
       # logit(mu_pactive[c,y]) <- mmu_pactive[c] + dnorm(0,tau_mu_pactive[c])
       # pactive[c,y] ~ dbeta(alpha_pactive[c,y],beta_pactive[c,y])
       #pactive[c,y] ~ dbeta(alpha_pactive[c,y],beta_pactive[c,y])
-      logit(pactive[c,y]) <- mmu_psucc[c,y]
+      logit(pactive[c,y]) <- mmu_pactive[c,y]
       
       ############# hunter-specific effects
       for(h in 1:nhunter_cy[c,y]){
@@ -313,7 +313,7 @@ for(g in 1:ngroups){
         for(h in 1:nhunter_cy[c,y]){
           for(g in 1:ngroups){
         #hunter-level predictions of mean kill
-        totkill_hcy[y,c,h,g] <- exp(group[y,g]*reg_mat[y,g] + ann[y] + cst[c,y] + hntr[c,y,h] + ann_day[y] + cst_day[c,y] + hntr_day[c,y,h]) *psi[y]
+        totkill_hcy[y,c,h,g] <- exp(group[y,g] + ann[y] + cst[c,y] + hntr[c,y,h] + ann_day[y] + cst_day[c,y] + hntr_day[c,y,h]) *psi[g]*reg_mat[y,g]
           }#g
         totdays_hcy[y,c,h] <- exp(ann_day[y] + cst_day[c,y] + hntr_day[c,y,h])
         }
@@ -321,7 +321,7 @@ for(g in 1:ngroups){
       for(g in 1:ngroups){
         mean_totkill_ycg_alt[y,c,g] <- mean(totkill_hcy[y,c,1:nhunter_cy[c,y],g]) #mean kill per active hunter
         #mean per-hunter kill and days by year and caste - alternative estimate
-        mean_totkill_ycg[y,c,g] <- exp(group[y,g]*reg_mat[y,g] + ann[y] + cst[c,y] + ann_day[y] + cst_day[c,y] + retrans_hunter_day[c] + retrans_hunter[c]) *psi[y]
+        mean_totkill_ycg[y,c,g] <- exp(group[y,g] + ann[y] + cst[c,y] + ann_day[y] + cst_day[c,y] + retrans_hunter_day[c] + retrans_hunter[c]) *psi[g]*reg_mat[y,g]
       }
       mean_totdays_yc_alt[y,c] <- mean(totdays_hcy[y,c,1:nhunter_cy[c,y]]) #mean days per active hunter
 
@@ -339,15 +339,17 @@ for(g in 1:ngroups){
   for(y in 1:nyears){
    
     for(c in 1:ncastes){
-      kill_cy[c,y,g] <- mean_totkill_yc[y,c,g]*NACTIVE_cy[g,c,y] #total kill by caste and year
-      days_cy[c,y,g] <- mean_totdays_yc[y,c]*NACTIVE_cy[g,c,y] #total days by caste and year
-      
+      for(g in 1:ngroups){
+      kill_cyg[c,y,g] <- mean_totkill_ycg[y,c,g]*NACTIVE_gcy[g,c,y] #total kill by caste and year
+      days_cyg[c,y,g] <- mean_totdays_yc[y,c]*NACTIVE_gcy[g,c,y]*reg_mat[y,g] #total days by caste, group, and year
+      }
 }
     
     #### summed total harvest and activity (e.g., all ducks) across castes in a given year for each group
-    kill_y[y.g] <- sum(kill_cy[castes,y,g])
-    days_y[y,g] <- sum(days_cy[castes,y,g])
-    
+    for(g in 1:ngroups){
+      kill_yg[y,g] <- sum(kill_cyg[castes,y,g])
+    days_yg[y,g] <- sum(days_cyg[castes,y,g])
+    }
   }#y
   
   

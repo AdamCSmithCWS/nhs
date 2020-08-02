@@ -288,13 +288,16 @@ regs_other[[spgp]] <- tmp
 
 non_res_combine = paste(rep(provs,each = 3),rep(c(1,2,3),times = length(provs)))
 #this above just ensures all non-resident hunters are combined with resident hunters for these groups, separating out caste E is rarely feasible (even caste B is sketchy)
-
+keep_E <- paste(rep(c("MB","NB","SK"),each = 3),rep(c(1,2,3),times = 3))
 # province and zone loops -------------------------------------------------
-
+non_res_combine <- non_res_combine[-which(non_res_combine %in% keep_E)]
 
 for(pr in provs){
   
   
+  #################### try keeping all caste effects constant through time - done (except caste-D day effect)
+  #################### or just giving a simple distributional prior so that we can still estimate the caste effects
+  #################### or tweaking the priors so that they are strongly informative - done
   
   
   # regulations selection -----------------------------------------------------
@@ -330,7 +333,11 @@ for(pr in provs){
   reg_mat <- as.matrix(regs[,grps]) #to enter model as data ensuring that group-level annual estimates are never > 0 in years with no season.
   grps_f <- factor(grps,levels = grps,ordered = TRUE) #ensures consistent ordering of the harvested groups
   
-  
+  fyear = NA
+  for(g in 1:ngroups){
+    fyear[g] <- min(which(regs[,g+1] > 0))
+  }
+
   # data set up -------------------------------------------------------
   
   allkill = allkill
@@ -631,18 +638,18 @@ for(i in 1:ngroups){
 print(nsucc[i,,]/nactive)
   }
 
-if(length(nsucct) != max(castes)*nyears){
-  nsucc <- matrix(nrow = max(castes),ncol = nyears,dimnames = list(as.character(levels(sumkill$caste)),as.character(1:nyears)))
-  for(cc in castes){
-    ccn = as.character(levels(sumkill$caste)[cc])
-    for(yy in 1:nyears){
-      yyn = as.character(yy)
-      nsucc[ccn,yyn] <- ifelse((ccn %in% names(nsucct[,1]) & yyn %in% names(nsucct[1,]) ), nsucct[ccn,yyn] , 0)
-    }
-  }
-}else{
-  nsucc <- nsucct
-}
+# if(length(nsucct) != max(castes)*nyears){
+#   nsucc <- matrix(nrow = max(castes),ncol = nyears,dimnames = list(as.character(levels(sumkill$caste)),as.character(1:nyears)))
+#   for(cc in castes){
+#     ccn = as.character(levels(sumkill$caste)[cc])
+#     for(yy in 1:nyears){
+#       yyn = as.character(yy)
+#       nsucc[ccn,yyn] <- ifelse((ccn %in% names(nsucct[,1]) & yyn %in% names(nsucct[1,]) ), nsucct[ccn,yyn] , 0)
+#     }
+#   }
+# }else{
+#   nsucc <- nsucct
+# }
 
 
 
@@ -650,19 +657,20 @@ if(any(sumkill_active[,wday] < 1 & spgp == "murre")){
   sumkill_active[which(sumkill_active[,wday] < 1),wday] <- sumkill_active[which(sumkill_active[,wday] < 1),"DAYOT"]
 }
 
-if(any(nsucc > nactive)){break("number successful > number active, problem with the data")}
-
+for(g in 1:ngroups){
+if(any(nsucc[g,,] > nactive)){break("number successful > number active, problem with the data")}
+}
 
 
 caste = as.integer(sumkill_active[,"caste"])
 year = sumkill_active[,"year"]
-kill = sumkill_active[,wkill]
+kill = as.matrix(sumkill_active[,wkill])
 nhs = nrow(sumkill_active)
 days = sumkill_active[,wday]
 
 if(any(days < 1) | any(is.na(days))){
-  mday_per_kill <- sum(days[which(days > 0)])/sum(kill[which(days > 0)],na.rm = T)
-  days[which(days == 0 | is.na(days))] <- ceiling(mday_per_kill*(kill[which(days == 0 | is.na(days))]+1))
+  mday_per_kill <- sum(days[which(days > 0)])/sum(rowSums(kill[which(days > 0),]),na.rm = T)
+  days[which(days == 0 | is.na(days))] <- ceiling(mday_per_kill*(rowSums(kill[which(days == 0 | is.na(days)),])+1))
 }
 
 days = ceiling(days)
@@ -755,13 +763,16 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
             nsucc = nsucc, # nsucc[c,y] number of successful hunters by caste and year (active hunters with harvest > 0)
             #spcies composition components
             nyears = nyears, #integer length = 1 number of years
+            ngroups = ngroups, #integer number of groups included in the other category for this zone
+            fyear = fyear, #vector of the first years for each group
+            reg_mat = reg_mat, # matrix of the yearly seasons for each group nrow = nyears, ncol = ngroups
             nhunter_cy = nhunter_cy, # nhunter_cy[castes,nyears] number active hunters by caste and year
             ncastes = max(castes), # castes (numeric, 1:4)
             castes = castes, # castes (numeric, 1:4)
             nhs = nhs, # integer length = 1 number of active hunters over all years (nrow for sumkill_active)
             #main data for overall harvest estimates
             hunter = hunter_n_cy, # vector(length = nhs) unique numeric indicator for active hunters by caste and year - same as nactive, but only needed for hunter-level predictions
-            kill = kill, # vector(length = nhs), total group (ducks, geese, murres) harvest of nhs response
+            kill = kill, # matrix(nrow = nhs,ncol = ngroups), total group (ducks, geese, murres) harvest of nhs response
             year = year, # vector(length = nhs), year of response
             caste = caste, # vector(length = nhs), caste of response
             days = days, #vector(length = nhs), number of days spent hunting
@@ -776,17 +787,17 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
 
 
 
-parms = c("NACTIVE_y",
-          "NSUCC_y",
+parms = c("NACTIVE_gy",
+          "NSUCC_gy",
           "nu_day",
           "sdhunter_day",
-          "mean_totkill_yc",
-          "mean_totdays_yc",
-          "mean_totkill_yc_alt",
-          "mean_totdays_yc_alt",
-          "kill_cy",
-          "kill_y",
-          "days_y",
+          "mean_totkill_ycg",
+          "mean_totdays_ycg",
+          "mean_totkill_ycg_alt",
+          "mean_totdays_ycg_alt",
+          "kill_cyg",
+          "kill_yg",
+          "days_yg",
           "nu",
           "sdhunter",
           "cst",
@@ -823,15 +834,16 @@ t1 = Sys.time()
   t2 = Sys.time()
 if(class(out2) != "try-error"){
 
-  pgg_psi = ggs(out2$samples,family = "psi")
-  pgg_sdhunter = ggs(out2$samples,family = "sdhunter")
-  pgg_ann = ggs(out2$samples,family = "ann")
-  pgg_nu = ggs(out2$samples,family = "nu")
-  pgg_ky = ggs(out2$samples,family = "kill_y")
-  pgg_ky = filter(pgg_ky,!grepl(pattern = "alt",Parameter))
-  pgg <- rbind(pgg_psi,pgg_ann,pgg_sdhunter,pgg_nu,pgg_ky)
-  try(ggmcmc(pgg,file = paste0("output/conv/",pr,z,spgp,".pdf")),silent = T)
-  
+  # pgg_psi = ggs(out2$samples,family = "psi")
+  # pgg_sdhunter = ggs(out2$samples,family = "sdhunter")
+  # pgg_ann = ggs(out2$samples,family = "ann")
+  # pgg_nu = ggs(out2$samples,family = "nu")
+  # pgg_ky = ggs(out2$samples,family = "kill_y")
+  # pgg_ky = filter(pgg_ky,!grepl(pattern = "alt",Parameter))
+  # 
+  # pgg <- rbind(pgg_psi,pgg_ann,pgg_sdhunter,pgg_nu,pgg_ky)
+  # try(ggmcmc(pgg,file = paste0("output/conv/",pr,z,".pdf")),silent = T)
+  # 
  
   
   
