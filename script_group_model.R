@@ -292,7 +292,7 @@ keep_E <- paste(rep(c("MB","NB","SK"),each = 3),rep(c(1,2,3),times = 3))
 # province and zone loops -------------------------------------------------
 non_res_combine <- non_res_combine[-which(non_res_combine %in% keep_E)]
 
-for(pr in provs){
+for(pr in provs[c(1,3)]){
   
   
   #################### try keeping all caste effects constant through time - done (except caste-D day effect)
@@ -330,6 +330,9 @@ for(pr in provs){
   regs <- regs[,which(colSums(regs) > 0)]
   grps <- names(regs)[-1] #the -1 removes the column called
   ngroups <- length(grps) #to enter model as data
+  if("SNIPK" %in% grps){
+    regs[which(regs$YEAR < 1992), "SNIPK"] <- 0
+  }### remove Snipe hunt per 1991
   reg_mat <- as.matrix(regs[,grps]) #to enter model as data ensuring that group-level annual estimates are never > 0 in years with no season.
   grps_f <- factor(grps,levels = grps,ordered = TRUE) #ensures consistent ordering of the harvested groups
   
@@ -803,7 +806,7 @@ parms = c("NACTIVE_y",
           "sdhunter",
           "cst",
           "cst_day",
-          "ann",
+          "group",
           "ann_day",
           "parrive",
           "pleave",
@@ -924,6 +927,9 @@ for(pr in provs){
   regs <- regs[,which(colSums(regs) > 0)]
   grps <- names(regs)[-1] #the -1 removes the column called
   ngroups <- length(grps) #to enter model as data
+  if("SNIPK" %in% grps){
+    regs[which(regs$YEAR < 1992), "SNIPK"] <- 0
+  }### remove Snipe hunt per 1991
   reg_mat <- as.matrix(regs[,grps]) #to enter model as data ensuring that group-level annual estimates are never > 0 in years with no season.
   grps_f <- factor(grps,levels = grps,ordered = TRUE) #ensures consistent ordering of the harvested groups
   

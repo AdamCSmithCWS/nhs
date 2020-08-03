@@ -153,8 +153,8 @@ model {
     cst[c,y] ~ dnorm(CCST[c],tau_cst[c])
     cst_day[c,y] ~ dnorm(CCST_day[c],tau_cst_day[c])
     }
-    tau_cst[c] ~ dgamma(0.001,0.001) # assumption that the
-    tau_cst_day[c] ~ dgamma(0.001,0.001)
+    tau_cst[c] ~ dscaled.gamma(0.5,50) # assumption that the
+    tau_cst_day[c] ~ dscaled.gamma(0.5,50)
     
   }
   
@@ -163,7 +163,7 @@ model {
     ## harvest rate priors
     retrans_hunter[c] <- 0.5*(1/tauhunter[c])/nu_ret[c] 
     sdhunter[c] <- 1/pow(tauhunter[c],0.5)
-    tauhunter[c] ~ dgamma(0.01,0.01)
+    tauhunter[c] ~ dscaled.gamma(0.5,50)
     nu[c] ~ dgamma(2,0.2)
     nu_ret[c] <- (1.422*nu[c]^0.906)/(1+(1.422*nu[c]^0.906)) #approximate retransformation to equate a t-distribution to a normal distribution - see appendix of Link et al. 2020 BBS model selection paper
     
@@ -173,7 +173,7 @@ model {
     #activity (days) priors
     retrans_hunter_day[c] <- 0.5*(1/tauhunter_day[c])/nu_day_ret[c]
     sdhunter_day[c] <- 1/pow(tauhunter_day[c],0.5)
-    tauhunter_day[c] ~ dgamma(0.01,0.01)
+    tauhunter_day[c] ~ dscaled.gamma(0.5,50)
     nu_day[c] ~ dgamma(2,0.2)
     nu_day_ret[c] <- (1.422*nu_day[c]^0.906)/(1+(1.422*nu_day[c]^0.906)) #approximate retransformation to equate a t-distribution to a normal distribution - see appendix of Link et al. 2020 BBS model selection paper
     
@@ -182,11 +182,11 @@ model {
     
      mmu_psucc[c,1] ~ dt(0, 1/2.5^2, 1) # cauchy(0, 2.5) prior (Gelman et al., 2008) doi:10.1214/08-AOAS191
     # phi_psucc[c] ~ dgamma(0.001,0.001)
-     tau_mmu_psucc[c] ~ dscaled.gamma(1,50)#time-series variance
+     tau_mmu_psucc[c] ~ dscaled.gamma(0.5,50)#time-series variance
      # 
      mmu_pactive[c,1] ~ dt(0, 1/2.5^2, 1) # cauchy(0, 2.5) prior (Gelman et al., 2008) doi:10.1214/08-AOAS191
      #phi_pactive[c] ~ dscaled.gamma(0.5,50) #
-     tau_mu_pactive[c] ~ dscaled.gamma(1,50) #time-series variance
+     tau_mu_pactive[c] ~ dscaled.gamma(0.5,50) #time-series variance
      
      ##time series model for the proportion that are active
      for(y in 2:nyears){
@@ -254,9 +254,9 @@ model {
   
   # first-difference harvest and activity variance priors
    sdyear <- 1/pow(tauyear,0.5)
- tauyear ~ dgamma(0.001,0.001)
+ tauyear ~ dscaled.gamma(0.5,50)
  sdyear_day <- 1/pow(tauyear_day,0.5)
- tauyear_day ~ dgamma(0.001,0.001)
+ tauyear_day ~ dscaled.gamma(0.5,50)
   # 
   
   
@@ -381,14 +381,14 @@ model {
   for(y in 2:nyears){
     alpha_py[1,y] ~ dnorm(alpha_py[1,y-1],tau_alpha_py[1])
   }
-  tau_alpha_py[1] ~ dgamma(0.01,0.01)
+  tau_alpha_py[1] ~ dscaled.gamma(0.5,50)
   for(p in 2:nperiods){
     alpha_p[p] ~ dnorm(0,0.001) # fixed effect period-effects on total kill
     alpha_py[p,1] <- alpha_p[p]
      for(y in 2:nyears){
        alpha_py[p,y] ~ dnorm(alpha_py[p,y-1],tau_alpha_py[p]) # first difference model through time
      }
-    tau_alpha_py[p] ~ dgamma(0.01,0.01)
+    tau_alpha_py[p] ~ dscaled.gamma(0.5,50)
   }#p
   
   
@@ -455,8 +455,8 @@ model {
     
   }#s
   for(s in 1:nspecies){
-    tau_alpha_psy[s] ~ dgamma(0.01,0.01) #year-effecct variance by species
-    taualpha_s[s] ~ dgamma(0.01,0.01) # period variance by species
+    tau_alpha_psy[s] ~ dscaled.gamma(0.5,50) #year-effecct variance by species
+    taualpha_s[s] ~ dscaled.gamma(0.5,50) # period variance by species
     
     for(p in 1:nperiods){
       alpha_ps[p,s] ~ dnorm(alpha_s[s],taualpha_s[s])
@@ -518,18 +518,18 @@ model {
   #### multinomial dirichlet-prior, time-series model for the age and sex (ducks) or age (geese) composition
   
   alpha_ax[1] <- 0
-  tau_alpha_ax[1] ~ dgamma(0.01,0.01)
+  tau_alpha_ax[1] ~ dscaled.gamma(0.5,50)
   
   for(d in 2:ndemog){
     alpha_ax[d] ~ dnorm(0,0.001)   # mean demographic contribution across species (assuming that demography is similar across species...sketchy...)
-    tau_alpha_ax[d] ~ dgamma(0.01,0.01)
+    tau_alpha_ax[d] ~ dscaled.gamma(0.5,50)
     #prior on the variance of demographic contribution across species for a given demographic grouping
     #prior on the sd of alpha_psy[s] equal to the half-t distribution with sd = 2 and 4 degrees of freedom.  The density isflat for very small values (σS) and has a long flat tail for large values (σS).  Thesefeatures protect against mis-specification of the prior scaleS.  Choosing a largeSis harmlessas it simply makes the prior flatter, whereas ifSis too small then the long flat tail ensuresthat sufficient data will dominate the prior.  Gelman [2006] calls this a “weakly informative”prior.  For comparison, figure 10.1 also shows the density onσin the limit as the degrees offreedomdfincreases to infinity.  The distribution then becomes a half-normal with standarddeviationS.  The effect of increasing the degrees of freedom is to diminish the weight of thetail.
     
   }#d
   
   for(s in 1:nspecies){
-    tau_alpha_axsy[s] ~ dgamma(0.01,0.01) #variance of year-effects for the demographic parameters by species
+    tau_alpha_axsy[s] ~ dscaled.gamma(0.5,50) #variance of year-effects for the demographic parameters by species
     
     for(d in 1:ndemog){
      

@@ -63,7 +63,7 @@ if(length(oldvar) > 1){
     geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
     scale_y_continuous(limits = c(0,NA))+
     my_col+
-    ggrepel::geom_text_repel(data = labls,aes(colour = mod),inherit.aes = TRUE,label = group)+
+    #ggrepel::geom_text_repel(data = labls,aes(colour = mod),inherit.aes = TRUE,label = group)+
     facet_wrap(facets = ~group,ncol = nf,nrow = 2,scales = "free")+
     theme_classic()
 }else{
@@ -73,8 +73,10 @@ if(length(oldvar) > 1){
     geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
     scale_y_continuous(limits = c(0,NA))+
     my_col+
-    ggrepel::geom_text_repel(data = labls,aes(colour = mod),inherit.aes = TRUE,label = group)+
-    theme_classic()  
+    theme_classic() 
+  # if(!is.na(grpnms)){
+  #   outgg + ggrepel::geom_text_repel(data = labls,aes(colour = mod),inherit.aes = TRUE,label = group)
+  # }
 }
       
       
