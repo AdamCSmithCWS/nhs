@@ -787,17 +787,18 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
 
 
 
-parms = c("NACTIVE_gy",
-          "NSUCC_gy",
+parms = c("NACTIVE_y",
+          "NSUCC_yg",
           "nu_day",
           "sdhunter_day",
-          "mean_totkill_ycg",
-          "mean_totdays_ycg",
-          "mean_totkill_ycg_alt",
-          "mean_totdays_ycg_alt",
-          "kill_cyg",
+          # "mean_totkill_ycg",
+          # "mean_totdays_ycg",
+          # "mean_totkill_ycg_alt",
+          # "mean_totdays_ycg_alt",
+          #"kill_cyg",
           "kill_yg",
           "days_yg",
+          "days_y",
           "nu",
           "sdhunter",
           "cst",
@@ -848,7 +849,7 @@ if(class(out2) != "try-error"){
   
   
   save(list = c("out2","jdat"),
-       file = paste("output/full harvest zip",pr,z,spgp,"alt mod.RData"))
+       file = paste("output/other harvest zip",pr,z,"alt mod.RData"))
   
 rm(list = "out2")
 
@@ -861,284 +862,103 @@ rm(list = "out2")
 stopCluster(cl = cluster)
 
 
-}#spgp
-# plotting comparisons to published estimates -----------------------------
 
-
-
-# re_sample to examine hunter effect distribution -------------------------
-
-# 
-# for(spgp in c("goose","duck","murre")){
-#   ### begining of loop through provinces only engage this loop if running the full analysis
-#   ### for a single province and zone, skip the next 4 lines
-#   ### and enter something like the following (e.g., to run Ontario-zone 3)
-#   
-#   # group data set up -------------------------------------------------------
-#   
-#   
-#   if(spgp == "goose"){
-#     aou.spgp = aou.goose
-#     period = period.goose
-#     cal.spgp = calg
-#     allkill = allkill
-#     phunt = "PRHUNTG"
-#     zhunt = "ZOHUNTG"
-#     wkill = "TOGOK"
-#     wact = "ACTIVEWF"
-#     wsucc = "SUTOGO"
-#     wday = "DAYWF"
-#     years = FY:Y
-#     nyears = length(years)
-#     demog = data.frame(BSEX = rep(c("U","U"),each = 1),
-#                        BAGE = rep(c("A","I"),times = 1),
-#                        stringsAsFactors = F)
-#     minyr <- min(years)
-#     provs2 <- provs
-#     mod.file = "species_harvest_model_zip.R" # I think this should work for geese and murres too
-#     
-#     
-#   }
-#   if(spgp == "duck"){
-#     aou.spgp = aou.ducks
-#     period = period.duck
-#     cal.spgp = cald
-#     allkill = allkill
-#     phunt = "PRHUNT"
-#     zhunt = "ZOHUNT"
-#     wkill = "TODUK"
-#     wact = "ACTIVEWF"
-#     wsucc = "SUTODU"
-#     wday = "DAYWF"
-#     years = FY:Y
-#     nyears = length(years)
-#     demog = data.frame(BSEX = rep(c("F","M"),each = 2),
-#                        BAGE = rep(c("A","I"),times = 2),
-#                        stringsAsFactors = F)
-#     minyr <- min(years)
-#     provs2 <- provs
-#     mod.file = "species_harvest_model.R" # I think this should work for geese and murres too
-#     
-#   }
-#   
-#   
-#   
-#   if(spgp == "murre"){
-#     aou.spgp = aou.murre
-#     period = period.murre
-#     cal.spgp = calm
-#     allkill = allkill
-#     phunt = "PRHUNTM"
-#     zhunt = "ZOHUNTM"
-#     wkill = "MURRK"
-#     wact = "ACTIVEM"
-#     wsucc = "SUCCM"
-#     wday = "DAYM" #?
-#     years = 2014:Y #### previous years Murre harvest was calculated differently, pre 2013 only total MURRK, and in 2013 it was a mix of infor from DAYOT and calendars and species composition
-#     nyears = length(years)
-#     demog = data.frame(BSEX = rep(c("U","U"),each = 1),
-#                        BAGE = rep(c("A","I"),times = 1),
-#                        stringsAsFactors = F)
-#     minyr <- 2014
-#     provs2 = "NF"
-#     mod.file = "species_harvest_model.R" # I think this should work for geese and murres too
-#     
-#     
-#   }
-#   
-#   
-#   non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
-#   
-#   
-#   
-# # Set up parallel stuff
-# n_cores <- length(provs2)
-# cluster <- makeCluster(n_cores, type = "PSOCK")
-# registerDoParallel(cluster)
-# 
-# 
-# 
-# sdhunter <- foreach(pr = provs2,
-#                     .packages = c("jagsUI","tidyverse"),
-#                     .inorder = FALSE,
-#                     .errorhandling = "pass") %dopar%
-#   {
-#     
-#     pzcount = 0
-#     
-#     zns <- unique(period[which(period$pr == pr),"zo"])
-#     for(z in zns){
-#       pzcount = pzcount + 1
-#       
-#       load(paste("output/full harvest",pr,z,spgp,"alt mod.RData"))#        load(paste("output/full harvest caste time",pr,z,spgp,"mod.RData"))
-#       
-#       new.inits <- list()
-#       length(new.inits) <- 3
-#       
-#       new.inits[[1]] <- as.list(out2$model$cluster1$state()[[1]])
-#       new.inits[[2]] <- as.list(out2$model$cluster2$state()[[1]])
-#       new.inits[[3]] <- as.list(out2$model$cluster3$state()[[1]])
-#       #
-#       
-#       
-#       out3 = try(jagsUI(data = jdat,
-#                         parameters.to.save = c("hntr","hntr_day"),
-#                         n.chains = 3,
-#                         n.burnin = 0,
-#                         n.thin = 10,
-#                         n.iter = 3000,
-#                         inits = new.inits,
-#                         parallel = T,
-#                         modules = NULL,
-#                         model.file = mod.file),silent = F)
-#       
-#       
-#       
-#       if(class(out2) != "try-error"){
-#         
-#         
-#         # g = ggs(out2$samples)
-#         # for(pp in parms){
-#         #   gg = filter(g,grepl(Parameter,pattern = pp))
-#         #   ggmcmc(gg,file = paste("output/converge",pr,z,spgp,pp,"mcmc.pdf"))
-#         # }
-#         
-#         
-#         
-#         
-#         save(list = c("out3","jdat"),
-#              file = paste("output/hunter_effects",pr,z,spgp,"alt mod.RData"))
-#       }
-#       
-#     }#z
-#     
-#     
-#   }#pr
-# stopCluster(cl = cluster)
-# 
-# 
-# }#spgp
 # # plotting comparisons to published estimates -----------------------------
 
-source("functions/comparison_plotting_function_caste_year.R")
-source("functions/comparison_plotting_function_sdhunter_year.R")
-source("functions/comparison_plotting_function_species_agesex.R")
-source("functions/comparison_plotting_function_species.R")
-source("functions/comparison_plotting_function_species_period_props.R")
-source("functions/comparison_plotting_function.R")
-source("functions/comparison_plotting_function_hunter_distr.R")
+source("functions/comparison_plotting_function_other.R")
 
 source("functions/utility_functions.R")
 
 
 
 
-others = c("WOODK","SNIPK","DOVEK","PIGEK","CRANK","RAILK","MURRK","COOTK")
+# regulations compile -----------------------------------------------------
+
+regs_other <- list()
+length(regs_other) <- length(others)
+names(regs_other) <- others
+
+for(spgp in others){ 
+  tmp <- read.csv(file = paste0("data/reg_",spgp,".csv"))
+  names(tmp)[which(names(tmp) == "QC")] <- "PQ"
+  regs_other[[spgp]] <- tmp
+}
 
 
-for(spgp in others){
+non_res_combine = paste(rep(provs,each = 3),rep(c(1,2,3),times = length(provs)))
+#this above just ensures all non-resident hunters are combined with resident hunters for these groups, separating out caste E is rarely feasible (even caste B is sketchy)
+keep_E <- paste(rep(c("MB","NB","SK"),each = 3),rep(c(1,2,3),times = 3))
+# province and zone loops -------------------------------------------------
+non_res_combine <- non_res_combine[-which(non_res_combine %in% keep_E)]
+
+
+
+
+
+
+jjsimcomp = 1
+simcomp_list <-  list() 
+
+
+
+for(pr in provs){
+  
   
 
-# plotting loop -----------------------------------------------------------
-
+  # 
+  nyears = length(years)
+  minyr <- min(years)
+  # 
+  for(spgp in others){ 
+    tmp <- regs_other[[spgp]][,c("YEAR",pr)]
+    tmp[which(tmp[,pr] > 0),pr] <- 1
+    names(tmp) <- c("YEAR",spgp)
+    if(spgp == others[[1]]){
+      regs <- tmp
+    }else{
+      regs <- merge(regs,tmp,by = "YEAR")
+    }
+    
+  }
+  regs <- regs[which(regs$YEAR >= FY),]
+  regs <- regs[,which(colSums(regs) > 0)]
+  grps <- names(regs)[-1] #the -1 removes the column called
+  ngroups <- length(grps) #to enter model as data
+  reg_mat <- as.matrix(regs[,grps]) #to enter model as data ensuring that group-level annual estimates are never > 0 in years with no season.
+  grps_f <- factor(grps,levels = grps,ordered = TRUE) #ensures consistent ordering of the harvested groups
   
-  regs_other <- read.csv(file = paste0("data/reg_",spgp,".csv"))
-  # group data set up -------------------------------------------------------
-  names(regs_other)[which(names(regs_other) == "QC")] <- "PQ"
-  regs_other <- regs_other[,c("YEAR",provs)]
+  fyear = NA
+  for(g in 1:ngroups){
+    fyear[g] <- min(which(regs[,g+1] > 0))
+  }
   
-  pps <- colSums(regs_other[,-1])
-  
-  provs2 <- names(pps)[which(pps > 0)]
+  # data set up -------------------------------------------------------
   
   allkill = allkill
   phunt = "PRHUNT"
   zhunt = "ZOHUNT"
-  wkill = spgp
+  wkill = grps
   wact = "ACTIVEOT"
-  wsucc = paste0("SU",gsub(spgp,pattern = "K",replacement = ""))
+  wsucc = paste0("SU",gsub("K",replacement = "",x = grps)) 
   wday = "DAYOT"
   
   
   
-  mod.file = "models/simple_group_model_zip2.R" # 
-  #non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
-  non_res_combine = paste(rep(provs2,each = 3),rep(c(1,2,3),times = length(provs2)))
+  mod.file = "models/group_model_zip23.R" # 
   
   
   
   
-  
-  jjcomp = 1
-  compps <-  list() 
-  
-  jjsp = 1
-  spplts_list <-  list() 
-  
-  jjsimcomp = 1
-  simcomp_list <-  list() 
-  
-  jjcst = 1
-  cst_list <-  list() 
-  
-  
-  jjpsy = 1
-  psy_list <-  list() 
-  
-  jjpaxsy = 1
-  paxsy_list <- list()
-  
-  
-  jjsdhunter = 1
-  sdhunter_list <- list()
-  
-  
-  
-  # Province and Zone loop --------------------------------------------------
-  
-  
-  for(pr in provs2){
-    #   
-    #Set up parallel stuff
-    # n_cores <- 2
-    # cluster <- makeCluster(n_cores, type = "PSOCK")
-    # registerDoParallel(cluster)
-    # 
-    # 
-    # 
-    # fullrun <- foreach(pr = provs2,
-    #                     .packages = c("jagsUI","tidyverse"),
-    #                     .inorder = FALSE,
-    #                     .errorhandling = "pass") %dopar%
-    #   {
-    
-    pzcount = 0
-    
-    zns <- as.integer(unique(allkill[which(allkill[,phunt] == pr),zhunt]))
-    zns <- zns[which(zns > 0)]
-    
-    
-    # selecting years ---------------------------------------------------------
-    years = regs_other[which(regs_other[,pr] > 0),"YEAR"]
-    years <- years[which(years >= FY)]
-    if(spgp == "MURRK"){
-      years <- 2006:2013
-    }
-    
-    if(spgp == "SNIPK"){
-      years <- 1991:Y
-    }
-    
-    nyears = length(years)
-    minyr <- min(years)
+  zns <- as.integer(unique(allkill[which(allkill[,phunt] == pr),zhunt]))
+  zns <- zns[which(zns > 0)]
+  for(z in zns){
     
     
   
-       for(z in zns){
-#       if(file.exists(paste("output/full harvest",pr,z,spgp,"mod.RData"))){
-# load(paste("output/full harvest",pr,z,spgp,"mod.RData"))
-
-             mod.saved = paste("output/full harvest zip",pr,z,spgp,"alt mod.RData")
+  
+  
+ 
+             mod.saved = paste("output/other harvest zip",pr,z,"alt mod.RData")
 
       
       #mod.saved = paste("output/full harvest time sdhunter",pr,z,spgp,"alt mod.RData") #paste("output/full harvest",pr,z,spgp,"alt mod.RData")
@@ -1148,241 +968,42 @@ for(spgp in others){
          
 
           
-          var_pair = data.frame(new = c("NACTIVE_y",
-                              "NSUCC_y",
-                              "kill_y",
-                              "days_y"),
-                      spgp = c("ACTIOT",
-                               paste0("SU",str_sub(spgp,1,4)),
-                               spgp,
-                               "DAYOT"),
-                      
-                      stringsAsFactors = F) ## add ofther spgp columns to match
+          var_pair = list(new = list("NACTIVE_y",
+                              "NSUCC_yg",
+                              "kill_yg",
+                              "days_y",
+                              "days_yg"),
+                      old = list("ACTIOT",
+                               wsucc,
+                               wkill,
+                               "DAYOT",
+                               NA),
+                      newgrps = list(NA,
+                                     wsucc,
+                                     wkill,
+                                     NA,
+                                     gsub(grps,pattern = "K",replacement = "Days"))) 
 
-          names(var_pair)[2] <- spgp
+         
 
           
           
           
           
-          plts = list()
-length(plts) = nrow(var_pair)
-#pdf(paste("output/comparison graphs",pr,z,"simple.pdf"))
-
-for(i in 1:nrow(var_pair)){
 
   
-plts[[i]] <-  comp_plot_simple(group = spgp,
-var = var_pair[i,"new"],
-prov = pr,
-zone = z,
-M = out2)
-
-
-print(plts[[i]])
-}
-
-
-simcomp_list[[jjsimcomp]] <- plts
-#dev.off()
-
-jjsimcomp <- jjsimcomp + 1
-
-
-
-
-
-# caterpillar plots -------------------------------------------------------
-gg = ggs(out2$samples)
-pdf(file = paste0("output/converge/caterpillar 2",spgp,pr,z,".pdf"), 
-    height = 22,width = 8.5)
-for(pps in c("nu","sdhunter","cst","parrive","pleave","kill_cy","ann","psi")){
-  print(ggs_caterpillar(gg,family = pps))
-}
-dev.off()
-
-
-
-
-
-
-
-# caste comparisons -----------------------------------------------------
-
-cst_list[[jjcst]] <- comp_plot_caste_year(prov = pr,
-                                         zone = z)
-
-jjcst = jjcst +1
-# pdf(paste0("output/species_level_harvests_",pr,z,".pdf"),width = 8,height = 10)
-# for(pp in 1:length(spplts)){print(spplts[[pp]])}
-# dev.off()
-
-# comparing retransformation options --------------------------------------
-
-
-
-### mean kill
-dsum = as.data.frame(out2$summary)
-names(dsum)[3:7] <- c("lci","lqrt","med","uqrt","uci")
-dsum$Parameter = row.names(dsum)
-d1 = filter(dsum,grepl(Parameter,pattern = "mean_totkill_yc\\["))
-d1$vers = "retrans"
-d1$yr = jags_dim(var = "mean_totkill_yc",dat = d1)
-d1$caste = jags_dim(var = "mean_totkill_yc",dat = d1,dim = 2)
-
-d2 = filter(dsum,grepl(Parameter,pattern = "mean_totkill_yc_alt"))
-d2$vers = "smear"
-d2$yr = jags_dim(var = "mean_totkill_yc_alt",dat = d2)
-d2$caste = jags_dim(var = "mean_totkill_yc_alt",dat = d2,dim = 2)
-
-dd = bind_rows(d1,d2)
-
-dd$year = years[dd$yr]
-
-
-
-# if(spgp == "goose"){
-#   for(y in 1:nyears){
-#     
-#     dpsi = filter(dsum,grepl(Parameter,pattern = paste0("psi[",y,"]"),fixed = T))
-#   
-#   for(jj in c("mean","lci","lqrt","med","uqrt","uci")){
-#     dd[which(dd$yr == y),jj] <- dd[which(dd$yr == y),jj]*dpsi$med
-#   }
-# }
-# }
-  csts = c("D","B","A","E")
-
-
-for(i in 1:max(dd$caste)){
-  ww = which(dd$caste == i)
-  dd[ww,"castes"] <- csts[i]
+  simcomp_list[[jjsimcomp]] <- comp_plot_simple_other(prov = pr,
+                                                      zone = z,
+                                                      M = out2)
+ 
   
-}
-
-
-if(max(dd$caste == 3)){
-  dd$castes = factor((dd$castes),ordered = T,levels = c("D","B","A")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
-  
-}else{
-  
-  dd$castes = factor((dd$castes),ordered = T,levels = c("D","B","A","E")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
-}
-
-
-for(i in 1:nrow(dd)){
-  cc = dd[i,"caste"]
-  yy = dd[i,"yr"]
-
-  dd[i,"nhunter"] <- jdat$nhunter_cy[cc,yy]
-}
+  jjsimcomp <- jjsimcomp + 1  
 
 
 
 
-ulim = max(dd$uci)
-ddb = dd[which(dd$vers == "retrans"),]
-ddb$hunterplot <- (ddb$nhunter/max(ddb$nhunter))*(ulim/2)
-ddbmx = tapply(ddb$nhunter,ddb$castes,max)
-wm = NULL
-ddbmn = tapply(ddb$nhunter,ddb$castes,min)
-wmn = NULL
-
-for(j in 1:length(ddbmx)){
-  wm[j] <- which(ddb$nhunter == ddbmx[j] & ddb$castes == names(ddbmx)[j])
-  wmn[j] <- which(ddb$nhunter == ddbmn[j] & ddb$castes == names(ddbmn)[j])
-}
-ddbm = ddb[c(wm,wmn),]
-compp = ggplot(data = dd,aes(x = year,y = mean,fill = vers))+
-  geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = hunterplot),fill = grey(0.2),alpha = 0.1,stat = "identity")+
-  geom_point(aes(colour = vers))+
-  geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.3)+
-  labs(title = paste0("retrans comparison KILL",pr," zn",z," (mean and 95 CI)"))+
-  scale_y_continuous(limits = c(0,ulim))+
-  scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
-  theme_classic()+
-  geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = hunterplot,label = nhunter),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
-  facet_wrap(facets = ~castes,ncol = 2,scales = "fixed")
-
-compps[[jjcomp]] <- compp
-jjcomp = jjcomp +1
-### mean days
-dsum = as.data.frame(out2$summary)
-names(dsum)[3:7] <- c("lci","lqrt","med","uqrt","uci")
-dsum$Parameter = row.names(dsum)
-d1 = filter(dsum,grepl(Parameter,pattern = "mean_totdays_yc\\["))
-d1$vers = "retrans"
-d1$yr = jags_dim(var = "mean_totdays_yc",dat = d1)
-d1$caste = jags_dim(var = "mean_totdays_yc",dat = d1,dim = 2)
-
-d2 = filter(dsum,grepl(Parameter,pattern = "mean_totdays_yc_alt"))
-d2$vers = "smear"
-d2$yr = jags_dim(var = "mean_totdays_yc_alt",dat = d2)
-d2$caste = jags_dim(var = "mean_totdays_yc_alt",dat = d2,dim = 2)
-
-dd = bind_rows(d1,d2)
-
-dd$year = years[dd$yr]
-
-for(i in 1:max(dd$caste)){
-  ww = which(dd$caste == i)
-  dd[ww,"castes"] <- csts[i]
-  
-}
-
-if(max(dd$caste == 3)){
-  dd$castes = factor((dd$castes),ordered = T,levels = c("D","B","A")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
-  
-}else{
-  
-dd$castes = factor((dd$castes),ordered = T,levels = c("D","B","A","E")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
-}
 
 
-for(i in 1:nrow(dd)){
-  cc = dd[i,"caste"]
-  yy = dd[i,"yr"]
-
-  dd[i,"nhunter"] <- jdat$nhunter_cy[cc,yy]
-}
-
-
-# if(max(to_plot$nrts) > 200){
-#   ncby_y = ceiling(to_plot$nrts/50)
-#   annot = c("each dot ~ 50 routes")
-# }else{
-#   ncby_y = to_plot$nrts
-#   annot = c("each dot = 1 route")
-#
-# }
-
-ulim = max(dd$uci)
-ddb = dd[which(dd$vers == "smear"),]
-ddb$hunterplot <- (ddb$nhunter/max(ddb$nhunter,na.rm = T))*(ulim/2)
-ddbmx = tapply(ddb$nhunter,ddb$castes,max)
-wm = NULL
-ddbmn = tapply(ddb$nhunter,ddb$castes,min)
-wmn = NULL
-
-for(j in 1:length(ddbmx)){
-  wm[j] <- which(ddb$nhunter == ddbmx[j] & ddb$castes == names(ddbmx)[j])
-  wmn[j] <- which(ddb$nhunter == ddbmn[j] & ddb$castes == names(ddbmn)[j])
-}
-ddbm = ddb[c(wm,wmn),]
-compp = ggplot(data = dd,aes(x = year,y = mean,fill = vers))+
-  geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = hunterplot),fill = grey(0.2),alpha = 0.1,stat = "identity")+
-  geom_point(aes(colour = vers))+
-  geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.3)+
-  labs(title = paste0("retrans comparison DAYS",pr," zn",z," (mean and 95 CI)"))+
-  scale_y_continuous(limits = c(0,ulim))+
-  scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
-  theme_classic()+
-  geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = hunterplot,label = nhunter),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
-  facet_wrap(facets = ~castes,ncol = 2,scales = "fixed")
-
-
-compps[[jjcomp]] <- compp
-jjcomp = jjcomp +1
 
 
 
@@ -1439,29 +1060,8 @@ jjcomp = jjcomp +1
   asuf <- c("ZIP")
   
 
-
-  #asuf <- c(" alt")
-  pdf(paste0("output/retransformation comparison",asuf," ",spgp,".pdf"),
-      width = 8,
-      height = 6)
-  for(jj in 1:length(compps)){
-    print(compps[[jj]])
-  }
-  dev.off()
   
- 
-  
-  pdf(paste0("output/caste effects",asuf," ",spgp,".pdf"),
-      width = 8,
-      height = 6)
-  for(jj in 1:length(cst_list)){
-    print(cst_list[[jj]])
-  }
-  dev.off()
-  
-
-  
-  pdf(paste("output/comparison graphs simple",asuf," ",spgp,".pdf"))
+  pdf(paste("output/comparison graphs simple other",asuf," ",".pdf"))
   
   for(pp in 1:length(simcomp_list)){
     plt = simcomp_list[[pp]]

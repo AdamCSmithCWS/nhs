@@ -58,19 +58,20 @@ model {
     nactive[c,y] ~ dbinom(pactive[c,y],npotential[c,y])
     
     for(g in 1:ngroups){     
-    NACTIVE_gcy[g,c,y] <- pactive[c,y]*pops_cor[c,y]*psucc[g,c,y] #NACTIVE_gcy used to rescale all per-hunter values in the derived quantities
-    
     nsucc[g,c,y] ~ dbinom(psucc[g,c,y],nactive[c,y])
-    NSUCC_gcy[g,c,y] <- psucc[g,c,y]*NACTIVE_gcy[g,c,y]
+    NSUCC_gcy[g,c,y] <- psucc[g,c,y]*NACTIVE_cy[c,y]
     
     }#g
+    NACTIVE_cy[c,y] <- pactive[c,y]*pops_cor[c,y] #NACTIVE_cy is the estmiated number of non-waterfowl active hunters - used to rescale all per-hunter values in the derived quantities
     
-  }
+  }#c
     for(g in 1:ngroups){     
-      NSUCC_gy[g,y] <- sum(NSUCC_gcy[g,castes,y]) 
-   NACTIVE_gy[g,y] <- sum(NACTIVE_gcy[g,castes,y])  
-    }
-  }
+      NSUCC_yg[y,g] <- sum(NSUCC_gcy[g,castes,y])*reg_mat[y,g]
+   NACTIVE_yg[y,g] <- sum(NACTIVE_cy[castes,y])*reg_mat[y,g]  
+    }#g
+    NACTIVE_y[y] <- sum(NACTIVE_cy[castes,y])
+    
+  }#y
   
   ### all other harvest
   for(i in 1:nhs){ #nhs 
@@ -81,7 +82,7 @@ model {
 for(g in 1:ngroups){
     ### number harvested for each group by hunter[i]
     kill[i,g] ~ dpois(lambda[i,g]) #kill is data - each hunter's estimate of the total number killed 
-    lambda[i,g] <- lambda1[i,g]*z[i,g] + 0.00001 ## hack required for Rjags -- otherwise 'incompatible'-error
+    lambda[i,g] <- lambda1[i,g]*z[i,g] + 0.00001 ## hack required for JAGS -- otherwise 'incompatible'-error
    
       z[i,g] <- z1[i,g]*reg_mat[year[i],g] #this reg_mat matrix has 1 for every year with a group-season and 0 for each year with no group-season
   #reg_mat removes the effect of group[y,g] in the likelihood line below, and it forces the zero-inflated portion to 0, absorbing all of the zero-counts for a given group and year with no season
@@ -340,9 +341,10 @@ for(g in 1:ngroups){
    
     for(c in 1:ncastes){
       for(g in 1:ngroups){
-      kill_cyg[c,y,g] <- mean_totkill_ycg[y,c,g]*NACTIVE_gcy[g,c,y] #total kill by caste and year
-      days_cyg[c,y,g] <- mean_totdays_yc[y,c]*NACTIVE_gcy[g,c,y]*reg_mat[y,g] #total days by caste, group, and year
+      kill_cyg[c,y,g] <- mean_totkill_ycg[y,c,g]*NACTIVE_cy[c,y] #total kill by caste and year
+      days_cyg[c,y,g] <- mean_totdays_yc[y,c]*NACTIVE_cy[c,y]*reg_mat[y,g]*psi[g] #total days by caste, group, and year - using psi here is somewhat questionable - it assumes that the inflated zeros are a function of active hunters that aren't seeking this particular group and therefore that the probability of a non-zero reported harvest (after the Poisson-related zeros) represents the proportion of hunters and hunting days where someone is seeking this species
       }
+      days_cy[c,y] <- mean_totdays_yc[y,c]*NACTIVE_cy[c,y] #total days by caste and year
 }
     
     #### summed total harvest and activity (e.g., all ducks) across castes in a given year for each group
@@ -350,6 +352,7 @@ for(g in 1:ngroups){
       kill_yg[y,g] <- sum(kill_cyg[castes,y,g])
     days_yg[y,g] <- sum(days_cyg[castes,y,g])
     }
+    days_y[y] <- sum(days_cy[castes,y])
   }#y
   
   
