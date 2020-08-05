@@ -292,7 +292,7 @@ keep_E <- paste(rep(c("MB","NB","SK"),each = 3),rep(c(1,2,3),times = 3))
 # province and zone loops -------------------------------------------------
 non_res_combine <- non_res_combine[-which(non_res_combine %in% keep_E)]
 
-for(pr in provs[c(1,3)]){
+for(pr in provs){
   
   
   #################### try keeping all caste effects constant through time - done (except caste-D day effect)
@@ -332,6 +332,9 @@ for(pr in provs[c(1,3)]){
   ngroups <- length(grps) #to enter model as data
   if("SNIPK" %in% grps){
     regs[which(regs$YEAR < 1992), "SNIPK"] <- 0
+  }### remove Snipe hunt per 1991
+  if("MURRK" %in% grps){
+    regs[which(regs$YEAR >2012 | regs$YEAR < 2001), "MURRK"] <- 0
   }### remove Snipe hunt per 1991
   reg_mat <- as.matrix(regs[,grps]) #to enter model as data ensuring that group-level annual estimates are never > 0 in years with no season.
   grps_f <- factor(grps,levels = grps,ordered = TRUE) #ensures consistent ordering of the harvested groups
@@ -615,7 +618,9 @@ for(i in 1:ngroups){
 sumkill[,ws] <- "N"
 
 sumkill[which(sumkill[,wk] > 0),ws] <- "Y"
-
+if(wk == "MURRK"){
+  sumkill[which(sumkill$YEAR > 2012),ws] <- "N"
+}
 sumkill[,ws] <- factor(sumkill[,ws],levels = c("N","Y"),ordered = TRUE)
 #
   for(y in 1:nyears){
@@ -673,7 +678,7 @@ days = sumkill_active[,wday]
 
 if(any(days < 1) | any(is.na(days))){
   mday_per_kill <- sum(days[which(days > 0)])/sum(rowSums(kill[which(days > 0),]),na.rm = T)
-  days[which(days == 0 | is.na(days))] <- ceiling(mday_per_kill*(rowSums(kill[which(days == 0 | is.na(days)),])+1))
+  days[which(days == 0 | is.na(days))] <- ceiling(mday_per_kill*(rowSums(kill[which(days == 0 | is.na(days)),],na.rm = T)+1))
 }
 
 days = ceiling(days)
@@ -837,19 +842,19 @@ t1 = Sys.time()
   
   t2 = Sys.time()
 if(class(out2) != "try-error"){
-
-  # pgg_psi = ggs(out2$samples,family = "psi")
-  # pgg_sdhunter = ggs(out2$samples,family = "sdhunter")
-  # pgg_ann = ggs(out2$samples,family = "ann")
-  # pgg_nu = ggs(out2$samples,family = "nu")
-  # pgg_ky = ggs(out2$samples,family = "kill_y")
-  # pgg_ky = filter(pgg_ky,!grepl(pattern = "alt",Parameter))
-  # 
-  # pgg <- rbind(pgg_psi,pgg_ann,pgg_sdhunter,pgg_nu,pgg_ky)
-  # try(ggmcmc(pgg,file = paste0("output/conv/",pr,z,".pdf")),silent = T)
-  # 
- 
-  
+# 
+#   pgg_psi = ggs(out2$samples,family = "psi")
+#   #pgg_sdhunter = ggs(out2$samples,family = "sdhunter")
+#   pgg_ann = ggs(out2$samples,family = "group")
+#   pgg_nu = ggs(out2$samples,family = "nu")
+#   #pgg_ky = ggs(out2$samples,family = "kill_y")
+#   #pgg_ky = filter(pgg_ky,!grepl(pattern = "alt",Parameter))
+# 
+#   pgg <- rbind(pgg_psi,pgg_nu)
+#   try(ggmcmc(pgg,file = paste0("output/conv/",pr,z,".pdf"),param_page = 5),silent = T)
+#   #
+# ggmcmc(pgg_ann,file = paste0("output/conv/ann_",pr,z,".pdf"),param_page = 5)
+#   
   
   save(list = c("out2","jdat"),
        file = paste("output/other harvest zip",pr,z,"alt mod.RData"))
@@ -862,7 +867,7 @@ rm(list = "out2")
   
 }#pr
 
-stopCluster(cl = cluster)
+#stopCluster(cl = cluster)
 
 
 
@@ -1067,7 +1072,9 @@ for(pr in provs){
   
 
   
-  pdf(paste("output/comparison graphs simple other",asuf," ",".pdf"))
+  pdf(paste("output/comparison graphs simple other",asuf," ",".pdf"),
+      width = 10,
+      height = 7.5)
   
   for(pp in 1:length(simcomp_list)){
     plt = simcomp_list[[pp]]
@@ -1080,28 +1087,4 @@ for(pr in provs){
   
   
   
-  
 
-# plotting hunter effects if necessary ------------------------------------
-
-  # 
-  # pdf(paste0("output/hunter effects",asuf," ",spgp,".pdf"),
-  #     width = 8,
-  #     height = 6)
-  # for(pp in 1:length(hunter_list)){
-  #   plt = hunter_list[[pp]]
-  #   for(j in 1:length(plt)){
-  #     print(plt[[j]])
-  #   }}
-  # dev.off()
-  # 
-  # 
-  # 
-  
-   
-  
-}#spgp (species group)
-#######################################
-## set up some automatic plotting of important variables and compare with this year's 10-year trend graphs
-
-###### still to Do...

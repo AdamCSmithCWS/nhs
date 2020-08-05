@@ -10,6 +10,9 @@ comp_plot_simple_other <- function(prov = "",
   outggl <- vector("list",length = 5)
   my_col <-  scale_color_viridis_d(aesthetics = c("colour","fill"), begin = 0.3,end = 0.9,option = "B",direction = -1)
   
+
+   
+  
   for(i in c(1:5)){
   
     var <- var_pair$new[[i]]
@@ -18,6 +21,45 @@ comp_plot_simple_other <- function(prov = "",
     if(all(is.na(oldvar))){
       oldvar <- var_pair$old[[i-1]] 
     }
+    
+    if(i %in% c(2,3)){
+      # sample sizes ------------------------------------------------------------
+      n_sam_y <- NULL
+      for(y in 1:jdat$nyears){
+        for(g in 1:jdat$ngroups){
+          sumg <- sum(jdat$nsucc[g,1:jdat$ncastes,y])
+          if(sumg > 0){
+            tmp <- data.frame(yr = y,
+                              year = as.integer(years[y]),
+                              grp = g,
+                              group = rep(grpnms[g],times = sumg),
+                              stringsAsFactors = FALSE)
+            n_sam_y <- rbind(n_sam_y,tmp)   
+          }
+        }
+      }
+      dot_lab <- c("grey dots = count of responses indicating harvest of group")
+      
+    }
+    if(i %in% c(1,4,5)){
+      # sample sizes ------------------------------------------------------------
+      n_sam_y <- NULL
+      for(y in 1:jdat$nyears){
+        sumy <- ceiling(sum(jdat$nactive[1:jdat$ncastes,y])/5)
+        if(sumy > 0){
+          tmp <- data.frame(yr = y,
+                            year = rep(as.integer(years[y]),times = sumy),
+                            stringsAsFactors = FALSE)
+          n_sam_y <- rbind(n_sam_y,tmp)   
+        }
+        
+        
+      }
+      dot_lab <- c("grey dots = count of responses indicating active (/5)")
+      
+      
+    }
+    
     if(i %in% c(1:3,5)){
       
       dsum = as.data.frame(M$summary)
@@ -57,21 +99,25 @@ comp_plot_simple_other <- function(prov = "",
       
 if(length(oldvar) > 1){
   nf = ceiling(length(oldvar)/2)
-  outgg = ggplot(data = dd,aes(x = year,y = mean,group = mod,fill = mod))+
-    geom_point(aes(colour = mod))+
-    labs(title = paste0(var,prov," zn",zone," (mean and 95 CI)"))+
-    geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
-    scale_y_continuous(limits = c(0,NA))+
-    my_col+
-    #ggrepel::geom_text_repel(data = labls,aes(colour = mod),inherit.aes = TRUE,label = group)+
-    facet_wrap(facets = ~group,ncol = nf,nrow = 2,scales = "free")+
-    theme_classic()
+
+   outgg = ggplot(data = dd,aes(x = year,y = mean,group = mod,fill = mod))+
+     geom_point(aes(colour = mod))+
+     labs(title = paste0(var,prov," zn",zone," (mean and 95 CI) ",dot_lab))+
+     geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
+     scale_y_continuous(limits = c(0,NA))+
+     my_col+
+     #ggrepel::geom_text_repel(data = labls,aes(colour = mod),inherit.aes = TRUE,label = group)+
+     geom_dotplot(data = n_sam_y,mapping = aes(x = year),drop = TRUE,binaxis = "x", stackdir = "up",method = "histodot",binwidth = 1,width = 0.3,inherit.aes = FALSE,fill = grDevices::grey(0.6),colour = grDevices::grey(0.6),alpha = 0.2,dotsize = 0.5)+
+     facet_wrap(facets = ~group,ncol = nf,nrow = 2,scales = "free")+
+     theme_classic()
+
 }else{
   outgg = ggplot(data = dd,aes(x = year,y = mean,group = group,fill = mod))+
     geom_point(aes(colour = mod))+
-    labs(title = paste0(var," vs ",oldvar," ",prov," zn",zone," (mean and 95 CI)"))+
+    labs(title = paste0(var," vs ",oldvar," ",prov," zn",zone," (mean and 95 CI) ",dot_lab))+
     geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
     scale_y_continuous(limits = c(0,NA))+
+    geom_dotplot(data = n_sam_y,mapping = aes(x = year),drop = TRUE,binaxis = "x", stackdir = "up",method = "histodot",binwidth = 1,width = 0.3,inherit.aes = FALSE,fill = grDevices::grey(0.6),colour = grDevices::grey(0.6),alpha = 0.2,dotsize = 0.5)+
     my_col+
     theme_classic() 
   # if(!is.na(grpnms)){
@@ -125,9 +171,10 @@ if(length(oldvar) > 1){
   }else{
   outgg = ggplot(data = dd,aes(x = year,y = mean,group = mod,fill = mod))+
     geom_point(aes(colour = mod))+
-    labs(title = paste0(var," vs ",oldvar," ",prov," zn",zone," (mean and 95 CI)"))+
+    labs(title = paste0(var," vs ",oldvar," ",prov," zn",zone," (mean and 95 CI) ",dot_lab))+
     geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
     scale_y_continuous(limits = c(0,NA))+
+    geom_dotplot(data = n_sam_y,mapping = aes(x = year),drop = TRUE,binaxis = "x", stackdir = "up",method = "histodot",binwidth = 1,width = 0.3,inherit.aes = FALSE,fill = grDevices::grey(0.6),colour = grDevices::grey(0.6),alpha = 0.2,dotsize = 0.5)+
     my_col+
     theme_classic()
     }

@@ -88,7 +88,7 @@ for(g in 1:ngroups){
   #reg_mat removes the effect of group[y,g] in the likelihood line below, and it forces the zero-inflated portion to 0, absorbing all of the zero-counts for a given group and year with no season
     z1[i,g] ~ dbern(psi[g]) #psi = proportion of non-zeros for that group
     log(lambda1[i,g]) <- elambda1[i,g] #
-    elambda1[i,g] <- cst[caste[i],year[i]] + hntr[caste[i],year[i],hunter[i]] + group[year[i],g]*reg_mat[year[i],g] + elambda_day[i] #elambda_day[i] acts as an offset on effort
+    elambda1[i,g] <- cst[caste[i],year[i]] + hntr[caste[i],year[i],g,hunter[i]] + group[year[i],g]*reg_mat[year[i],g] + elambda_day[i] #elambda_day[i] acts as an offset on effort
 }
     ## ann[y] is a yearly intercept for all species kill ann[year[i]] + replaced by group
     ## cst[c] is a caste-specific intercept for all species kill
@@ -189,23 +189,26 @@ for(g in 1:ngroups){
 
   
  ############################### forcing a single estimate of hunter level variance from caste D onto all other castes
- retrans_hunter[1] <- (0.5*(1/tauhunter[1]))/nu_ret[1]
+   for(g in 1:ngroups){
+   retrans_hunter[1,g] <- (0.5*(1/tauhunter[1,g]))/nu_ret[g]
 
- sdhunter[1] <- 1/pow(tauhunter[1],0.5)
+ sdhunter[1,g] <- 1/pow(tauhunter[1,g],0.5)
  #tauhunter[1] ~ dgamma(0.01,0.01)
- tauhunter[1] ~ dscaled.gamma(0.5,50) #implicit prior on sigma of a half-t dist: sigma = 1*t(df = 50) , i.e., 99% prob sd < 2
+ tauhunter[1,g] ~ dscaled.gamma(0.5,50) #implicit prior on sigma of a half-t dist: sigma = 1*t(df = 50) , i.e., 99% prob sd < 2
  
- nu[1] ~ dgamma(2,0.2)
+ nu[1,g] ~ dgamma(2,0.2)
  
- nu_ret <- (1.422*nu[1]^0.906)/(1+(1.422*nu[1]^0.906)) #approximate retransformation to equate a t-distribution to a normal distribution - see appendix of Link et al. 2020 BBS model selection paper
+ nu_ret[g] <- (1.422*nu[1,g]^0.906)/(1+(1.422*nu[1,g]^0.906)) #approximate retransformation to equate a t-distribution to a normal distribution - see appendix of Link et al. 2020 BBS model selection paper
  
- ## caste specific intercept priors
+ ## caste specific intercept priors on harvest by group
  for(c in 2:ncastes){
+
    ## harvest rate priors
-   retrans_hunter[c] <-  retrans_hunter[1]
-   sdhunter[c] <- 1/pow(tauhunter[1],0.5)
-   tauhunter[c] <- tauhunter[1]
-   nu[c] <- nu[1]
+   retrans_hunter[c,g] <-  retrans_hunter[1,g]
+   sdhunter[c,g] <- 1/pow(tauhunter[1,g],0.5)
+   tauhunter[c,g] <- tauhunter[1,g]
+   nu[c,g] <- nu[1,g]
+   }
  }
 
   for(c in 1:ncastes){
@@ -276,7 +279,9 @@ for(g in 1:ngroups){
         ## 
         
         hntr_day[c,y,h] ~ dt(0,tauhunter_day[c],nu_day[c])
-        hntr[c,y,h] ~ dt(0,tauhunter[c],nu[c])
+        for(g in 1:ngroups){
+        hntr[c,y,g,h] ~ dt(0,tauhunter[c,g],nu[c,g])
+        }
         #hntr[c,y,h] ~ dnorm(0,tauhunter[c]) #alternative normal overdispersion assuming that most of variance in harvest is a function of how many days a hunter spends hunting
         #n days probably accounts for a bit of the hunting skill effect as well as the activity effect
         
@@ -317,7 +322,7 @@ for(g in 1:ngroups){
         for(h in 1:nhunter_cy[c,y]){
           for(g in 1:ngroups){
         #hunter-level predictions of mean kill
-        totkill_hcy[y,c,h,g] <- exp(group[y,g] + cst[c,y] + hntr[c,y,h] + ann_day[y] + cst_day[c,y] + hntr_day[c,y,h]) *psi[g]*reg_mat[y,g]
+        totkill_hcy[y,c,h,g] <- exp(group[y,g] + cst[c,y] + hntr[c,y,g,h] + ann_day[y] + cst_day[c,y] + hntr_day[c,y,h]) *psi[g]*reg_mat[y,g]
           }#g
         totdays_hcy[y,c,h] <- exp(ann_day[y] + cst_day[c,y] + hntr_day[c,y,h])
         }
@@ -325,7 +330,7 @@ for(g in 1:ngroups){
       for(g in 1:ngroups){
         mean_totkill_ycg_alt[y,c,g] <- mean(totkill_hcy[y,c,1:nhunter_cy[c,y],g]) #mean kill per active hunter
         #mean per-hunter kill and days by year and caste - alternative estimate
-        mean_totkill_ycg[y,c,g] <- exp(group[y,g] + cst[c,y] + ann_day[y] + cst_day[c,y] + retrans_hunter_day[c] + retrans_hunter[c]) *psi[g]*reg_mat[y,g]
+        mean_totkill_ycg[y,c,g] <- exp(group[y,g] + cst[c,y] + ann_day[y] + cst_day[c,y] + retrans_hunter_day[c] + retrans_hunter[c,g]) *psi[g]*reg_mat[y,g]
       }
       mean_totdays_yc_alt[y,c] <- mean(totdays_hcy[y,c,1:nhunter_cy[c,y]]) #mean days per active hunter
 
