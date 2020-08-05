@@ -307,7 +307,7 @@ for(spgp in c("duck","goose","murre")){
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    mod.file = "models/species_harvest_model_zip.R" # 
+    mod.file = "models/species_harvest_model_zip2.R" # 
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
     
     
@@ -336,7 +336,7 @@ for(spgp in c("duck","goose","murre")){
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    mod.file = "models/species_harvest_model_zip.R" #
+    mod.file = "models/species_harvest_model_zip2.R" #
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
     
   }
@@ -367,7 +367,7 @@ for(spgp in c("duck","goose","murre")){
                        stringsAsFactors = F)
     minyr <- FY
     provs2 = "NF"
-    mod.file = "models/species_harvest_model_zip.R" # I think this should work for murres too
+    mod.file = "models/species_harvest_model_zip2.R" # I think this should work for murres too
  
     
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
@@ -983,7 +983,7 @@ rm(list = "out2")
 #                        stringsAsFactors = F)
 #     minyr <- min(years)
 #     provs2 <- provs
-#     mod.file = "models/species_harvest_model_zip.R" # I think this should work for geese and murres too
+#     mod.file = "models/species_harvest_model_zip2.R" # I think this should work for geese and murres too
 #     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
 #     
 #     
@@ -1006,7 +1006,7 @@ rm(list = "out2")
 #                        stringsAsFactors = F)
 #     minyr <- min(years)
 #     provs2 <- provs
-#     mod.file = "models/species_harvest_model_zip.R" # I think this should work for geese and murres too
+#     mod.file = "models/species_harvest_model_zip2.R" # I think this should work for geese and murres too
 #     
 #     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
 #     
@@ -1033,7 +1033,7 @@ rm(list = "out2")
 #                        stringsAsFactors = F)
 #     minyr <- 2014
 #     provs2 = "NF"
-#     mod.file = "models/species_harvest_model_zip.R" # I think this should work for geese and murres too
+#     mod.file = "models/species_harvest_model_zip2.R" # I think this should work for geese and murres too
 #     
 #     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
 #     
@@ -1167,7 +1167,7 @@ for(spgp in c("goose","duck","murre")){
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    mod.file = "models/species_harvest_model_zip.R" # 
+    mod.file = "models/species_harvest_model_zip2.R" # 
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
     
     
@@ -1196,7 +1196,7 @@ for(spgp in c("goose","duck","murre")){
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    mod.file = "models/species_harvest_model_zip.R" #
+    mod.file = "models/species_harvest_model_zip2.R" #
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
     
   }
@@ -1227,7 +1227,7 @@ for(spgp in c("goose","duck","murre")){
                        stringsAsFactors = F)
     minyr <- FY
     provs2 = "NF"
-    mod.file = "models/species_harvest_model_zip.R" # I think this should work for murres too
+    mod.file = "models/species_harvest_model_zip2.R" # I think this should work for murres too
     
     
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
