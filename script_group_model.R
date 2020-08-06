@@ -273,6 +273,7 @@ others = c("COOTK","WOODK","SNIPK","DOVEK","PIGEK","CRANK","RAILK","MURRK")
 #prov_otherk <- read.csv(stringsAsFactors = F,"data/OTHERK_by_Prov.csv")
 
 
+
 # regulations compile -----------------------------------------------------
 
 regs_other <- list()
@@ -856,7 +857,7 @@ if(class(out2) != "try-error"){
 # ggmcmc(pgg_ann,file = paste0("output/conv/ann_",pr,z,".pdf"),param_page = 5)
 #   
   
-  save(list = c("out2","jdat"),
+  save(list = c("out2","jdat","grps","regs"),
        file = paste("output/other harvest zip",pr,z,"alt mod.RData"))
   
 rm(list = "out2")
