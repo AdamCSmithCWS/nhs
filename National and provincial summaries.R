@@ -201,6 +201,9 @@ for(pr in provs){
       
       tmp_other <- full_join(tmp_other,ys,by = "y")
       
+      #### this tmp file can be added to the similar regional ones
+      #### then the group and year variables will facilitate a full 
+      #### tidy summary to generate the national and provincial estimates
       
       }
        
