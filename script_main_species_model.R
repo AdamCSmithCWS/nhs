@@ -307,7 +307,7 @@ for(spgp in c("duck","goose","murre")){
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    mod.file = "models/species_harvest_model_zip2.R" # 
+    mod.file = "models/species_harvest_model.R" # 
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
     
     
@@ -336,7 +336,7 @@ for(spgp in c("duck","goose","murre")){
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    mod.file = "models/species_harvest_model_zip2.R" #
+    mod.file = "models/species_harvest_model.R" #
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
     
   }
@@ -367,7 +367,7 @@ for(spgp in c("duck","goose","murre")){
                        stringsAsFactors = F)
     minyr <- FY
     provs2 = "NF"
-    mod.file = "models/species_harvest_model_zip2.R" # I think this should work for murres too
+    mod.file = "models/species_harvest_model.R" # I think this should work for murres too
  
     
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
@@ -617,17 +617,26 @@ sumkillall = allkill[which(((allkill[,phunt] == pr &
 arrive_hunt_cf <- matrix(1,nrow = nyears,ncol = 2)
 leave_hunt_cf <- matrix(1,nrow = nyears,ncol = 2)
 
+sumkillall$huntpr <- FALSE
+sumkillall$samppr <- FALSE
+
+sumkillall[which(sumkillall[,phunt] == pr &
+                   sumkillall[,zhunt] == z),"huntpr"] <- TRUE
+sumkillall[which(sumkillall[,"PRSAMP"] == pr &
+                   sumkillall[,"ZOSAMP"] == z),"samppr"] <- TRUE
+
+
 
 for(y in years){
   yi = y-(FY-1)
-  tmp = table(sumkillall[which(sumkillall$YEAR == y),c("PRSAMP",phunt)])
+  tmp = table(sumkillall[which(sumkillall$YEAR == y),c("samppr","huntpr")])
   
   
-  nsampprov = sum(tmp[pr,])#number of hunters sampled in that prov/zone (ratio of this to population = simple extrapolation factor)
-  nhuntprov = sum(tmp[,pr])#number of hunters hunting in that prov/zone
-  nhunt_samp_prov = sum(tmp[pr,pr])
-  nsampprov_huntaltprov = nsampprov-nhunt_samp_prov
-  nhuntprov_sampaltprov = nhuntprov-nhunt_samp_prov
+  nsampprov = sum(tmp["TRUE",])#number of hunters sampled in that prov/zone (ratio of this to population = simple extrapolation factor)
+  #nhuntprov = sum(tmp[,"TRUE"])#number of hunters hunting in that prov/zone
+  #nhunt_samp_prov = sum(tmp["TRUE","TRUE"])
+  nsampprov_huntaltprov = tmp["TRUE","FALSE"]
+  nhuntprov_sampaltprov = tmp["FALSE","TRUE"]
   
   leave_hunt_cf[yi,1] <- nsampprov_huntaltprov
   leave_hunt_cf[yi,2] <- nsampprov
@@ -983,7 +992,7 @@ rm(list = "out2")
 #                        stringsAsFactors = F)
 #     minyr <- min(years)
 #     provs2 <- provs
-#     mod.file = "models/species_harvest_model_zip2.R" # I think this should work for geese and murres too
+#     mod.file = "models/species_harvest_model.R" # I think this should work for geese and murres too
 #     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
 #     
 #     
@@ -1006,7 +1015,7 @@ rm(list = "out2")
 #                        stringsAsFactors = F)
 #     minyr <- min(years)
 #     provs2 <- provs
-#     mod.file = "models/species_harvest_model_zip2.R" # I think this should work for geese and murres too
+#     mod.file = "models/species_harvest_model.R" # I think this should work for geese and murres too
 #     
 #     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
 #     
@@ -1033,7 +1042,7 @@ rm(list = "out2")
 #                        stringsAsFactors = F)
 #     minyr <- 2014
 #     provs2 = "NF"
-#     mod.file = "models/species_harvest_model_zip2.R" # I think this should work for geese and murres too
+#     mod.file = "models/species_harvest_model.R" # I think this should work for geese and murres too
 #     
 #     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
 #     
@@ -1167,7 +1176,7 @@ for(spgp in c("goose","duck","murre")){
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    mod.file = "models/species_harvest_model_zip2.R" # 
+    mod.file = "models/species_harvest_model.R" # 
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
     
     
@@ -1196,7 +1205,7 @@ for(spgp in c("goose","duck","murre")){
                        stringsAsFactors = F)
     minyr <- min(years)
     provs2 <- provs
-    mod.file = "models/species_harvest_model_zip2.R" #
+    mod.file = "models/species_harvest_model.R" #
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
     
   }
@@ -1227,7 +1236,7 @@ for(spgp in c("goose","duck","murre")){
                        stringsAsFactors = F)
     minyr <- FY
     provs2 = "NF"
-    mod.file = "models/species_harvest_model_zip2.R" # I think this should work for murres too
+    mod.file = "models/species_harvest_model.R" # I think this should work for murres too
     
     
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")

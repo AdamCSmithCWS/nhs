@@ -14,6 +14,11 @@ library(ggforce)
 ### age-sex summaries
 ### age-sex raw data for website - 
 
+Y <- 2019
+FY = 1976
+years <- FY:Y
+
+names(years) <- paste(years)
 
 
 
@@ -86,14 +91,15 @@ for(spgp in others){
 
 # compile website file b --------------------------------------------------
 
-sp_vars <- read.csv("data/website_species_variable_names_in.csv")
 sim_vars <- read.csv("data/website_variable_names_in.csv")
+sp_vars <- read.csv("data/website_species_variable_names_in.csv")
+
 
 
 gps <- c("duck",
            "goose",
-           "murre",
-           "other")
+           "other",
+         "murre")
 
 for(pr in provs){
   
@@ -140,13 +146,47 @@ for(pr in provs){
 
   
    for(z in 1:3){
-     if(file.exists(paste("output/full harvest zip",pr,z,gp,"alt mod.RData"))){
+     if(file.exists(paste("output/full harvest zip",pr,z,"duck","alt mod.RData"))){
        load(paste("output/full harvest zip",pr,z,"duck","alt mod.RData"))
      
            tmp_duck <- out2$samples %>% gather_draws(NACTIVE_y[y],
                                                 days_y[y],
                                                 NSUCC_y[y],
                                                 kill_y[y]) 
+           
+           vnm <- sim_vars[which(sim_vars$source == "duck"),]
+           #vnm <- rename(vnm,group = var)
+           
+           tmp_duck <- left_join(tmp_duck,vnm,by = c(".variable" = "newvar"))
+           
+           
+           ys <- data.frame(y = 1:jdat$nyears,
+                            year = years) 
+           
+           tmp_duck <- full_join(tmp_duck,ys,by = "y")
+           tmp_duck$prov <- pr
+           tmp_duck$zone <- z
+           
+           ## species harvests
+           
+           tmp_sp_duck <- out2$samples %>% gather_draws(kill_ys[y,s]) 
+           vnm <- sp_vars[which(sp_vars$source == "duck"),c("sp","species","newvar")]
+           spss <- sp.save.out[which(sp.save.out$PRHUNT == pr & sp.save.out$ZOHUNT == z),c("AOU","spfact","spn")]
+           spss <- spss[order(spss$spn),]
+           tmp_sp_duck <- left_join(tmp_sp_duck,spss,by = c("s" = "spn"))
+           tmp_sp_duck <- left_join(tmp_sp_duck,vnm,by = c("AOU" = "sp"))
+           tmp_sp_duck <- left_join(tmp_sp_duck,ys,by = "y")
+           tmp_sp_duck$prov <- pr
+           tmp_sp_duck$zone <- z
+           
+           if(z == 1 & pr == "AB"){
+             tmp <- tmp_duck
+             tmp_sp <- tmp_sp_duck
+           }else{
+             tmp <- bind_rows(tmp,tmp_duck)
+             
+             tmp_sp <- bind_rows(tmp_sp,tmp_sp_duck)
+           }
            }
      
      if(file.exists(paste("output/full harvest zip",pr,z,"goose","alt mod.RData"))){
@@ -155,44 +195,75 @@ for(pr in provs){
            tmp_goose <- out2$samples %>% gather_draws(NSUCC_y[y],
                                                      kill_y[y]) 
            
-       
+           vnm <- sim_vars[which(sim_vars$source == "goose"),]
+           #vnm <- rename(vnm,group = var)
+           
+           tmp_goose <- left_join(tmp_goose,vnm,by = c(".variable" = "newvar"))
+           
+           
+           ys <- data.frame(y = 1:jdat$nyears,
+                            year = years) 
+           
+           tmp_goose <- full_join(tmp_goose,ys,by = "y")
+           tmp_goose$prov <- pr
+           tmp_goose$zone <- z
+           tmp <- bind_rows(tmp,tmp_goose)
+           
+           ## species harvests
+           
+           tmp_sp_goose <- out2$samples %>% gather_draws(kill_ys[y,s]) 
+           vnm <- sp_vars[which(sp_vars$source == "goose"),c("sp","species","newvar")]
+           spss <- sp.save.out[which(sp.save.out$PRHUNT == pr & sp.save.out$ZOHUNT == z),c("AOU","spfact","spn")]
+           spss <- spss[order(spss$spn),]
+           tmp_sp_goose <- left_join(tmp_sp_goose,spss,by = c("s" = "spn"))
+           tmp_sp_goose <- left_join(tmp_sp_goose,vnm,by = c("AOU" = "sp"))
+           tmp_sp_goose <- left_join(tmp_sp_goose,ys,by = "y")
+           tmp_sp_goose$prov <- pr
+           tmp_sp_goose$zone <- z
+           tmp_sp <- bind_rows(tmp_sp,tmp_sp_goose)
      }
      
      if(file.exists(paste("output/other harvest zip",pr,z,"alt mod.RData"))){
        load(paste("output/other harvest zip",pr,z,"alt mod.RData"))
        
        vnm <- sim_vars[which(sim_vars$source == "other"),]
-       vnm <- rename(vnm,group = var)
+       #vnm <- rename(vnm,group = var)
        
+       #harvests
        tmp_otherk <- out2$samples %>% gather_draws(NACTIVE_y[y],
-                                                  days_y[y],
-                                                  kill_yg[y,g])
-  #harvests
+                                                  days_y[y])
+       
+       tmp_otherk <- left_join(tmp_otherk,vnm,by = c(".variable" = "newvar"))
+       
+       
+       tmp_otherkg <- out2$samples %>% gather_draws(kill_yg[y,g])
+       
       gpk <- data.frame(g = 1:ngroups,
-                       group = grps)
-      tmp_otherk <- full_join(tmp_otherk,gpk,by = "g")
+                       var = grps)
+      tmp_otherkg <- full_join(tmp_otherkg,gpk,by = "g")
+      tmp_otherkg <- left_join(tmp_otherkg,vnm,by = c("var"))
       
 
-      tmp_otherk <- left_join(tmp_otherk,vnm,by = "group")
       
   #days
       tmp_otherd <- out2$samples %>% gather_draws(days_yg[y,g])
       gpd <- data.frame(g = 1:ngroups,
-                        group = paste0("DA",gsub(grps,pattern = "K",replacement = "")))
+                        var = paste0("DA",gsub(grps,pattern = "K",replacement = "")))
       
       tmp_otherd <- full_join(tmp_otherd,gpd,by = "g")
-      tmp_otherd <- left_join(tmp_otherd,vnm,by = "group")
+      tmp_otherd <- left_join(tmp_otherd,vnm,by = "var")
       
   #succ    
       tmp_others <- out2$samples %>% gather_draws(NSUCC_yg[y,g])
       gps <- data.frame(g = 1:ngroups,
-                        group = paste0("SU",gsub(grps,pattern = "K",replacement = "")))
+                        var = paste0("SU",gsub(grps,pattern = "K",replacement = "")))
       
       tmp_others <- full_join(tmp_others,gps,by = "g")
-      tmp_others <- left_join(tmp_others,vnm,by = "group")
+      tmp_others <- left_join(tmp_others,vnm,by = "var")
       
       
       tmp_other <- bind_rows(tmp_otherk,
+                             tmp_otherkg,
                              tmp_otherd,
                              tmp_others)
       
@@ -200,22 +271,76 @@ for(pr in provs){
                        year = years) 
       
       tmp_other <- full_join(tmp_other,ys,by = "y")
-      
+      tmp_other$prov <- pr
+      tmp_other$zone <- z
       #### this tmp file can be added to the similar regional ones
       #### then the group and year variables will facilitate a full 
       #### tidy summary to generate the national and provincial estimates
       
+      tmp <- bind_rows(tmp,tmp_other)
+      
+      
       }
        
-       
+      
+     #tmp <- bind_rows(tmp_other) 
        
     
    }
    
- } 
-  
-  
 }
+
+prov_sums_b <- tmp %>% 
+  group_by(var,prov,year,.draw) %>% 
+  summarise(sum = sum(.value)) %>% 
+  group_by(var,prov,year) %>% 
+  summarise(median = quantile(sum,0.5,names = FALSE),
+            lci = quantile(sum,0.025,names = FALSE),
+            uci = quantile(sum,0.975,names = FALSE))
+  
+  
+
+prov_sums_a <- tmp_sp %>% 
+  group_by(AOU,prov,year,.draw) %>%
+  summarise(sum = sum(.value)) %>% 
+  group_by(AOU,prov,year) %>%
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE),
+            lci = quantile(sum,0.025,names = FALSE),
+            uci = quantile(sum,0.975,names = FALSE))
+
+
+# ggt <- ggplot()+
+#   geom_line(data = prov_sums_a,aes(x = year,y = mean))+
+#   geom_ribbon(data = prov_sums_a,aes(x = year,ymax = uci,ymin = lci),alpha = 0.2)+
+#   facet_wrap(facets = ~AOU,nrow = 6, ncol = 6,scales = "free")
+
+
+nat_sums_b <- tmp %>% 
+  group_by(var,year,.draw) %>% 
+  summarise(sum = sum(.value)) %>% 
+  group_by(var,year) %>% 
+  summarise(median = quantile(sum,0.5,names = FALSE),
+            lci = quantile(sum,0.025,names = FALSE),
+            uci = quantile(sum,0.975,names = FALSE))
+
+
+
+nat_sums_a <- tmp_sp %>% 
+  group_by(AOU,year,.draw) %>%
+  summarise(sum = sum(.value)) %>% 
+  group_by(AOU,year) %>%
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE),
+            lci = quantile(sum,0.025,names = FALSE),
+            uci = quantile(sum,0.975,names = FALSE))
+
+
+
+
+# compile website file a --------------------------------------------------
+
+
 
 
 

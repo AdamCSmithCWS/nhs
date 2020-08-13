@@ -120,7 +120,7 @@ model {
   
 
   tau_alpha_psi ~ dgamma(2,0.02)
-  alpha_psi[1] ~ dnorm(0,0.01)
+  alpha_psi[1] ~ dnorm(0,1)
   
   logit(psi[1]) <- alpha_psi[1]
   
@@ -239,18 +239,13 @@ model {
   }#c
   
   ### yearly intercepts of total kill by first-difference 
-  ### still has structure to allow first-differenc time-series model, but appears to be uneccessary and identifiability issues with caste time-series
-  ann[1] ~ dnorm(0,0.001) # fixed effects for year-1 annual harvest level
-  ann_day[1] ~ dnorm(0,0.001) # fixed effect for year-1 annual activity level
+  ann[1] ~ dnorm(0,0.1) # fixed effects for year-1 annual harvest level
+  ann_day[1] ~ dnorm(0,0.1) # fixed effect for year-1 annual activity level
   
   for(y in 2:nyears){
     ann[y] ~ dnorm(ann[y-1],tauyear)
     ann_day[y] ~ dnorm(ann_day[y-1],tauyear_day)
-    
-    #ann[y] ~ dnorm(0,0.001)
-    #ann_day[y] ~ dnorm(0,0.001)
-    
-  }
+      }
   
   # first-difference harvest and activity variance priors
    sdyear <- 1/pow(tauyear,0.5)

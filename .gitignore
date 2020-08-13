@@ -11,3 +11,5 @@
 *.tsv
 *.xlsx
 *Ramon*
+data/stored_SAS_download.RData
+data/web_files_FR/
