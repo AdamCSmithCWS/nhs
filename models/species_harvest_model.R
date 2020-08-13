@@ -329,7 +329,13 @@ model {
   ## nkill_yh[y,h] is also data, hunter-level total estimate of their harvest
   ### assumes that seasonal distribution is the same across castes...questionable...
   
-  
+ # JAGS doesn't allow the parameters of ddirch to be inferred. 
+ #However you can use the observation that if delta[k] ~ dgamma(alpha[k], 1), 
+ #then the vector with elements delta[k] / sum(delta[1:K]), k = 1, ., K, 
+ #is Dirichlet with parameters alpha[k], k = 1, ., K.'
+ # Then infer in the gamma distribution instead
+ 
+ 
 #####################################################################
   #### proportional distribution of all birds killed across periods
   ### this component ignores caste specific variation in the seasonal spread of the hunt
@@ -370,7 +376,7 @@ model {
   }
   tau_alpha_py[1] ~ dscaled.gamma(0.5,50)
   for(p in 2:nperiods){
-    alpha_p[p] ~ dnorm(0,0.001) # fixed effect period-effects on total kill
+    alpha_p[p] ~ dnorm(0,0.1) # fixed effect period-effects on total kill
     alpha_py[p,1] <- alpha_p[p]
      for(y in 2:nyears){
        alpha_py[p,y] ~ dnorm(alpha_py[p,y-1],tau_alpha_py[p]) # first difference model through time
@@ -435,35 +441,35 @@ model {
   #### multinomial dirichlet-prior, time-series model for the species composition
   
   alpha_s[1] <- 0
-
+  
+  for(p in 1:nperiods){
+    taualpha_psy1[p] ~ dscaled.gamma(0.5,50) # first-year, year-effect variance 
+  }
   for(s in 2:nspecies){
-    alpha_s[s] ~ dnorm(0,0.001)   # species mean proportional contribution across years and periods
+    alpha_s[s] ~ dnorm(0,0.1)   # species mean proportional contribution across years and periods
     #prior on the sd of alpha_psy[s] equal to the half-t distribution with sd = 2 and 4 degrees of freedom.  The density isflat for very small values (σS) and has a long flat tail for large values (σS).  Thesefeatures protect against mis-specification of the prior scaleS.  Choosing a largeSis harmlessas it simply makes the prior flatter, whereas ifSis too small then the long flat tail ensuresthat sufficient data will dominate the prior.  Gelman [2006] calls this a “weakly informative”prior.  For comparison, figure 10.1 also shows the density onσin the limit as the degrees offreedomdfincreases to infinity.  The distribution then becomes a half-normal with standarddeviationS.  The effect of increasing the degrees of freedom is to diminish the weight of thetail.
     
   }#s
   for(s in 1:nspecies){
     tau_alpha_psy[s] ~ dscaled.gamma(0.5,50) #year-effecct variance by species
     taualpha_s[s] ~ dscaled.gamma(0.5,50) # period variance by species
-    
+     
     for(p in 1:nperiods){
       alpha_ps[p,s] ~ dnorm(alpha_s[s],taualpha_s[s])
-      alpha_psy[p,s,1] <- alpha_ps[p,s]
+      alpha_psy1[p,s,1] <- dnorm(0,taualpha_psy1[p])
+      alpha_psy[p,s,1] <- alpha_ps[p,s] + alpha_psy1[p,s,1]
       
       for(y in 2:nyears){
-        alpha_psy[p,s,y] ~ dnorm(alpha_psy[p,s,y-1],tau_alpha_psy[s]) 
+        alpha_psy1[p,s,y] ~ dnorm(alpha_psy1[p,s,y-1],tau_alpha_psy[s]) 
+        alpha_psy[p,s,y] <- alpha_ps[p,s] + alpha_psy1[p,s,y]
+        
       }
       
     }#p
     
   }#s
  
-  # JAGS doesn't allow the parameters of ddirch to be inferred. 
-  #However you can use the observation that if delta[k] ~ dgamma(alpha[k], 1), 
-  #then the vector with elements delta[k] / sum(delta[1:K]), k = 1, ., K, 
-  #is Dirichlet with parameters alpha[k], k = 1, ., K.'
-  # Then infer in the gamma distribution instead
-  
- 
+
   
   
   #####################################################################
@@ -503,25 +509,25 @@ model {
   }#s
   
   #### multinomial dirichlet-prior, time-series model for the age and sex (ducks) or age (geese) composition
-  
-  alpha_ax[1] <- 0
-  tau_alpha_ax[1] ~ dscaled.gamma(0.5,50)
-  
-  for(d in 2:ndemog){
-    alpha_ax[d] ~ dnorm(0,0.001)   # mean demographic contribution across species (assuming that demography is similar across species...sketchy...)
-    tau_alpha_ax[d] ~ dscaled.gamma(0.5,50)
-    #prior on the variance of demographic contribution across species for a given demographic grouping
-    #prior on the sd of tau_alpha_ax[s] equal to the half-t distribution with sd = 1 and 50 degrees of freedom.  The density isflat for very small values (σS) and has a long flat tail for large values (σS).  Thesefeatures protect against mis-specification of the prior scaleS.  Choosing a largeSis harmlessas it simply makes the prior flatter, whereas ifSis too small then the long flat tail ensuresthat sufficient data will dominate the prior.  Gelman [2006] calls this a “weakly informative”prior.  For comparison, figure 10.1 also shows the density onσin the limit as the degrees offreedomdfincreases to infinity.  The distribution then becomes a half-normal with standarddeviationS.  The effect of increasing the degrees of freedom is to diminish the weight of thetail.
-    
-  }#d
-  
+  # 
+  # 
+     tau_alpha_ax ~ dscaled.gamma(0.5,50) #variance among species on the first-year parameter for demography
+     
+
   for(s in 1:nspecies){
     tau_alpha_axsy[s] ~ dscaled.gamma(0.5,50) #variance of year-effects for the demographic parameters by species
     
-    for(d in 1:ndemog){
+    alpha_axs[1,s] <- 0 #fixed first demographic category = 0
+ 
+    for(y in 1:nyears){
+      alpha_axsy[1,s,y] <- alpha_axs[1,s]  #first demographic group is fixed at 0
+    }#y
+    
+    for(d in 2:ndemog){
      
-      alpha_axs[d,s] ~ dnorm(alpha_ax[d],tau_alpha_ax[d])
+      alpha_axs[d,s] ~ dnorm(0,tau_alpha_ax)
       alpha_axsy[d,s,1] <- alpha_axs[d,s] # first year
+      
       
       for(y in 2:nyears){
         alpha_axsy[d,s,y] ~ dnorm(alpha_axsy[d,s,y-1],tau_alpha_axsy[s]) 
