@@ -20,6 +20,7 @@ comp_plot_psy <- function(group = spgp,
   d1 = filter(dsum,grepl(Parameter,pattern = paste0(var,"["),fixed = T))
   
   d1$per = jags_dim(var = var,dat = d1)
+  d1$per_f = factor(d1$per)
   d1$yr = jags_dim(var = var,dat = d1,dim = 3)
   d1$sp = jags_dim(var = var,dat = d1,dim = 2)
   d1$year = d1$yr+(Y-(jdat$nyears))
@@ -89,10 +90,10 @@ comp_plot_psy <- function(group = spgp,
   ############## end parts plot counts
   
   for(pp in 1:length(outggs)){
-    outgg = ggplot(data = dd,aes(x = year,y = mean,group = per,fill = per))+
+    outgg = ggplot(data = dd,aes(x = year,y = mean,group = per_f,fill = per_f))+
       geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = partsplot),fill = grey(0.7),alpha = 1,stat = "identity",width = 0.2)+
-      #geom_point(aes(colour = per),size = 0.5)+
-      geom_line(aes(colour = per))+
+      #geom_point(aes(colour = per_f),size = 0.5)+
+      geom_line(aes(colour = per_f))+
       labs(title = paste0("Species proportions in SCS by period ",prov," zn",zone," (mean and 95 CI)"))+
       geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.03)+
       scale_y_continuous(limits = c(0,NA))+

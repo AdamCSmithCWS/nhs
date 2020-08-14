@@ -915,6 +915,9 @@ t1 = Sys.time()
    
 
 
+# MCMC sampling -----------------------------------------------------------
+
+
   
   out2 = try(jagsUI(data = jdat,
                     parameters.to.save = parms,

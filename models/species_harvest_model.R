@@ -456,7 +456,7 @@ model {
      
     for(p in 1:nperiods){
       alpha_ps[p,s] ~ dnorm(alpha_s[s],taualpha_s[s])
-      alpha_psy1[p,s,1] <- dnorm(0,taualpha_psy1[p])
+      alpha_psy1[p,s,1] ~ dnorm(0,taualpha_psy1[p])
       alpha_psy[p,s,1] <- alpha_ps[p,s] + alpha_psy1[p,s,1]
       
       for(y in 2:nyears){

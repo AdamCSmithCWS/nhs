@@ -28,7 +28,7 @@ comp_plot_species <- function(group = spgp,
   d2 = pubEsts_species[which(pubEsts_species$prov == unique(d1$province) & pubEsts_species$zone == zone),]
   names(d2) <- c("AOU","species","province","ZOHUNT","year","mean","sd","lci","uci")
   d2$mod = "Old"
-  d2 = filter(d2,AOU %in% sps.spgp)
+  d2 = filter(d2,AOU %in% aou.spgp)
   
   dd = suppressWarnings(bind_rows(d1,d2))
   outggs <- list()

@@ -70,7 +70,7 @@ comp_plot_axsy <- function(group = spgp,
   ddb[ws,"partsplot"] <- (ddb[ws,"nparts"]/max(ddb[ws,"nparts"]))*(ulim/2)
   }
   
-  ddb = unique(ddb[,c("AOU","year","nparts","partsplot")])
+  ddb = unique(ddb[,c("AOU","demo","year","nparts","partsplot")])
   ddbmx = tapply(ddb$partsplot,ddb$AOU,max)
   if(any(is.na(ddbmx))){ddbmx[which(is.na(ddbmx))] <- 0}
   wm = NULL
@@ -101,11 +101,11 @@ for(pp in 1:length(outggs)){
     geom_point(aes(x = year,y = raw_pd,colour = demo))+
     labs(title = paste0("Age and sex proportions ",prov," zn",zone," (mean and 95 CI)"))+
     geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.1)+
-    scale_y_continuous(limits = c(0,NA))+
+    scale_y_continuous(limits = c(0,1))+
     my_col+
     theme_classic()+
-    #geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = partsplot,label = nparts),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
-    facet_wrap_paginate(facets = ~AOU+demo,nrow = 2,ncol = 2,scales = "fixed",page = pp)
+    geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = partsplot,label = nparts),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
+    facet_wrap_paginate(facets = ~AOU+demo,nrow = 2,ncol = 2,scales = "free",page = pp)
   outggs[[pp]] <- outgg
 }
   
