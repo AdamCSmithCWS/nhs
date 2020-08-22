@@ -365,7 +365,7 @@ for(pr in provs){
   
    zns <- as.integer(unique(allkill[which(allkill[,phunt] == pr),zhunt]))
   zns <- zns[which(zns > 0)]
-  for(z in zns){
+ # for(z in zns){
     
 
 
@@ -373,18 +373,18 @@ for(pr in provs){
   
   
 
-  #Set up parallel stuff
-  # n_cores <- 2
-  # cluster <- makeCluster(n_cores, type = "PSOCK")
-  # registerDoParallel(cluster)
-  # 
-  # 
-  # 
-  # fullrun <- foreach(pr = provs2,
-  #                     .packages = c("jagsUI","tidyverse"),
-  #                     .inorder = FALSE,
-  #                     .errorhandling = "pass") %dopar%
-  #   {
+ # Set up parallel stuff
+  n_cores <- length(zns)
+  cluster <- makeCluster(n_cores, type = "PSOCK")
+  registerDoParallel(cluster)
+
+
+
+  fullrun <- foreach(z = zns,
+                      .packages = c("jagsUI","tidyverse"),
+                      .inorder = FALSE,
+                      .errorhandling = "pass") %dopar%
+    {
       
   
  
@@ -865,10 +865,10 @@ rm(list = "out2")
 }
 
   }#z
+  stopCluster(cl = cluster)
   
 }#pr
 
-#stopCluster(cl = cluster)
 
 
 

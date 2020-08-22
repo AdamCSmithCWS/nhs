@@ -1408,6 +1408,7 @@ jjcst = jjcst +1
 # comparing retransformation options --------------------------------------
 
 
+my_col <-  scale_color_viridis_d(aesthetics = c("colour","fill"), begin = 0.3,end = 0.9,option = "B",direction = -1)
 
 ### mean kill
 dsum = as.data.frame(out2$summary)
@@ -1487,7 +1488,7 @@ compp = ggplot(data = dd,aes(x = year,y = mean,fill = vers))+
   geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.3)+
   labs(title = paste0("retrans comparison KILL",pr," zn",z," (mean and 95 CI)"))+
   scale_y_continuous(limits = c(0,ulim))+
-  scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
+  my_col + #scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
   theme_classic()+
   geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = hunterplot,label = nhunter),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
   facet_wrap(facets = ~castes,ncol = 2,scales = "fixed")
@@ -1563,7 +1564,7 @@ compp = ggplot(data = dd,aes(x = year,y = mean,fill = vers))+
   geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.3)+
   labs(title = paste0("retrans comparison DAYS",pr," zn",z," (mean and 95 CI)"))+
   scale_y_continuous(limits = c(0,ulim))+
-  scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
+  my_col + #scale_color_viridis_d(aesthetics = c("colour","fill"), end = 0.7)+
   theme_classic()+
   geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = hunterplot,label = nhunter),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
   facet_wrap(facets = ~castes,ncol = 2,scales = "fixed")
@@ -1659,13 +1660,13 @@ jjcomp = jjcomp +1
   
  
   
-  pdf(paste0("output/caste effects",asuf," ",spgp,".pdf"),
-      width = 8,
-      height = 6)
-  for(jj in 1:length(cst_list)){
-    print(cst_list[[jj]])
-  }
-  dev.off()
+  # pdf(paste0("output/caste effects",asuf," ",spgp,".pdf"),
+  #     width = 8,
+  #     height = 6)
+  # for(jj in 1:length(cst_list)){
+  #   print(cst_list[[jj]])
+  # }
+  # dev.off()
   
   
   pdf(paste0("output/species_level_harvests",asuf," ",spgp,".pdf"),width = 8,height = 10)
@@ -1724,6 +1725,4 @@ jjcomp = jjcomp +1
   
 }#spgp (species group)
 #######################################
-## set up some automatic plotting of important variables and compare with this year's 10-year trend graphs
 
-###### still to Do...

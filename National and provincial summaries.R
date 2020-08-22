@@ -49,15 +49,17 @@ for(rr in c("by_zone","by_province","canada-wide")){
 pubEsts_simple_all$lci = ceiling(pubEsts_simple_all$mean-(1.96*pubEsts_simple_all$sd))
 pubEsts_simple_all$uci = ceiling(pubEsts_simple_all$mean+(1.96*pubEsts_simple_all$sd))
 pubEsts_simple_all[which(pubEsts_simple_all$lci < 0),"lci"] <- 0
-
+pubEsts_simple_all[which(is.na(pubEsts_simple_all$prov)),"prov"] <- "Canada"
 
 names(pubEsts_species_all) <- c("sp","species","prov","zone","year","mean","sd")
 pubEsts_species_all$lci = ceiling(pubEsts_species_all$mean-(1.96*pubEsts_species_all$sd))
 pubEsts_species_all$uci = ceiling(pubEsts_species_all$mean+(1.96*pubEsts_species_all$sd))
 pubEsts_species_all[which(pubEsts_species_all$lci < 0),"lci"] <- 0
+pubEsts_species_all[which(is.na(pubEsts_species_all$prov)),"prov"] <- "Canada"
 
 
 names(pubEsts_age_sex_all) <- c("sp","species","prov","zone","year","age_ratio")
+pubEsts_age_sex_all[which(is.na(pubEsts_age_sex_all$prov)),"prov"] <- "Canada"
 
 
 species_web_names = unique(pubEsts_species_all[,c("sp","species")])
@@ -223,6 +225,40 @@ for(pr in provs){
            tmp_sp <- bind_rows(tmp_sp,tmp_sp_goose)
      }
      
+     if(file.exists(paste("output/full harvest zip",pr,z,"murre","alt mod.RData"))){
+       load(paste("output/full harvest zip",pr,z,"murre","alt mod.RData"))
+       
+       tmp_murre <- out2$samples %>% gather_draws(NSUCC_y[y],
+                                                  kill_y[y]) 
+       
+       vnm <- sim_vars[which(sim_vars$source == "murre"),]
+       #vnm <- rename(vnm,group = var)
+       
+       tmp_murre <- left_join(tmp_murre,vnm,by = c(".variable" = "newvar"))
+       
+       
+       ys <- data.frame(y = 1:jdat$nyears,
+                        year = years[c(((length(years)-jdat$nyears)+1):length(years))]) 
+       
+       tmp_murre <- full_join(tmp_murre,ys,by = "y")
+       tmp_murre$prov <- pr
+       tmp_murre$zone <- z
+       tmp <- bind_rows(tmp,tmp_murre)
+       
+       ## species harvests
+       
+       tmp_sp_murre <- out2$samples %>% gather_draws(kill_ys[y,s]) 
+       vnm <- sp_vars[which(sp_vars$source == "murre"),c("sp","species","newvar")]
+       spss <- sp.save.out[which(sp.save.out$PRHUNT == pr & sp.save.out$ZOHUNT == z),c("AOU","spfact","spn")]
+       spss <- spss[order(spss$spn),]
+       tmp_sp_murre <- left_join(tmp_sp_murre,spss,by = c("s" = "spn"))
+       tmp_sp_murre <- left_join(tmp_sp_murre,vnm,by = c("AOU" = "sp"))
+       tmp_sp_murre <- left_join(tmp_sp_murre,ys,by = "y")
+       tmp_sp_murre$prov <- pr
+       tmp_sp_murre$zone <- z
+       tmp_sp <- bind_rows(tmp_sp,tmp_sp_murre)
+     }
+     
      if(file.exists(paste("output/other harvest zip",pr,z,"alt mod.RData"))){
        load(paste("output/other harvest zip",pr,z,"alt mod.RData"))
        
@@ -341,6 +377,18 @@ nat_sums_a <- tmp_sp %>%
 # compile website file a --------------------------------------------------
 
 
+save(list = c("nat_sums_a",
+              #"nat_sums_b",
+              #"prov_sums_b",
+              "prov_sums_a",
+              "pubEsts_species_all",
+              "pubEsts_simple_all",
+              "pubEsts_age_sex_all"),
+     file = "national_provincial_summaries.RData")
+       
+
+nat_sums_a$model <- "new"
+prov_sums_a$model <- "new"
 
 
 
