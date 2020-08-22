@@ -417,9 +417,9 @@ sumkill = allkill[which(allkill[,phunt] == pr &
                              allkill[,zhunt] == z &
                              allkill$YEAR %in% years),]
 
-if(minyr != FY){
 sumkill$year = sumkill$YEAR-(minyr-1)
-}
+
+
   nperiods <- max(periods$period)
     
     
@@ -635,9 +635,23 @@ for(y in years){
   nsampprov = sum(tmp["TRUE",])#number of hunters sampled in that prov/zone (ratio of this to population = simple extrapolation factor)
   #nhuntprov = sum(tmp[,"TRUE"])#number of hunters hunting in that prov/zone
   #nhunt_samp_prov = sum(tmp["TRUE","TRUE"])
+  if(sum(dim(tmp)) == 4){
   nsampprov_huntaltprov = tmp["TRUE","FALSE"]
   nhuntprov_sampaltprov = tmp["FALSE","TRUE"]
-  
+  }else{
+    if(!("FALSE" %in% dimnames(tmp)$huntpr)){
+    nsampprov_huntaltprov <- 0 
+    }else{
+      nsampprov_huntaltprov = tmp["TRUE","FALSE"] 
+    }
+    
+    if(!("FALSE" %in% dimnames(tmp)$samppr)){
+      nhuntprov_sampaltprov <- 0 
+    }else{
+      nhuntprov_sampaltprov = tmp["FALSE","TRUE"] 
+    }
+    
+  }
   leave_hunt_cf[yi,1] <- nsampprov_huntaltprov
   leave_hunt_cf[yi,2] <- nsampprov
   
