@@ -328,70 +328,16 @@ for(pr in provs){
 
 
 
-prov_sums_b <- tmp %>% 
-  group_by(var,prov,year,.draw) %>% 
-  summarise(sum = sum(.value)) %>% 
-  group_by(var,prov,year) %>% 
-  summarise(median = quantile(sum,0.5,names = FALSE,na.rm = T),
-            lci = quantile(sum,0.025,names = FALSE,na.rm = T),
-            uci = quantile(sum,0.975,names = FALSE,na.rm = T))
-  
-  
-
-prov_sums_a <- tmp_sp %>% 
-  group_by(AOU,prov,year,.draw) %>%
-  summarise(sum = sum(.value)) %>% 
-  group_by(AOU,prov,year) %>%
-  summarise(mean = mean(sum),
-            median = quantile(sum,0.5,names = FALSE),
-            lci = quantile(sum,0.025,names = FALSE),
-            uci = quantile(sum,0.975,names = FALSE))
-
-
-# ggt <- ggplot()+
-#   geom_line(data = prov_sums_a,aes(x = year,y = mean))+
-#   geom_ribbon(data = prov_sums_a,aes(x = year,ymax = uci,ymin = lci),alpha = 0.2)+
-#   facet_wrap(facets = ~AOU,nrow = 6, ncol = 6,scales = "free")
-
-
-nat_sums_b <- tmp %>% 
-  group_by(var,year,.draw) %>% 
-  summarise(sum = sum(.value)) %>% 
-  group_by(var,year) %>% 
-  summarise(median = quantile(sum,0.5,names = FALSE,na.rm = T),
-            lci = quantile(sum,0.025,names = FALSE,na.rm = T),
-            uci = quantile(sum,0.975,names = FALSE,na.rm = T))
-
-
-
-nat_sums_a <- tmp_sp %>% 
-  group_by(AOU,year,.draw) %>%
-  summarise(sum = sum(.value)) %>% 
-  group_by(AOU,year) %>%
-  summarise(mean = mean(sum),
-            median = quantile(sum,0.5,names = FALSE),
-            lci = quantile(sum,0.025,names = FALSE),
-            uci = quantile(sum,0.975,names = FALSE))
-
-
-
-
 # compile website file a --------------------------------------------------
 
 
-save(list = c("nat_sums_a",
-              "nat_sums_b",
-              "prov_sums_b",
-              "prov_sums_a",
-              "pubEsts_species_all",
+save(list = c("pubEsts_species_all",
               "pubEsts_simple_all",
-              "pubEsts_age_sex_all"),
+              "pubEsts_age_sex_all",
+              "tmp",
+              "tmp_sp"),
      file = "national_provincial_summaries.RData")
        
-
-nat_sums_a$model <- "new"
-prov_sums_a$model <- "new"
-
 
 
 
