@@ -107,7 +107,8 @@ prov_sums_b <- tmp %>%
   group_by(var,prov,year,.draw) %>% 
   summarise(sum = sum(.value)) %>% 
   group_by(var,prov,year) %>% 
-  summarise(median = quantile(sum,0.5,names = FALSE,na.rm = T),
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE,na.rm = T),
             lci = quantile(sum,0.025,names = FALSE,na.rm = T),
             uci = quantile(sum,0.975,names = FALSE,na.rm = T))
 
@@ -133,7 +134,8 @@ nat_sums_b <- tmp %>%
   group_by(var,year,.draw) %>% 
   summarise(sum = sum(.value)) %>% 
   group_by(var,year) %>% 
-  summarise(median = quantile(sum,0.5,names = FALSE,na.rm = T),
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE,na.rm = T),
             lci = quantile(sum,0.025,names = FALSE,na.rm = T),
             uci = quantile(sum,0.975,names = FALSE,na.rm = T))
 
@@ -153,9 +155,57 @@ nat_sums_a <- tmp_sp %>%
 
 
 nat_sums_a$model <- "new"
+nat_sums_a$prov <- "Canada"
 prov_sums_a$model <- "new"
 
 
+
+# compile published and  new estimates ------------------------------------
+pubEsts_species_all$model = "old"
+pubEsts_simple_all$model = "old"
+pubEsts_age_sex_all$model = "old"
+
+names(pubEsts_species_all) <- c("AOU","species","province","zone","year","mean","sd","lci","uci","model")
+
+provs = unique((provzone[,c("prov","province")]))
+provs = data.frame(prov = as.character(provs$prov),
+               province = as.character(provs$province),stringsAsFactors = F)
+
+adl <- nrow(provs)+1
+provs[adl,"prov"] <- "Canada"
+provs[adl,"province"] <- "Canada"
+
+
+prov_sums_a <- left_join(prov_sums_a,provs,by = "prov")
+nat_sums_a <- left_join(nat_sums_a,provs,by = "prov")
+
+sums_a <- bind_rows(nat_sums_a,prov_sums_a)
+names(species_web_names) <- c("AOU","species")
+sums_a <- left_join(sums_a,species_web_names)
+
+
+
+both_a <- bind_rows(sums_a,pubEsts_species_all)
+
+ttt = comp_plot_species(dat = both_a)
+
+pdf(file = "species_summaries.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
+ttt = comp_plot_species_CV(dat = both_a)
+
+pdf(file = "species_summaries_CV.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
+# compile b tables --------------------------------------------------------
 
 
 # table output and generation ---------------------------------------------
