@@ -857,7 +857,7 @@ if(class(out2) != "try-error"){
 # ggmcmc(pgg_ann,file = paste0("output/conv/ann_",pr,z,".pdf"),param_page = 5)
 #   
   
-  save(list = c("out2","jdat","grps","regs"),
+  save(list = c("out2","jdat","grps"),
        file = paste("output/other harvest zip",pr,z,"alt mod.RData"))
   
 rm(list = "out2")

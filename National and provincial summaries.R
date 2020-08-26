@@ -326,13 +326,15 @@ for(pr in provs){
    
 }
 
+
+
 prov_sums_b <- tmp %>% 
   group_by(var,prov,year,.draw) %>% 
   summarise(sum = sum(.value)) %>% 
   group_by(var,prov,year) %>% 
-  summarise(median = quantile(sum,0.5,names = FALSE),
-            lci = quantile(sum,0.025,names = FALSE),
-            uci = quantile(sum,0.975,names = FALSE))
+  summarise(median = quantile(sum,0.5,names = FALSE,na.rm = T),
+            lci = quantile(sum,0.025,names = FALSE,na.rm = T),
+            uci = quantile(sum,0.975,names = FALSE,na.rm = T))
   
   
 
@@ -356,9 +358,9 @@ nat_sums_b <- tmp %>%
   group_by(var,year,.draw) %>% 
   summarise(sum = sum(.value)) %>% 
   group_by(var,year) %>% 
-  summarise(median = quantile(sum,0.5,names = FALSE),
-            lci = quantile(sum,0.025,names = FALSE),
-            uci = quantile(sum,0.975,names = FALSE))
+  summarise(median = quantile(sum,0.5,names = FALSE,na.rm = T),
+            lci = quantile(sum,0.025,names = FALSE,na.rm = T),
+            uci = quantile(sum,0.975,names = FALSE,na.rm = T))
 
 
 
@@ -378,8 +380,8 @@ nat_sums_a <- tmp_sp %>%
 
 
 save(list = c("nat_sums_a",
-              #"nat_sums_b",
-              #"prov_sums_b",
+              "nat_sums_b",
+              "prov_sums_b",
               "prov_sums_a",
               "pubEsts_species_all",
               "pubEsts_simple_all",
