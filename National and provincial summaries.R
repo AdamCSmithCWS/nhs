@@ -182,10 +182,10 @@ for(pr in provs){
            tmp_sp_duck$zone <- z
            
            if(z == 1 & pr == "AB"){
-             tmp <- tmp_duck
+             tmp_sim <- tmp_duck
              tmp_sp <- tmp_sp_duck
            }else{
-             tmp <- bind_rows(tmp,tmp_duck)
+             tmp_sim <- bind_rows(tmp_sim,tmp_duck)
              
              tmp_sp <- bind_rows(tmp_sp,tmp_sp_duck)
            }
@@ -209,7 +209,7 @@ for(pr in provs){
            tmp_goose <- full_join(tmp_goose,ys,by = "y")
            tmp_goose$prov <- pr
            tmp_goose$zone <- z
-           tmp <- bind_rows(tmp,tmp_goose)
+           tmp_sim <- bind_rows(tmp_sim,tmp_goose)
            
            ## species harvests
            
@@ -243,7 +243,7 @@ for(pr in provs){
        tmp_murre <- full_join(tmp_murre,ys,by = "y")
        tmp_murre$prov <- pr
        tmp_murre$zone <- z
-       tmp <- bind_rows(tmp,tmp_murre)
+       tmp_sim <- bind_rows(tmp_sim,tmp_murre)
        
        ## species harvests
        
@@ -313,7 +313,7 @@ for(pr in provs){
       #### then the group and year variables will facilitate a full 
       #### tidy summary to generate the national and provincial estimates
       
-      tmp <- bind_rows(tmp,tmp_other)
+      tmp_sim <- bind_rows(tmp_sim,tmp_other)
       
       
       }
@@ -334,7 +334,7 @@ for(pr in provs){
 save(list = c("pubEsts_species_all",
               "pubEsts_simple_all",
               "pubEsts_age_sex_all",
-              "tmp",
+              "tmp_sim",
               "tmp_sp"),
      file = "national_provincial_summaries.RData")
        

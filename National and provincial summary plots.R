@@ -102,6 +102,17 @@ load("national_provincial_summaries.RData")
 
 
 
+zone_sums_b <- tmp2 %>% 
+  group_by(var,prov,zone,year,.draw) %>% 
+  summarise(sum = sum(.value)) %>% 
+  group_by(var,prov,zone,year) %>% 
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE,na.rm = T),
+            lci = quantile(sum,0.025,names = FALSE,na.rm = T),
+            uci = quantile(sum,0.975,names = FALSE,na.rm = T))
+
+
+
 
 prov_sums_b <- tmp %>% 
   group_by(var,prov,year,.draw) %>% 
@@ -113,23 +124,6 @@ prov_sums_b <- tmp %>%
             uci = quantile(sum,0.975,names = FALSE,na.rm = T))
 
 
-
-prov_sums_a <- tmp_sp %>% 
-  group_by(AOU,prov,year,.draw) %>%
-  summarise(sum = sum(.value)) %>% 
-  group_by(AOU,prov,year) %>%
-  summarise(mean = mean(sum),
-            median = quantile(sum,0.5,names = FALSE),
-            lci = quantile(sum,0.025,names = FALSE),
-            uci = quantile(sum,0.975,names = FALSE))
-
-
-# ggt <- ggplot()+
-#   geom_line(data = prov_sums_a,aes(x = year,y = mean))+
-#   geom_ribbon(data = prov_sums_a,aes(x = year,ymax = uci,ymin = lci),alpha = 0.2)+
-#   facet_wrap(facets = ~AOU,nrow = 6, ncol = 6,scales = "free")
-
-
 nat_sums_b <- tmp %>% 
   group_by(var,year,.draw) %>% 
   summarise(sum = sum(.value)) %>% 
@@ -139,6 +133,24 @@ nat_sums_b <- tmp %>%
             lci = quantile(sum,0.025,names = FALSE,na.rm = T),
             uci = quantile(sum,0.975,names = FALSE,na.rm = T))
 
+
+zone_sums_a <- tmp_sp %>% 
+  group_by(AOU,prov,zone,year,.draw) %>%
+  summarise(sum = sum(.value)) %>% 
+  group_by(AOU,prov,zone,year) %>%
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE),
+            lci = quantile(sum,0.025,names = FALSE),
+            uci = quantile(sum,0.975,names = FALSE))
+
+prov_sums_a <- tmp_sp %>% 
+  group_by(AOU,prov,year,.draw) %>%
+  summarise(sum = sum(.value)) %>% 
+  group_by(AOU,prov,year) %>%
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE),
+            lci = quantile(sum,0.025,names = FALSE),
+            uci = quantile(sum,0.975,names = FALSE))
 
 
 nat_sums_a <- tmp_sp %>% 
@@ -195,6 +207,22 @@ for(pp in 1:length(ttt)){
 }
 dev.off()
 
+ttt = comp_plot_species(dat = both_a,reg = "Canada",sp = sp_vars[which(sp_vars$source == "duck"),"species"])
+pdf(file = "National_duck_summaries.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
+ttt = comp_plot_species(dat = both_a,reg = "Canada",sp = sp_vars[which(sp_vars$source == "goose"),"species"])
+pdf(file = "National_goose_summaries.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
 
 ttt = comp_plot_species_CV(dat = both_a)
 
@@ -204,6 +232,22 @@ for(pp in 1:length(ttt)){
 }
 dev.off()
 
+ttt = comp_plot_species_CV(dat = both_a,reg = "Canada",sp = sp_vars[which(sp_vars$source == "duck"),"species"])
+
+pdf(file = "national_duck_summaries_CV.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
+ttt = comp_plot_species_CV(dat = both_a,reg = "Canada",sp = sp_vars[which(sp_vars$source == "goose"),"species"])
+
+pdf(file = "national_goose_summaries_CV.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
 
 # compile b tables --------------------------------------------------------
 
