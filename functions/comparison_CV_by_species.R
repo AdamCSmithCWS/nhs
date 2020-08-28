@@ -18,7 +18,7 @@ comp_plot_species_CV <- function(dat = both_a,
   }
   
   sps = unique(dat$species)
-  nregions <- length(sps)
+  nspecies <- length(sps)
   outggs <- vector(mode = "list",length = nspecies)
 
   
@@ -31,14 +31,39 @@ comp_plot_species_CV <- function(dat = both_a,
   w_lci0 = which(dat$lci == 0)
   dat[w_lci0,"CV"] <- (dat[w_lci0,"sd"])/dat[w_lci0,"mean"]
   
+  if(!is.null(reg)){
+    nreg <- length(reg)
+    outggs <- vector(mode = "list",length = nreg)
+    
+    for(ppn in 1:length(reg)){
+      pp = reg[ppn]
+      datp <- filter(dat,province == pp)
+      outgg = ggplot(data = datp,aes(x = year,y = CV,group = mod,fill = mod))+
+        geom_point(aes(colour = mod),size = 0.5)+
+        geom_line(aes(colour = mod))+
+        labs(title = paste0(pp," CV of Harvest (mean and 95 CI)"))+
+        #geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
+        scale_y_continuous(limits = c(0,NA))+
+        my_col+
+        theme_classic()+
+        facet_wrap(facets = ~species,ncol = 3,scales = "free")
+      
+      #print(outgg)
+      
+      outggs[[ppn]] <- outgg
+      
+    }
+  }
   
-for(ppn in 1:nspecies){
+    if(is.null(reg)){
+      
+    for(ppn in 1:nspecies){
   pp = sps[ppn]
   datp <- filter(dat,species == pp)
   outgg = ggplot(data = datp,aes(x = year,y = CV,group = mod,fill = mod))+
     geom_point(aes(colour = mod),size = 0.5)+
     geom_line(aes(colour = mod))+
-    labs(title = paste0(pp," Harvest (mean and 95 CI)"))+
+    labs(title = paste0(pp," CV of Harvest (mean and 95 CI)"))+
     #geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
     scale_y_continuous(limits = c(0,NA))+
     my_col+
@@ -49,7 +74,8 @@ for(ppn in 1:nspecies){
   
   outggs[[ppn]] <- outgg
 }
-  
+}
+
   return(outggs)
 }
 
