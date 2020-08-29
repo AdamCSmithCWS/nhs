@@ -17,7 +17,11 @@ comp_plot_simple <- function(dat = both_b,
     dat <- filter(dat,zone %in% z)
   }
   
-
+  if(length(unique(dat$zone)) > 1){
+    by_zone = TRUE
+  }
+  
+  
   
   dat$mod <- factor(dat$model,levels = c("old","new"), ordered = T)
   
@@ -27,7 +31,13 @@ comp_plot_simple <- function(dat = both_b,
   if(!is.null(reg)){
     nreg <- length(reg)
     outggs <- vector(mode = "list",length = nreg)
-    
+    if(by_zone){
+      my_facets <- facet_wrap(facets = ~name+zone,ncol = 3,scales = "free")
+      
+    }else{
+      my_facets <- facet_wrap(facets = ~name,ncol = 3,scales = "free")
+      
+    }
     for(ppn in 1:length(reg)){
       pp = reg[ppn]
       datp <- filter(dat,province == pp)
@@ -39,7 +49,7 @@ comp_plot_simple <- function(dat = both_b,
         scale_y_continuous(limits = c(0,NA))+
         my_col+
         theme_classic()+
-        facet_wrap(facets = ~name,ncol = 3,scales = "free")
+        my_facets
       
       #print(outgg)
       
@@ -53,7 +63,11 @@ comp_plot_simple <- function(dat = both_b,
     nms = unique(dat$name)
     nnms = length(nms)
     outggs <- vector(mode = "list",length = nnms)
-    
+    if(by_zone){
+      my_facets <- facet_wrap(facets = ~province+zone,ncol = 3,scales = "free")
+    }else{
+      my_facets <- facet_wrap(facets = ~province,ncol = 3,scales = "free")
+    }
 for(ppn in 1:nnms){
   pp = nms[ppn]
   datp <- filter(dat,name == pp)
@@ -65,9 +79,9 @@ for(ppn in 1:nnms){
     scale_y_continuous(limits = c(0,NA))+
     my_col+
     theme_classic()+
-    facet_wrap(facets = ~province,ncol = 3,scales = "free")
+    my_facets
   
-  print(outgg)
+  #print(outgg)
   
   outggs[[ppn]] <- outgg
 }

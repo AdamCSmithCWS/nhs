@@ -16,6 +16,10 @@ comp_plot_species_CV <- function(dat = both_a,
   if(!is.null(z)){
     dat <- filter(dat,zone %in% z)
   }
+  if(length(unique(dat$zone)) > 1){
+    by_zone = TRUE
+  }
+  
   
   sps = unique(dat$species)
   nspecies <- length(sps)
@@ -34,7 +38,13 @@ comp_plot_species_CV <- function(dat = both_a,
   if(!is.null(reg)){
     nreg <- length(reg)
     outggs <- vector(mode = "list",length = nreg)
-    
+    if(by_zone){
+      my_facets <- facet_wrap(facets = ~species+zone,ncol = 3,scales = "free")
+      
+    }else{
+      my_facets <- facet_wrap(facets = ~species,ncol = 3,scales = "free")
+      
+    }
     for(ppn in 1:length(reg)){
       pp = reg[ppn]
       datp <- filter(dat,province == pp)
@@ -46,7 +56,7 @@ comp_plot_species_CV <- function(dat = both_a,
         scale_y_continuous(limits = c(0,NA))+
         my_col+
         theme_classic()+
-        facet_wrap(facets = ~species,ncol = 3,scales = "free")
+        my_facets
       
       #print(outgg)
       
@@ -56,7 +66,11 @@ comp_plot_species_CV <- function(dat = both_a,
   }
   
     if(is.null(reg)){
-      
+      if(by_zone){
+        my_facets <- facet_wrap(facets = ~province+zone,ncol = 3,scales = "free")
+      }else{
+        my_facets <- facet_wrap(facets = ~province,ncol = 3,scales = "free")
+      }
     for(ppn in 1:nspecies){
   pp = sps[ppn]
   datp <- filter(dat,species == pp)
@@ -68,7 +82,7 @@ comp_plot_species_CV <- function(dat = both_a,
     scale_y_continuous(limits = c(0,NA))+
     my_col+
     theme_classic()+
-    facet_wrap(facets = ~province,ncol = 3,scales = "free")
+    my_facets
   
   #print(outgg)
   
