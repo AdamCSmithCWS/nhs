@@ -167,11 +167,18 @@ sp_vars <- read.csv("data/website_species_variable_names_in.csv")
 # 
 # 
 # # age ratios --------------------------------------------------------------
+rat_f <- function(x){
+  a = filter(x,BAGE == "A")
+  i = filter(x,BAGE == "I")
+  r = i/a
+  return(r)
+}
 # 
+
 # zone_sums_c <- tmp_sp_demo %>% 
 #   group_by(AOU,BAGE,prov,zone,year,.draw) %>%
 #   summarise(sum = sum(.value)) %>% 
-#   group_by(AOU,BAGE,prov,zone,year) %>%
+#   group_by(AOU,prov,zone,year) %>%
 #   summarise(mean = mean(sum),
 #             median = quantile(sum,0.5,names = FALSE),
 #             lci = quantile(sum,0.025,names = FALSE),
@@ -228,9 +235,6 @@ source("functions/comparison_by_species.R")
 source("functions/comparison_CV_by_species.R")
 
 
-nat_sums_a$model <- "new"
-nat_sums_a$prov <- "Canada"
-prov_sums_a$model <- "new"
 
 
 
@@ -250,18 +254,44 @@ provs[adl,"prov"] <- "Canada"
 provs[adl,"province"] <- "Canada"
 
 
+
+# A tables ----------------------------------------------------------------
+
+
+nat_sums_a$model <- "new"
+nat_sums_a$prov <- "Canada"
+prov_sums_a$model <- "new"
+zone_sums_a$model <- "new"
+
 prov_sums_a <- left_join(prov_sums_a,provs,by = "prov")
 nat_sums_a <- left_join(nat_sums_a,provs,by = "prov")
+zone_sums_a <- left_join(zone_sums_a,provs,by = "prov")
+
 
 sums_a <- bind_rows(nat_sums_a,prov_sums_a)
 names(species_web_names) <- c("AOU","species")
 sums_a <- left_join(sums_a,species_web_names)
+zone_sums_a <- left_join(zone_sums_a,species_web_names)
 
 
 both_a <- bind_rows(sums_a,pubEsts_species_all[which(is.na(pubEsts_species_all$zone)),])
+zone_both_a <- bind_rows(zone_sums_a,pubEsts_species_all[which(!is.na(pubEsts_species_all$zone)),])
 
 ### not totally sure why there are na values in the species columns...
 both_a <- both_a[which(!is.na(both_a$species)),]
+zone_both_a <- zone_both_a[which(!is.na(zone_both_a$species)),]
+
+
+ttt = comp_plot_species(dat = zone_both_a)
+
+pdf(file = "Figures/species_summaries_by_zone.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
+
 
 ttt = comp_plot_species(dat = both_a)
 
@@ -313,7 +343,8 @@ for(pp in 1:length(ttt)){
 }
 dev.off()
 
-# compile b tables --------------------------------------------------------
+
+# B tables ----------------------------------------------------------------
 
 
 
@@ -434,6 +465,103 @@ for(pp in 1:length(ttt)){
   print(ttt[[pp]])
 }
 dev.off()
+
+
+
+
+
+# C tables ----------------------------------------------------------------
+
+names(pubEsts_age_sex_all) <- c("AOU","species","province","zone","year","mean","model")
+
+nat_sums_c$model <- "new"
+nat_sums_c$prov <- "Canada"
+prov_sums_c$model <- "new"
+zone_sums_c$model <- "new"
+
+prov_sums_c <- left_join(prov_sums_c,provs,by = "prov")
+nat_sums_c <- left_join(nat_sums_c,provs,by = "prov")
+zone_sums_c <- left_join(zone_sums_c,provs,by = "prov")
+
+sums_c <- bind_rows(nat_sums_c,prov_sums_c)
+names(species_web_names) <- c("AOU","species")
+sums_c <- left_join(sums_c,species_web_names)
+zone_sums_c <- left_join(zone_sums_c,species_web_names)
+
+sums_c <- filter(sums_c,BAGE == "I") #just the immature summaries to replicate the age ratios on the website
+zone_sums_c <- filter(zone_sums_c,BAGE == "I")
+
+
+both_c <- bind_rows(sums_c,pubEsts_age_sex_all[which(is.na(pubEsts_age_sex_all$zone)),])
+zone_both_c <- bind_rows(zone_sums_c,pubEsts_age_sex_all[which(!is.na(pubEsts_age_sex_all$zone)),])
+
+### not totally sure why there are na values in the species columns...
+both_c <- both_c[which(!is.na(both_c$species)),]
+zone_both_c <- zone_both_c[which(!is.na(zone_both_c$species)),]
+
+
+ttt = comp_plot_species(dat = zone_both_c)
+
+pdf(file = "Figures/species_age_ratios_by_zone.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
+
+
+ttt = comp_plot_species(dat = both_c)
+
+pdf(file = "Figures/species_age_ratios.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+ttt = comp_plot_species(dat = both_c,reg = "Canada",sp = sp_vars[which(sp_vars$source == "duck"),"species"])
+pdf(file = "Figures/National_duck_age_ratios.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
+ttt = comp_plot_species(dat = both_c,reg = "Canada",sp = sp_vars[which(sp_vars$source == "goose"),"species"])
+pdf(file = "Figures/National_goose_age_ratios.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
+
+ttt = comp_plot_species_CV(dat = both_c)
+
+pdf(file = "Figures/species_age_ratios_CV.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+ttt = comp_plot_species_CV(dat = both_c,reg = "Canada",sp = sp_vars[which(sp_vars$source == "duck"),"species"])
+
+pdf(file = "Figures/national_duck_age_ratios_CV.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
+ttt = comp_plot_species_CV(dat = both_c,reg = "Canada",sp = sp_vars[which(sp_vars$source == "goose"),"species"])
+
+pdf(file = "Figures/national_goose_age_ratios_CV.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
 
 # table output and generation ---------------------------------------------
 
