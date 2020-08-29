@@ -4,7 +4,7 @@
 comp_plot_species <- function(dat = both_a,
                               sp = NULL,
                               reg = NULL,
-                              z = NA){
+                              z = NULL){
   
   
   if(!is.null(sp)){
