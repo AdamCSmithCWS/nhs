@@ -151,6 +151,7 @@ for(pr in provs){
      if(file.exists(paste("output/full harvest zip",pr,z,"duck","alt mod.RData"))){
        load(paste("output/full harvest zip",pr,z,"duck","alt mod.RData"))
      
+       ### using tidybayes package functions to compile posterior samples into dataframes
            tmp_duck <- out2$samples %>% gather_draws(NACTIVE_y[y],
                                                 days_y[y],
                                                 NSUCC_y[y],
