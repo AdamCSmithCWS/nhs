@@ -164,7 +164,13 @@ nat_sums_a <- tmp_sp %>%
 
 
 
-
+save(list = c("nat_sums_a",
+              "prov_sums_a",
+              "zone_sums_a",
+              "nat_sums_b",
+              "prov_sums_b",
+              "zone_sums_b"),
+     file = "data/Posterior_summaries.RData")
 
 nat_sums_a$model <- "new"
 nat_sums_a$prov <- "Canada"

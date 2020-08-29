@@ -181,13 +181,37 @@ for(pr in provs){
            tmp_sp_duck$prov <- pr
            tmp_sp_duck$zone <- z
            
+           
+           ## species age-sex harvests
+           
+           demog = data.frame(BSEX = rep(c("F","M"),each = 2),
+                              BAGE = rep(c("A","I"),times = 2),
+                              d = 1:4,
+                              stringsAsFactors = F)
+           
+           tmp_sp_duck_demo <- out2$samples %>% gather_draws(axcomp_axsy[d,s,y]) 
+           vnm <- sp_vars[which(sp_vars$source == "duck"),c("sp","species")]
+           spss <- sp.save.out[which(sp.save.out$PRHUNT == pr & sp.save.out$ZOHUNT == z),c("AOU","spfact","spn")]
+           spss <- spss[order(spss$spn),]
+           tmp_sp_duck_demo <- left_join(tmp_sp_duck_demo,spss,by = c("s" = "spn"))
+           tmp_sp_duck_demo <- left_join(tmp_sp_duck_demo,vnm,by = c("AOU" = "sp"))
+           tmp_sp_duck_demo <- left_join(tmp_sp_duck_demo,ys,by = "y")
+           tmp_sp_duck_demo <- left_join(tmp_sp_duck_demo,demog,by = "d")
+           tmp_sp_duck_demo$prov <- pr
+           tmp_sp_duck_demo$zone <- z
+           
+           
+           
            if(z == 1 & pr == "AB"){
              tmp_sim <- tmp_duck
              tmp_sp <- tmp_sp_duck
+             tmp_sp_demo <- tmp_sp_duck_demo
+             
            }else{
              tmp_sim <- bind_rows(tmp_sim,tmp_duck)
              
              tmp_sp <- bind_rows(tmp_sp,tmp_sp_duck)
+             tmp_sp_demo <- bind_rows(tmp_sp_demo,tmp_sp_duck_demo)
            }
            }
      
@@ -223,6 +247,27 @@ for(pr in provs){
            tmp_sp_goose$prov <- pr
            tmp_sp_goose$zone <- z
            tmp_sp <- bind_rows(tmp_sp,tmp_sp_goose)
+           
+           ## species age-sex harvests
+           
+           demog = data.frame(BSEX = rep(c("U","U"),each = 1),
+                              BAGE = rep(c("A","I"),times = 1),
+                              d = 1:2,
+                              stringsAsFactors = F)
+           
+           tmp_sp_goose_demo <- out2$samples %>% gather_draws(axcomp_axsy[d,s,y]) 
+           vnm <- sp_vars[which(sp_vars$source == "goose"),c("sp","species")]
+           spss <- sp.save.out[which(sp.save.out$PRHUNT == pr & sp.save.out$ZOHUNT == z),c("AOU","spfact","spn")]
+           spss <- spss[order(spss$spn),]
+           tmp_sp_goose_demo <- left_join(tmp_sp_goose_demo,spss,by = c("s" = "spn"))
+           tmp_sp_goose_demo <- left_join(tmp_sp_goose_demo,vnm,by = c("AOU" = "sp"))
+           tmp_sp_goose_demo <- left_join(tmp_sp_goose_demo,ys,by = "y")
+           tmp_sp_goose_demo <- left_join(tmp_sp_goose_demo,demog,by = "d")
+           tmp_sp_goose_demo$prov <- pr
+           tmp_sp_goose_demo$zone <- z
+           tmp_sp_demo <- bind_rows(tmp_sp_demo,tmp_sp_goose_demo)
+           
+           
      }
      
      if(file.exists(paste("output/full harvest zip",pr,z,"murre","alt mod.RData"))){
@@ -257,6 +302,26 @@ for(pr in provs){
        tmp_sp_murre$prov <- pr
        tmp_sp_murre$zone <- z
        tmp_sp <- bind_rows(tmp_sp,tmp_sp_murre)
+       
+       ## species age-sex harvests
+       
+       demog = data.frame(BSEX = rep(c("U","U"),each = 1),
+                          BAGE = rep(c("A","I"),times = 1),
+                          d = 1:2,
+                          stringsAsFactors = F)
+       
+       tmp_sp_murre_demo <- out2$samples %>% gather_draws(axcomp_axsy[d,s,y]) 
+       vnm <- sp_vars[which(sp_vars$source == "murre"),c("sp","species")]
+       spss <- sp.save.out[which(sp.save.out$PRHUNT == pr & sp.save.out$ZOHUNT == z),c("AOU","spfact","spn")]
+       spss <- spss[order(spss$spn),]
+       tmp_sp_murre_demo <- left_join(tmp_sp_murre_demo,spss,by = c("s" = "spn"))
+       tmp_sp_murre_demo <- left_join(tmp_sp_murre_demo,vnm,by = c("AOU" = "sp"))
+       tmp_sp_murre_demo <- left_join(tmp_sp_murre_demo,ys,by = "y")
+       tmp_sp_murre_demo <- left_join(tmp_sp_murre_demo,demog,by = "d")
+       tmp_sp_murre_demo$prov <- pr
+       tmp_sp_murre_demo$zone <- z
+       tmp_sp_demo <- bind_rows(tmp_sp_demo,tmp_sp_murre_demo)
+       
      }
      
      if(file.exists(paste("output/other harvest zip",pr,z,"alt mod.RData"))){
