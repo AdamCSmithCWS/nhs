@@ -400,7 +400,8 @@ save(list = c("pubEsts_species_all",
               "pubEsts_simple_all",
               "pubEsts_age_sex_all",
               "tmp_sim",
-              "tmp_sp"),
+              "tmp_sp",
+              "tmp_sp_demo"),
      file = "national_provincial_summaries.RData")
        
 
