@@ -67,7 +67,7 @@ for(ppn in 1:nspecies){
     theme_classic()+
     facet_wrap(facets = ~province,ncol = 3,scales = "free")
   
-  print(outgg)
+  #print(outgg)
   
   outggs[[ppn]] <- outgg
 }
