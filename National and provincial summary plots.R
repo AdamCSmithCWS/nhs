@@ -102,7 +102,7 @@ load("national_provincial_summaries.RData")
 
 
 
-zone_sums_b <- tmp2 %>% 
+zone_sums_b <- tmp_sim %>% 
   group_by(var,prov,zone,year,.draw) %>% 
   summarise(sum = sum(.value)) %>% 
   group_by(var,prov,zone,year) %>% 
@@ -114,7 +114,7 @@ zone_sums_b <- tmp2 %>%
 
 
 
-prov_sums_b <- tmp %>% 
+prov_sums_b <- tmp_sim %>% 
   group_by(var,prov,year,.draw) %>% 
   summarise(sum = sum(.value)) %>% 
   group_by(var,prov,year) %>% 
@@ -124,7 +124,7 @@ prov_sums_b <- tmp %>%
             uci = quantile(sum,0.975,names = FALSE,na.rm = T))
 
 
-nat_sums_b <- tmp %>% 
+nat_sums_b <- tmp_sim %>% 
   group_by(var,year,.draw) %>% 
   summarise(sum = sum(.value)) %>% 
   group_by(var,year) %>% 
@@ -207,14 +207,14 @@ both_a <- bind_rows(sums_a,pubEsts_species_all)
 
 ttt = comp_plot_species(dat = both_a)
 
-pdf(file = "species_summaries.pdf",width = 8.5,height = 11)
+pdf(file = "Figures/species_summaries.pdf",width = 8.5,height = 11)
 for(pp in 1:length(ttt)){
   print(ttt[[pp]])
 }
 dev.off()
 
 ttt = comp_plot_species(dat = both_a,reg = "Canada",sp = sp_vars[which(sp_vars$source == "duck"),"species"])
-pdf(file = "National_duck_summaries.pdf",width = 8.5,height = 11)
+pdf(file = "Figures/National_duck_summaries.pdf",width = 8.5,height = 11)
 for(pp in 1:length(ttt)){
   print(ttt[[pp]])
 }
@@ -222,7 +222,7 @@ dev.off()
 
 
 ttt = comp_plot_species(dat = both_a,reg = "Canada",sp = sp_vars[which(sp_vars$source == "goose"),"species"])
-pdf(file = "National_goose_summaries.pdf",width = 8.5,height = 11)
+pdf(file = "Figures/National_goose_summaries.pdf",width = 8.5,height = 11)
 for(pp in 1:length(ttt)){
   print(ttt[[pp]])
 }
@@ -232,7 +232,7 @@ dev.off()
 
 ttt = comp_plot_species_CV(dat = both_a)
 
-pdf(file = "species_summaries_CV.pdf",width = 8.5,height = 11)
+pdf(file = "Figures/species_summaries_CV.pdf",width = 8.5,height = 11)
 for(pp in 1:length(ttt)){
   print(ttt[[pp]])
 }
@@ -240,7 +240,7 @@ dev.off()
 
 ttt = comp_plot_species_CV(dat = both_a,reg = "Canada",sp = sp_vars[which(sp_vars$source == "duck"),"species"])
 
-pdf(file = "national_duck_summaries_CV.pdf",width = 8.5,height = 11)
+pdf(file = "Figures/national_duck_summaries_CV.pdf",width = 8.5,height = 11)
 for(pp in 1:length(ttt)){
   print(ttt[[pp]])
 }
@@ -249,7 +249,7 @@ dev.off()
 
 ttt = comp_plot_species_CV(dat = both_a,reg = "Canada",sp = sp_vars[which(sp_vars$source == "goose"),"species"])
 
-pdf(file = "national_goose_summaries_CV.pdf",width = 8.5,height = 11)
+pdf(file = "Figures/national_goose_summaries_CV.pdf",width = 8.5,height = 11)
 for(pp in 1:length(ttt)){
   print(ttt[[pp]])
 }
@@ -257,6 +257,125 @@ dev.off()
 
 # compile b tables --------------------------------------------------------
 
+
+
+
+nat_sums_b$model <- "new"
+nat_sums_b$prov <- "Canada"
+prov_sums_b$model <- "new"
+
+prov_sums_b <- left_join(prov_sums_b,provs,by = "prov")
+nat_sums_b <- left_join(nat_sums_b,provs,by = "prov")
+
+sums_b <- bind_rows(nat_sums_b,prov_sums_b)
+
+names(pubEsts_simple_all) <- c("var","name","province","zone","resid","year","mean","sd","lci","uci","model")
+pubEsts_simple_all1 = filter(pubEsts_simple_all,is.na(zone))
+vrs = unique(pubEsts_simple_all1[,c("var","name")])
+
+sums_b <- left_join(sums_b,vrs,by = "var")
+both_b <- bind_rows(sums_b,pubEsts_simple_all1)
+
+
+ttt = comp_plot_simple(dat = both_b,
+                       var_sel = c("ACTIWF",
+                                   "DAYWF",
+                                   "SUTODU",
+                                   "SUTOGO",
+                                   "TODUK",
+                                   "TOGOK",
+                                   "POTNTL",
+                                   "SUTOWF",
+                                   "TOWFK"))
+
+pdf(file = "Figures/regional_Waterfowl_summaries.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
+ttt = comp_plot_simple(dat = both_b,
+                       reg = "Canada",
+                       var_sel = c("ACTIWF",
+                                   "DAYWF",
+                                   "SUTODU",
+                                   "SUTOGO",
+                                   "TODUK",
+                                   "TOGOK",
+                                   "POTNTL",
+                                   "SUTOWF",
+                                   "TOWFK"))
+
+pdf(file = "Figures/national_Waterfowl_summaries.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
+##3 drop snipe and rail data from pre-1991
+both_b2 <- both_b[-which(both_b$var %in% c("RAILK","SNIPK","SURAIL",
+                                           "SUSNIP","DARAIL",
+                                           "DASNIP") & 
+                           both_b$year < 1992),]
+ttt = comp_plot_simple(dat = both_b2,
+                       reg = "Canada",
+                       var_sel = c("ACTIOT",
+                                   "COOTK",
+                                   "CRANK",
+                                    "DOVEK",
+                                   "MURRK",
+                                   "PIGEK",
+                                   "RAILK",
+                                   "SNIPK",
+                                   "WOODK",
+                                   "TOOTK"))
+
+pdf(file = "Figures/national_NonWaterfowl_harvest_summaries.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+ttt = comp_plot_simple(dat = both_b2,
+                       reg = "Canada",
+                       var_sel = c("SUCOOT",
+"SUCRAN",
+"SUDOVE",
+"SUMURR",
+"SUPIGE",
+"SURAIL",
+"SUSNIP",
+"SUWOOD",
+"SUTOOT"))
+
+pdf(file = "Figures/national_NonWaterfowl_hunter_success_summaries.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
+
+
+ttt = comp_plot_simple(dat = both_b2,
+                       reg = "Canada",
+                       var_sel = c("DACOOT",
+                                   "DACRAN",
+                                   "DADOVE",
+                                   "DAMURR",
+                                   "DAPIGE",
+                                   "DARAIL",
+                                   "DASNIP",
+                                   "DAWOOD",
+                                   "DAYOT"))
+
+pdf(file = "Figures/national_NonWaterfowl_days_summaries.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
 
 # table output and generation ---------------------------------------------
 
