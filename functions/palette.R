@@ -1,0 +1,1 @@
+my_col <-  scale_color_viridis_d(aesthetics = c("colour","fill"), begin = 0.2,end = 0.7,option = "B",direction = -1)

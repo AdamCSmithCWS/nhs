@@ -213,6 +213,8 @@ nrow(allkill) == length(unique(allkill$uniperm))
 
 
 
+ save(list = c("allkill"),
+      file = "data/allkill.RData")
  
  ######## sampling population sizes
 popsiz_s = merge(popsiz,provzone[,c("prov","provn")],by.x = "PRSAMP",by.y = "provn",all.x = T)
@@ -1198,6 +1200,14 @@ for(spgp in c("goose","duck","murre")){
     mod.file = "models/species_harvest_model.R" # 
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
     
+    z_means <- allkill %>% 
+      filter(ACTIVEWF == "Y",
+             ZOHUNTG %in% c(1,2,3)) %>% 
+      group_by(PRHUNTG,ZOHUNTG,YEAR,CASTE) %>% 
+      summarise(TOGOK = mean(TOGOK,na.rm = T),
+                DAYWF = mean(DAYWF,na.rm = T),
+                nresp = n())
+    names(z_means) <- c("prov","zone","year","caste","mean_harv","mean_day","nresp")
     
   }
   if(spgp == "duck"){
@@ -1226,6 +1236,16 @@ for(spgp in c("goose","duck","murre")){
     provs2 <- provs
     mod.file = "models/species_harvest_model.R" #
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
+    
+    z_means <- allkill %>% 
+      filter(ACTIVEWF == "Y",
+             ZOHUNT %in% c(1,2,3)) %>% 
+      group_by(PRHUNT,ZOHUNT,YEAR,CASTE) %>% 
+      summarise(TODUK = mean(TODUK,na.rm = T),
+                DAYWF = mean(DAYWF,na.rm = T),
+                nresp = n())
+    names(z_means) <- c("prov","zone","year","caste","mean_harv","mean_day","nresp")
+    
     
   }
   
@@ -1257,6 +1277,14 @@ for(spgp in c("goose","duck","murre")){
     provs2 = "NF"
     mod.file = "models/species_harvest_model.R" # I think this should work for murres too
     
+    z_means <- allkill %>% 
+      filter(ACTIVEM == "Y",
+             ZOHUNTM %in% c(1,2)) %>% 
+      group_by(PRHUNTM,ZOHUNTM,YEAR,CASTE) %>% 
+      summarise(MURRK = mean(MURRK,na.rm = T),
+                DAYM = mean(DAYM,na.rm = T),
+                nresp = n())
+   names(z_means) <- c("prov","zone","year","caste","mean_harv","mean_day","nresp")
     
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
     

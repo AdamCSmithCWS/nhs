@@ -28,7 +28,7 @@ comp_plot_species_CV <- function(dat = both_a,
   
   dat$mod <- factor(dat$model,levels = c("old","new"), ordered = T)
   
-  my_col <-  scale_color_viridis_d(aesthetics = c("colour","fill"), begin = 0.3,end = 0.9,option = "B",direction = -1)
+  source("Functions/palette.R")  
   
   dat[,"CV"] <- ((dat$uci-dat$lci)/(qnorm(0.975)*2))/dat$mean
   

@@ -5,6 +5,7 @@ library(tidyverse)
 library(ggmcmc)
 library(ggrepel)
 library(ggforce)
+library(patchwork)
 
 ### caste level summaries
 ### full summaries
@@ -149,11 +150,14 @@ zone_both_a <- zone_both_a[which(!is.na(zone_both_a$species)),]
 nat_sums_b$model <- "new"
 nat_sums_b$prov <- "Canada"
 prov_sums_b$model <- "new"
+zone_sums_b$model <- "new"
 
 prov_sums_b <- left_join(prov_sums_b,provs,by = "prov")
 nat_sums_b <- left_join(nat_sums_b,provs,by = "prov")
+zone_sums_b <- left_join(zone_sums_b,provs,by = "prov")
 
 sums_b <- bind_rows(nat_sums_b,prov_sums_b)
+zone_sums_b <- left_join(zone_sums_b,species_web_names)
 
 names(pubEsts_simple_all) <- c("var","name","province","zone","resid","year","mean","sd","lci","uci","model")
 pubEsts_simple_all1 = filter(pubEsts_simple_all,is.na(zone))
@@ -161,6 +165,7 @@ vrs = unique(pubEsts_simple_all1[,c("var","name")])
 
 sums_b <- left_join(sums_b,vrs,by = "var")
 both_b <- bind_rows(sums_b,pubEsts_simple_all1)
+zone_both_b <- bind_rows(zone_sums_b,pubEsts_simple_all[which(!is.na(pubEsts_simple_all$zone)),])
 
 
 
@@ -204,13 +209,86 @@ zone_both_c <- zone_both_c[which(!is.na(zone_both_c$species)),]
 
 ###########################################################
 # plotting ----------------------------------------------------------------
-
-# Figure 1 - 4 example zone estimates ---------------------------------------
+load("data/allkill.RData")
+allkill <- allkill[which(allkill$PRHUNT %in% provs$prov[1:10]),]
+# Figure 1 - Four example general harvest estimates ---------------------------------------
 
 # Mallard harvest in SK 3
 # CAGO small harvest in MB 1
 # BSCO in NF 2
 # NOPI in SK 3 -changing precision and sample sizes
 
-source("selected_zone_plot_function.R")
+source("Functions/selected_general_plot_function.R")
 
+p1 = plot_sel_general(dat = both_b,
+                      g = "TODUK",
+                      p = "Canada",
+                      z = NULL,
+                      spgp = "duck",
+                      labs_inc = TRUE,
+                      lbl_y = c(1982,1995))
+p2 = plot_sel_general(dat = both_b,
+                      g = "TOGOK",
+                      p = "Canada",
+                      z = NULL,
+                      spgp = "goose")
+p3 = plot_sel_general(dat = both_b,
+                      g = "SUTOGO",
+                      p = "Canada",
+                      z = NULL,
+                      spgp = "goose")
+p4 = plot_sel_general(dat = both_b,
+                      g = "SUTODU",
+                      p = "Canada",
+                      z = NULL,
+                      spgp = "duck")
+
+pdf("Figures/Figure 1.pdf",
+    width = 180/25,
+    height = 180/25)
+print(p1+p2+p3+p4)
+dev.off()
+
+
+p2 = plot_sel_general(dat = zone_both_b,
+                      g = "TOGOK",
+                      p = "ON",
+                      z = 2,
+                      spgp = "goose")
+# Figure 2 - Four example species harvest estimates ---------------------------------------
+
+# Mallard harvest in SK 3
+# CAGO small harvest in MB 1
+# BSCO in NF 2
+# NOPI in SK 3 -changing precision and sample sizes
+
+source("Functions/selected_zone_plot_function.R")
+
+p1 = plot_sel_sp(dat = zone_both_a,
+                             sp = "Mallard",
+                             p = "SK",
+                             z = 3,
+                             spgp = "duck")
+p2 = plot_sel_sp(dat = zone_both_a,
+                 sp = "Canada Goose: small races",
+                 p = "MB",
+                 z = 1,
+                 spgp = "goose")
+p3 = plot_sel_sp(dat = zone_both_a,
+                 sp = "Black Scoter",
+                 p = "NF",
+                 z = 2,
+                 spgp = "duck",
+                 labs_inc = TRUE,
+                 lbl_y = c(2010,1995))
+p4 = plot_sel_sp(dat = zone_both_a,
+                 sp = "Northern Pintail",
+                 p = "SK",
+                 z = 3,
+                 spgp = "duck")
+
+pdf("Figures/Figure 2.pdf",
+    width = 180/25,
+    height = 180/25)
+print(p1+p2+p3+p4)
+dev.off()
