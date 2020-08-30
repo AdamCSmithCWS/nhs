@@ -96,16 +96,16 @@ for(spgp in others){
 sim_vars <- read.csv("data/website_variable_names_in.csv")
 sp_vars <- read.csv("data/website_species_variable_names_in.csv")
 
-# 
-# 
+
+
 # load("national_provincial_summaries.RData")
 # 
 # 
 # 
-# zone_sums_b <- tmp_sim %>% 
-#   group_by(var,prov,zone,year,.draw) %>% 
-#   summarise(sum = sum(.value)) %>% 
-#   group_by(var,prov,zone,year) %>% 
+# zone_sums_b <- tmp_sim %>%
+#   group_by(var,prov,zone,year,.draw) %>%
+#   summarise(sum = sum(.value)) %>%
+#   group_by(var,prov,zone,year) %>%
 #   summarise(mean = mean(sum),
 #             median = quantile(sum,0.5,names = FALSE,na.rm = T),
 #             lci = quantile(sum,0.025,names = FALSE,na.rm = T),
@@ -114,38 +114,38 @@ sp_vars <- read.csv("data/website_species_variable_names_in.csv")
 # 
 # 
 # 
-# prov_sums_b <- tmp_sim %>% 
-#   group_by(var,prov,year,.draw) %>% 
-#   summarise(sum = sum(.value)) %>% 
-#   group_by(var,prov,year) %>% 
+# prov_sums_b <- tmp_sim %>%
+#   group_by(var,prov,year,.draw) %>%
+#   summarise(sum = sum(.value)) %>%
+#   group_by(var,prov,year) %>%
 #   summarise(mean = mean(sum),
 #             median = quantile(sum,0.5,names = FALSE,na.rm = T),
 #             lci = quantile(sum,0.025,names = FALSE,na.rm = T),
 #             uci = quantile(sum,0.975,names = FALSE,na.rm = T))
 # 
 # 
-# nat_sums_b <- tmp_sim %>% 
-#   group_by(var,year,.draw) %>% 
-#   summarise(sum = sum(.value)) %>% 
-#   group_by(var,year) %>% 
+# nat_sums_b <- tmp_sim %>%
+#   group_by(var,year,.draw) %>%
+#   summarise(sum = sum(.value)) %>%
+#   group_by(var,year) %>%
 #   summarise(mean = mean(sum),
 #             median = quantile(sum,0.5,names = FALSE,na.rm = T),
 #             lci = quantile(sum,0.025,names = FALSE,na.rm = T),
 #             uci = quantile(sum,0.975,names = FALSE,na.rm = T))
 # 
 # 
-# zone_sums_a <- tmp_sp %>% 
+# zone_sums_a <- tmp_sp %>%
 #   group_by(AOU,prov,zone,year,.draw) %>%
-#   summarise(sum = sum(.value)) %>% 
+#   summarise(sum = sum(.value)) %>%
 #   group_by(AOU,prov,zone,year) %>%
 #   summarise(mean = mean(sum),
 #             median = quantile(sum,0.5,names = FALSE),
 #             lci = quantile(sum,0.025,names = FALSE),
 #             uci = quantile(sum,0.975,names = FALSE))
 # 
-# prov_sums_a <- tmp_sp %>% 
+# prov_sums_a <- tmp_sp %>%
 #   group_by(AOU,prov,year,.draw) %>%
-#   summarise(sum = sum(.value)) %>% 
+#   summarise(sum = sum(.value)) %>%
 #   group_by(AOU,prov,year) %>%
 #   summarise(mean = mean(sum),
 #             median = quantile(sum,0.5,names = FALSE),
@@ -153,9 +153,9 @@ sp_vars <- read.csv("data/website_species_variable_names_in.csv")
 #             uci = quantile(sum,0.975,names = FALSE))
 # 
 # 
-# nat_sums_a <- tmp_sp %>% 
+# nat_sums_a <- tmp_sp %>%
 #   group_by(AOU,year,.draw) %>%
-#   summarise(sum = sum(.value)) %>% 
+#   summarise(sum = sum(.value)) %>%
 #   group_by(AOU,year) %>%
 #   summarise(mean = mean(sum),
 #             median = quantile(sum,0.5,names = FALSE),
@@ -167,26 +167,20 @@ sp_vars <- read.csv("data/website_species_variable_names_in.csv")
 # 
 # 
 # # age ratios --------------------------------------------------------------
-rat_f <- function(x){
-  a = filter(x,BAGE == "A")
-  i = filter(x,BAGE == "I")
-  r = i/a
-  return(r)
-}
 # 
-
-# zone_sums_c <- tmp_sp_demo %>% 
+# 
+# zone_sums_c <- tmp_sp_demo %>%
 #   group_by(AOU,BAGE,prov,zone,year,.draw) %>%
-#   summarise(sum = sum(.value)) %>% 
+#   summarise(sum = sum(.value)) %>%
 #   group_by(AOU,prov,zone,year) %>%
 #   summarise(mean = mean(sum),
 #             median = quantile(sum,0.5,names = FALSE),
 #             lci = quantile(sum,0.025,names = FALSE),
 #             uci = quantile(sum,0.975,names = FALSE))
 # 
-# prov_sums_c <- tmp_sp_demo %>% 
+# prov_sums_c <- tmp_sp_demo %>%
 #   group_by(AOU,BAGE,prov,year,.draw) %>%
-#   summarise(sum = sum(.value)) %>% 
+#   summarise(sum = sum(.value)) %>%
 #   group_by(AOU,BAGE,prov,year) %>%
 #   summarise(mean = mean(sum),
 #             median = quantile(sum,0.5,names = FALSE),
@@ -194,15 +188,14 @@ rat_f <- function(x){
 #             uci = quantile(sum,0.975,names = FALSE))
 # 
 # 
-# nat_sums_c <- tmp_sp_demo %>% 
+# nat_sums_c <- tmp_sp_demo %>%
 #   group_by(AOU,BAGE,year,.draw) %>%
-#   summarise(sum = sum(.value)) %>% 
+#   summarise(sum = sum(.value)) %>%
 #   group_by(AOU,BAGE,year) %>%
 #   summarise(mean = mean(sum),
 #             median = quantile(sum,0.5,names = FALSE),
 #             lci = quantile(sum,0.025,names = FALSE),
 #             uci = quantile(sum,0.975,names = FALSE))
-# 
 # 
 # 
 # # age and sex harvest --------------------------------------------------------------
@@ -224,7 +217,7 @@ rat_f <- function(x){
 #               "prov_sums_c",
 #               "zone_sums_c"),
 #      file = "data/Posterior_summaries.RData")
-
+# 
 
 
 # plotting ----------------------------------------------------------------
@@ -490,10 +483,16 @@ zone_sums_c <- left_join(zone_sums_c,species_web_names)
 
 sums_c <- filter(sums_c,BAGE == "I") #just the immature summaries to replicate the age ratios on the website
 zone_sums_c <- filter(zone_sums_c,BAGE == "I")
-
+zone_sums_c2 <- mutate(zone_sums_c,
+                         mean = mean/(1-mean),
+                         median = median/(1-median),
+                         lci = lci/(1-lci),
+                         uci = uci/(1-uci),
+                       .keep = "all")
+                      
 
 both_c <- bind_rows(sums_c,pubEsts_age_sex_all[which(is.na(pubEsts_age_sex_all$zone)),])
-zone_both_c <- bind_rows(zone_sums_c,pubEsts_age_sex_all[which(!is.na(pubEsts_age_sex_all$zone)),])
+zone_both_c <- bind_rows(zone_sums_c2,pubEsts_age_sex_all[which(!is.na(pubEsts_age_sex_all$zone)),])
 
 ### not totally sure why there are na values in the species columns...
 both_c <- both_c[which(!is.na(both_c$species)),]
