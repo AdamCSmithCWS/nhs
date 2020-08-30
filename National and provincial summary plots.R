@@ -91,8 +91,6 @@ for(spgp in others){
 }
 
 
-# compile website file b --------------------------------------------------
-
 sim_vars <- read.csv("data/website_variable_names_in.csv")
 sp_vars <- read.csv("data/website_species_variable_names_in.csv")
 
