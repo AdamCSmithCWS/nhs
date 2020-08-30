@@ -310,7 +310,7 @@ for(spgp in c("duck","goose","murre")){
     minyr <- min(years)
     provs2 <- provs
     mod.file = "models/species_harvest_model.R" # 
-    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
+    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 2","BC 2","NT 1","YT 1","NB 1")
     
     
   }
@@ -339,7 +339,7 @@ for(spgp in c("duck","goose","murre")){
     minyr <- min(years)
     provs2 <- provs
     mod.file = "models/species_harvest_model.R" #
-    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
+    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 2","BC 2","NT 1","YT 1")
     
   }
   
@@ -372,7 +372,7 @@ for(spgp in c("duck","goose","murre")){
     mod.file = "models/species_harvest_model.R" # I think this should work for murres too
  
     
-    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
+    non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 2","BC 2","NT 1","YT 1")
     
   }
 
