@@ -165,14 +165,25 @@ model {
   
   
   for(c in 1:ncastes){
-    ## harvest rate priors
-    retrans_hunter[c] <- 0.5*(1/tauhunter[c])/nu_ret[c] 
-    sdhunter[c] <- 1/pow(tauhunter[c],0.5)
-    tauhunter[c] ~ dscaled.gamma(0.5,50)
+    ## harvest rate variance priors
+    log_tauhunter[c,1] ~ dnorm(0,1) #first-year fixed effect log-scale variance
+    tau_logtauhunter[c] ~ dscaled.gamma(0.1,50)
+    log(tauhunter[c,1]) <- log_tauhunter[c,1]
+    sdhunter[c,1] <- 1/pow(tauhunter[c,1],0.5)
+    retrans_hunter[c,1] <- 0.5*(1/tauhunter[c,1])/nu_ret[c] 
+    
+    for(y in 2:nyears){# log-scale time-series model on the tauhunter values
+      log_tauhunter[c,y] ~ dnorm(log_tauhunter[c,y-1],tau_logtauhunter[c])
+      log(tauhunter[c,y]) <- log_tauhunter[c,y]
+      sdhunter[c,y] <- 1/pow(tauhunter[c,y],0.5)
+      retrans_hunter[c,y] <- 0.5*(1/tauhunter[c,y])/nu_ret[c] 
+      
+    }
+    
     nu[c] ~ dgamma(2,0.2)
     nu_ret[c] <- (1.422*nu[c]^0.906)/(1+(1.422*nu[c]^0.906)) #approximate retransformation to equate a t-distribution to a normal distribution - see appendix of Link et al. 2020 BBS model selection paper
 
-    #activity (days) priors
+    #activity (days) variance priors
     retrans_hunter_day[c] <- 0.5*(1/tauhunter_day[c])/nu_day_ret[c]
     sdhunter_day[c] <- 1/pow(tauhunter_day[c],0.5)
     tauhunter_day[c] ~ dscaled.gamma(0.5,50)
@@ -213,7 +224,7 @@ model {
         ## consider whether tauhunter should also vary among years...
         
         hntr_day[c,y,h] ~ dt(0,tauhunter_day[c],nu_day[c])
-        hntr[c,y,h] ~ dt(0,tauhunter[c],nu[c])
+        hntr[c,y,h] ~ dt(0,tauhunter[c,y],nu[c])
         #n days probably accounts for a bit of the hunting skill effect as well as the activity effect
         
       }#h
@@ -256,7 +267,7 @@ model {
       mean_totdays_yc_alt[y,c] <- mean(totdays_hcy[y,c,1:nhunter_cy[c,y]]) #mean days per active hunter
 
       #mean per-hunter kill and days by year and caste - alternative estimate
-      mean_totkill_yc[y,c] <- exp(ann[y] + cst[c,y] + ann_day[y] + cst_day[c,y] + retrans_hunter_day[c] + retrans_hunter[c]) *psi[y]
+      mean_totkill_yc[y,c] <- exp(ann[y] + cst[c,y] + ann_day[y] + cst_day[c,y] + retrans_hunter_day[c] + retrans_hunter[c,y]) *psi[y]
       mean_totdays_yc[y,c] <- exp(ann_day[y] + cst_day[c,y] + retrans_hunter_day[c])
       
       for(p in 1:nperiods){
