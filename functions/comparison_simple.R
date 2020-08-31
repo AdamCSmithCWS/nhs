@@ -19,7 +19,7 @@ comp_plot_simple <- function(dat = both_b,
   
   if(length(unique(dat$zone)) > 1){
     by_zone = TRUE
-  }
+  }else{by_zone = FALSE}
   
   
   

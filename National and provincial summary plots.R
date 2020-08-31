@@ -299,6 +299,29 @@ for(pp in 1:length(ttt)){
 }
 dev.off()
 
+ttt = comp_plot_species(dat = both_a,reg = "Canada",sp = sp_vars[which(sp_vars$group == "diving_ducks"),"species"])
+pdf(file = "Figures/National_diving_duck_summaries.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+ttt = comp_plot_species(dat = both_a,reg = "Canada",
+                        sp = sp_vars[which(sp_vars$group == "sea_ducks"),"species"])
+pdf(file = "Figures/National_sea_duck_summaries.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+ttt = comp_plot_species(dat = both_a,reg = "Canada",
+                        sp = sp_vars[which(sp_vars$group == "puddle_ducks"),"species"])
+pdf(file = "Figures/National_puddle_duck_summaries.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
 
 ttt = comp_plot_species(dat = both_a,reg = "Canada",sp = sp_vars[which(sp_vars$source == "goose"),"species"])
 pdf(file = "Figures/National_goose_summaries.pdf",width = 8.5,height = 11)

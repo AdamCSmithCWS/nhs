@@ -20,7 +20,7 @@ comp_plot_species <- function(dat = both_a,
   
   if(length(unique(dat$zone)) > 1){
     by_zone = TRUE
-  }
+  }else{by_zone = FALSE}
     
     
 

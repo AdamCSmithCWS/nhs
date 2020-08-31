@@ -18,7 +18,7 @@ comp_plot_species_CV <- function(dat = both_a,
   }
   if(length(unique(dat$zone)) > 1){
     by_zone = TRUE
-  }
+  }else{by_zone = FALSE}
   
   
   sps = unique(dat$species)
