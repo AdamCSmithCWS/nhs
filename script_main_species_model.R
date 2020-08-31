@@ -190,7 +190,8 @@ dupuni = allkill$uniperm[duplicated(allkill$uniperm)]
 # dupdf = dupdf[order(dupdf$uniperm),]
 
 wmigoo <- which(allkill$PRHUNTG == "")
-allkill[wmigoo,"PRHUNTG"] <- allkill[wmigoo,"PRHUNT"]
+allkill$PRHUNTG = as.character(allkill$PRHUNTG)
+allkill[wmigoo,"PRHUNTG"] <- as.character(allkill[wmigoo,"PRHUNT"])
 allkill[wmigoo,"ZOHUNTG"] <- allkill[wmigoo,"ZOHUNT"]
 
   
@@ -1204,10 +1205,11 @@ for(spgp in c("goose","duck","murre")){
       filter(ACTIVEWF == "Y",
              ZOHUNTG %in% c(1,2,3)) %>% 
       group_by(PRHUNTG,ZOHUNTG,YEAR,CASTE) %>% 
-      summarise(TOGOK = mean(TOGOK,na.rm = T),
+      summarise(mean_harv = mean(TOGOK,na.rm = T),
                 DAYWF = mean(DAYWF,na.rm = T),
+                sd_harv = sd(TOGOK,na.rm = T),
                 nresp = n())
-    names(z_means) <- c("prov","zone","year","caste","mean_harv","mean_day","nresp")
+    names(z_means) <- c("prov","zone","year","caste","mean_harv","mean_day","sd_harv","nresp")
     
   }
   if(spgp == "duck"){
@@ -1241,10 +1243,11 @@ for(spgp in c("goose","duck","murre")){
       filter(ACTIVEWF == "Y",
              ZOHUNT %in% c(1,2,3)) %>% 
       group_by(PRHUNT,ZOHUNT,YEAR,CASTE) %>% 
-      summarise(TODUK = mean(TODUK,na.rm = T),
+      summarise(mean_harv = mean(TODUK,na.rm = T),
                 DAYWF = mean(DAYWF,na.rm = T),
+                sd_harv = sd(TODUK,na.rm = T),
                 nresp = n())
-    names(z_means) <- c("prov","zone","year","caste","mean_harv","mean_day","nresp")
+    names(z_means) <- c("prov","zone","year","caste","mean_harv","mean_day","sd_harv","nresp")
     
     
   }
@@ -1281,10 +1284,11 @@ for(spgp in c("goose","duck","murre")){
       filter(ACTIVEM == "Y",
              ZOHUNTM %in% c(1,2)) %>% 
       group_by(PRHUNTM,ZOHUNTM,YEAR,CASTE) %>% 
-      summarise(MURRK = mean(MURRK,na.rm = T),
+      summarise(mean_harv = mean(MURRK,na.rm = T),
                 DAYM = mean(DAYM,na.rm = T),
+                sd_harv = sd(MURRK,na.rm = T),
                 nresp = n())
-   names(z_means) <- c("prov","zone","year","caste","mean_harv","mean_day","nresp")
+   names(z_means) <- c("prov","zone","year","caste","mean_harv","mean_day","sd_harv","nresp")
     
     non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1")
     
@@ -1369,7 +1373,7 @@ zone = z,
 M = out2)
 
 
-print(plts[[i]])
+#print(plts[[i]])
 }
 
 
@@ -1438,8 +1442,7 @@ jjcst = jjcst +1
 # comparing retransformation options --------------------------------------
 
 
-my_col <-  scale_color_viridis_d(aesthetics = c("colour","fill"), begin = 0.3,end = 0.9,option = "B",direction = -1)
-
+source("functions/palette.R")
 ### mean kill
 dsum = as.data.frame(out2$summary)
 names(dsum)[3:7] <- c("lci","lqrt","med","uqrt","uci")
@@ -1479,13 +1482,26 @@ for(i in 1:max(dd$caste)){
   
 }
 
-
-if(max(dd$caste == 3)){
-  dd$castes = factor((dd$castes),ordered = T,levels = c("D","B","A")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
   
+  ## observed means
+  ob_m <- filter(z_means,
+                 prov == pr,
+                 zone == z)
+  psi = filter(dsum,grepl(Parameter,pattern = "psi\\["))
+  psi = data.frame(psi = psi$mean,
+                   year = 1976:2019)
+ob_m = left_join(ob_m,psi,by = "year")
+ob_m = mutate(ob_m,
+              mean_harv = mean_harv*psi)
+
+
+if(max(dd$caste) == 3){
+  dd$castes = factor((dd$castes),ordered = T,levels = c("D","B","A")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
+  ob_m$castes = factor((ob_m$caste),ordered = T,levels = c("D","B","A"))
 }else{
   
   dd$castes = factor((dd$castes),ordered = T,levels = c("D","B","A","E")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
+  ob_m$castes = factor((ob_m$caste),ordered = T,levels = c("D","B","A","E"))
 }
 
 
@@ -1494,14 +1510,15 @@ for(i in 1:nrow(dd)){
   yy = dd[i,"yr"]
 
   dd[i,"nhunter"] <- jdat$nhunter_cy[cc,yy]
+  dd[i,"nperm"] <- jdat$pops[cc,yy]
 }
-
 
 
 
 ulim = max(dd$uci)
 ddb = dd[which(dd$vers == "retrans"),]
 ddb$hunterplot <- (ddb$nhunter/max(ddb$nhunter))*(ulim/2)
+ddb$permplot <- (ddb$nhunter/ddb$nperm)*(ulim*4)
 ddbmx = tapply(ddb$nhunter,ddb$castes,max)
 wm = NULL
 ddbmn = tapply(ddb$nhunter,ddb$castes,min)
@@ -1512,9 +1529,18 @@ for(j in 1:length(ddbmx)){
   wmn[j] <- which(ddb$nhunter == ddbmn[j] & ddb$castes == names(ddbmn)[j])
 }
 ddbm = ddb[c(wm,wmn),]
+
+dd$vers = factor(dd$vers,ordered = T,levels = c("smear","retrans"))
+
+ob_m$psi = ob_m$psi*(ulim/2)
+ob_m$sd_harv = (ob_m$sd_harv/ob_m$mean_harv)*(ulim/4)
 compp = ggplot(data = dd,aes(x = year,y = mean,fill = vers))+
   geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = hunterplot),fill = grey(0.2),alpha = 0.1,stat = "identity")+
+  #geom_point(data = ddb,aes(x = year, y = permplot),colour = "blue",inherit.aes = FALSE,alpha = 0.2)+
   geom_point(aes(colour = vers))+
+  geom_point(data = ob_m,aes(x = year, y = mean_harv),colour = grey(0.5),inherit.aes = FALSE,alpha = 0.2)+
+  geom_point(data = ob_m,aes(x = year, y = psi),colour = "green",inherit.aes = FALSE,alpha = 0.2)+
+  geom_point(data = ob_m,aes(x = year, y = sd_harv),colour = "blue",inherit.aes = FALSE,alpha = 0.2)+
   geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.3)+
   labs(title = paste0("retrans comparison KILL",pr," zn",z," (mean and 95 CI)"))+
   scale_y_continuous(limits = c(0,ulim))+
@@ -1549,7 +1575,7 @@ for(i in 1:max(dd$caste)){
   
 }
 
-if(max(dd$caste == 3)){
+if(max(dd$caste) == 3){
   dd$castes = factor((dd$castes),ordered = T,levels = c("D","B","A")) #D-renewal > 1year, B-renewal = 1year, A-nonrenewal (new hunter), E-nonresident
   
 }else{
@@ -1588,9 +1614,15 @@ for(j in 1:length(ddbmx)){
   wmn[j] <- which(ddb$nhunter == ddbmn[j] & ddb$castes == names(ddbmn)[j])
 }
 ddbm = ddb[c(wm,wmn),]
+
+dd$vers = factor(dd$vers,ordered = T,levels = c("smear","retrans"))
+
+
 compp = ggplot(data = dd,aes(x = year,y = mean,fill = vers))+
   geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = hunterplot),fill = grey(0.2),alpha = 0.1,stat = "identity")+
   geom_point(aes(colour = vers))+
+  geom_point(data = ob_m,aes(x = year, y = mean_day),colour = grey(0.5),inherit.aes = FALSE,alpha = 0.2)+
+  #geom_point(data = ob_m,aes(x = year, y = psi),colour = "green",inherit.aes = FALSE,alpha = 0.2)+
   geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.3)+
   labs(title = paste0("retrans comparison DAYS",pr," zn",z," (mean and 95 CI)"))+
   scale_y_continuous(limits = c(0,ulim))+
