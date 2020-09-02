@@ -277,7 +277,7 @@ outscse[which(outscse$BSEX %in% c("")),"BSEX"] <- "U"
 
 
 
-for(spgp in c("duck","goose","murre")){
+for(spgp in c("duck","goose","murre")[1]){
 ### begining of loop through provinces only engage this loop if running the full analysis
 ### for a single province and zone, skip the next 4 lines
 ### and enter something like the following (e.g., to run Ontario-zone 3)
