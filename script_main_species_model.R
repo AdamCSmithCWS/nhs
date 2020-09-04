@@ -164,10 +164,10 @@ if(length(trem)>0){
 }### removing the unused castes; there are permits that have this caste designation across all years
 
 
-tkp = which(allkill$POTNTL == "Y")
-if(length(tkp)>0){
+ tkp = which(allkill$POTNTL == "Y")
+# if(length(tkp)>0){
   allkill = allkill[tkp,]
-}### removing the hunters sampled from last year's permit file who indicated they didn't buy a permit this year
+#}### removing the hunters sampled from last year's permit file who indicated they didn't buy a permit this year
 ### and are therefore not potential hunters
 
 
@@ -177,15 +177,10 @@ if(length(trem)>0){
 }### removes a single permit from 1985 with no permit number
 
 
-# tkp = which(allkill$PRHUNT %in% c("AB","BC","MB","NB","NF","NS","NT","ON","PE","PQ","SK","YT","")) #drops NU and non provincial values
-# if(length(tkp)>0){
-#   allkill = allkill[tkp,]
-# }### 
-
-
 
 allkill$uniperm = allkill$PERMIT + allkill$SELYEAR*1000000 + allkill$YEAR*10000000000
 dupuni = allkill$uniperm[duplicated(allkill$uniperm)]
+## there are no duplicates.
 # dupdf = allkill[which(allkill$uniperm %in% dupuni),]
 # dupdf = dupdf[order(dupdf$uniperm),]
 
@@ -222,10 +217,14 @@ popsiz_s = merge(popsiz,provzone[,c("prov","provn")],by.x = "PRSAMP",by.y = "pro
 popsiz_s = unique(popsiz_s)
 
 
+
 #### total number of permits in each year
 
 popsiz_perm = merge(perms,provzone[,c("prov","provn")],by.x = "PRSALE",by.y = "provn",all.x = T)
 popsiz_perm = unique(popsiz_perm)
+
+# popsiz_perm$yr = str_sub(popsiz_perm$YEAR,start = 3,end = 4)
+# tmp = left_join(popsiz_perm,popsiz_s[,c("zone","caste","TOTPERM","yr","prov")])
 
 
 ### species lists
@@ -611,6 +610,20 @@ tmp1$yearhunt = tmp1$YEAR
 
 
 # Correction factors for inter-provincial hunting -------------------------
+# the population sizes of permits are based on the sampling process:
+  # historically hunters were sampled based on where the permit was purchased. THis was used as the best estimate of where they did their hunting
+  # recently, many hunters are sampled based on where they indicate, at the time of purchase, they will do most of their hunting. This is necessary for online purchases, and a better approach for all permits
+  # These corrections calculate the proportion of the permits sampled from this local population that hunted somewhere else (leave_cf)
+  # and the proportion of the permits that are hunting in this zone which were sampled from another zone.
+  # as there is more sampling from online permits, the population sizes will converge.
+  # this correction factor is an improvement over the previous model because it treats all hunters actively hunting in this zone the same way (asumes activity and mean harvests are the same, regardless of where they're sampled)
+  # in a few zones, this different correction makes a significant difference in the number of successful, active, and harvest totals.
+  # These differences (ON 2, especially) happen to coincide with a change in teh sampling rates (~2001)
+
+  
+  
+
+
 sumkillall = allkill[which(((allkill[,phunt] == pr &
                                allkill[,zhunt] == z)|(allkill[,"PRSAMP"] == pr &
                                                         allkill[,"ZOSAMP"] == z)) &
@@ -703,18 +716,18 @@ cfact = matrix(NA,nrow = 2,ncol = nyears) ## matrix of the yearly proportion of 
 ### correction factors for RESREN hunters
 for(y in 1:nyears){
   permpop = popsiz_perm[which(popsiz_perm$SAMPLE == "B" & popsiz_perm$YEAR == as.character(years[y]) &
-                                popsiz_perm$prov == pr & popsiz_perm$ZOSALE == z),"TOTSALE"]
+                                popsiz_perm$prov == pr & popsiz_perm$ZOSALE == z),"TOTSALE"] ## total number of renewal permits sold in the zone (sum of B and D) - true known numbers from this years permit file
   for(cc in castes[1:2]){ # loops through the castes D and B
     yn = as.integer(substr(as.character(years[y]),3,4))
     tmpnum = popsiz_s[which(popsiz_s$SAMPLE == levels(sumkill$caste)[cc] & popsiz_s$YEAR == yn &
-                                   popsiz_s$prov == pr & popsiz_s$ZOSAMP == z),"TOTPERM"]
+                                   popsiz_s$prov == pr & popsiz_s$ZOSAMP == z),"TOTPERM"] #total estimated permits in the caste[cc] (info from last years and this years permit file)
     tmpdenom = sum(popsiz_s[which(popsiz_s$SAMPLE %in% levels(sumkill$caste)[1:2] & popsiz_s$YEAR == yn &
-                            popsiz_s$prov == pr & popsiz_s$ZOSAMP == z),"TOTPERM"])
+                            popsiz_s$prov == pr & popsiz_s$ZOSAMP == z),"TOTPERM"]) # total estimate permits in castes B and D (infor from last years and this years file)
     
     
-    cfact[cc,y] = tmpnum/tmpdenom
+    cfact[cc,y] = tmpnum/tmpdenom #ratio of estimated permits in caste[cc]/caste[B and D]
 
-    pops[cc,y] <- as.integer(round(permpop*cfact[cc,y],0))
+    pops[cc,y] <- as.integer(round(permpop*cfact[cc,y],0)) # new division of known renewal hunters into castes B and D
 
     
   }
@@ -740,6 +753,7 @@ succ = sumkill[which(sumkill[,wsucc] == "Y"),]
 nsucc <- as.matrix(table(succ$caste,succ$year))
 
 
+
 sumkill_active = sumkill[which(sumkill[,wact] == "Y"),]
 
 #### insert 0 for all NA-kill values and active hunters (applies to active WF hunters with NA values for geese)
@@ -747,6 +761,8 @@ sumkill_active = sumkill[which(sumkill[,wact] == "Y"),]
 if(any(is.na(sumkill_active[,wkill]) & spgp == "goose")){
   sumkill_active[which(is.na(sumkill_active[,wkill])),wkill] <- 0
 }
+### this bit is different for the 1994-1999 range and the 2000 onwards. The NAs make up 2/3rds of hte rows in 1994-1999, and only 1/3 from 2000 onwards
+
 
 
 nactive <- as.matrix(table(sumkill_active$caste,sumkill_active$year))
