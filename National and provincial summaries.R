@@ -190,7 +190,7 @@ for(pr in provs){
                               d = 1:4,
                               stringsAsFactors = F)
            
-           tmp_sp_duck_demo <- out2$samples %>% gather_draws(axcomp_axsy[d,s,y]) 
+           tmp_sp_duck_demo <- out2$samples %>% gather_draws(kill_ysax[d,s,y]) 
            vnm <- sp_vars[which(sp_vars$source == "duck"),c("sp","species")]
            spss <- sp.save.out[which(sp.save.out$PRHUNT == pr & sp.save.out$ZOHUNT == z),c("AOU","spfact","spn")]
            spss <- spss[order(spss$spn),]
@@ -249,14 +249,14 @@ for(pr in provs){
            tmp_sp_goose$zone <- z
            tmp_sp <- bind_rows(tmp_sp,tmp_sp_goose)
            
-           ## species age-sex harvests
+           ## species age-sex harvests 
            
-           demog = data.frame(BSEX = rep(c("U","U"),each = 1),
+                      demog = data.frame(BSEX = rep(c("U","U"),each = 1),
                               BAGE = rep(c("A","I"),times = 1),
                               d = 1:2,
                               stringsAsFactors = F)
            
-           tmp_sp_goose_demo <- out2$samples %>% gather_draws(axcomp_axsy[d,s,y]) 
+           tmp_sp_goose_demo <- out2$samples %>% gather_draws(kill_ysax[d,s,y]) 
            vnm <- sp_vars[which(sp_vars$source == "goose"),c("sp","species")]
            spss <- sp.save.out[which(sp.save.out$PRHUNT == pr & sp.save.out$ZOHUNT == z),c("AOU","spfact","spn")]
            spss <- spss[order(spss$spn),]
@@ -311,7 +311,7 @@ for(pr in provs){
                           d = 1:2,
                           stringsAsFactors = F)
        
-       tmp_sp_murre_demo <- out2$samples %>% gather_draws(axcomp_axsy[d,s,y]) 
+       tmp_sp_murre_demo <- out2$samples %>% gather_draws(kill_ysax[d,s,y]) 
        vnm <- sp_vars[which(sp_vars$source == "murre"),c("sp","species")]
        spss <- sp.save.out[which(sp.save.out$PRHUNT == pr & sp.save.out$ZOHUNT == z),c("AOU","spfact","spn")]
        spss <- spss[order(spss$spn),]
