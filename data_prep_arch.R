@@ -22,7 +22,7 @@ library(rjags)
 
 # 
 # sashome <- "C:\\Program Files\\SASHome\\SASFoundation\\9.4"
-# provs = c("AB","BC","SK","MB","ON","PQ","NS","PE","NB","NF")#,"NU","NT","YT") #All prov
+# provs = c("AB","BC","SK","MB","ON","PQ","NS","PE","NB","NF","NT","YT")#,"NU") #All prov
 # #ignoring territories above
 # 
 # sps <- read.csv(paste(home.fold,"/data/Bird names 2010.csv", sep = ""))

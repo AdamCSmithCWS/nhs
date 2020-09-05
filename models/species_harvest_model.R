@@ -45,17 +45,15 @@ model {
   for(y in 1:nyears){
     
     ## two correction factors to account for the inter-province hunting
-    ## parrive = proportion of hunting values that were sampled in another province (i.e., the proportion of hunters hunting in prov that are not included in pops, 1+parrive = factor by which pops should be increased)
     ## pleave = proportion of permit population that hunted somewhere else (i.e, the proportion of the pops that are hunting somewhere else and should be removed, factor by which pops should be reduced)
-    arrive_hunt_cf[y,1] ~ dbinom(parrive[y],arrive_hunt_cf[y,2])
     leave_hunt_cf[y,1] ~ dbinom(pleave[y],leave_hunt_cf[y,2])
-    
+    ## n_arrive[c,y] = caste and year estimate of the number of permits that should be added to the total population
+    ## currently not estimated as part of the model because the number of permits used to estimate this value is extremely large (all permits sampled in all other zones) and so the binomial error associated with it should be trivial
     
  
-    prov_flow[y] <- parrive[y]-pleave[y] #difference in proportion of hunters coming and going, negative values indicate permits purchased in zone tend to hunt somewhere else
   for(c in 1:ncastes){
     
-    pops_cor[c,y] <- pops[c,y]+(pops[c,y]*(parrive[y]))-(pops[c,y]*pleave[y])
+    pops_cor[c,y] <- pops[c,y]+(n_arrive[c,y])-(pops[c,y]*pleave[y])
     
     
     nactive[c,y] ~ dbinom(pactive[c,y],npotential[c,y])
@@ -115,11 +113,7 @@ model {
   logit(psi[1]) <- alpha_psi[1]
   
   
-  tau_alpha_parrive ~ dscaled.gamma(0.5,50) # assumption that the
-  alpha_parrive[1] ~ dt(0, 1/2.5^2, 1) # cauchy(0, 2.5) prior (Gelman et al., 2008) doi:10.1214/08-AOAS191
-  logit(parrive[1]) <- alpha_parrive[1]
-  
-  tau_alpha_pleave ~ dscaled.gamma(0.5,50) # assumption that the
+   tau_alpha_pleave ~ dscaled.gamma(0.5,50) # assumption that the
   alpha_pleave[1] ~ dt(0, 1/2.5^2, 1) # cauchy(0, 2.5) prior (Gelman et al., 2008) doi:10.1214/08-AOAS191
   logit(pleave[1]) <- alpha_pleave[1]
   
@@ -128,9 +122,6 @@ model {
     
       alpha_psi[y] ~ dnorm(alpha_psi[y-1],tau_alpha_psi) 
     logit(psi[y]) <- alpha_psi[y]
-    
-    alpha_parrive[y] ~ dnorm(alpha_parrive[y-1],tau_alpha_parrive) 
-    logit(parrive[y]) <- alpha_parrive[y]
     
     alpha_pleave[y] ~ dnorm(alpha_pleave[y-1],tau_alpha_psi) 
     logit(pleave[y]) <- alpha_pleave[y]

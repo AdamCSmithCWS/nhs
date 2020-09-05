@@ -201,6 +201,13 @@ allkill$SUTOGO <- "N"
 allkill[wsud,"SUTOGO"] <- "Y"
 
 
+
+tkeepP = which(allkill$PRSAMP %in% provs) #keeps only permits sampled in primary provinces. for now ignores territories
+
+  allkill = allkill[tkeepP,]
+
+
+
 nrow(allkill) == length(unique(allkill$uniperm))
  allkill$year = allkill$YEAR-(min(allkill$YEAR)-1)
  allkill$caste = factor(allkill$CASTE,
@@ -222,6 +229,15 @@ popsiz_s = unique(popsiz_s)
 
 popsiz_perm = merge(perms,provzone[,c("prov","provn")],by.x = "PRSALE",by.y = "provn",all.x = T)
 popsiz_perm = unique(popsiz_perm)
+
+
+### total number of permits by zone and year
+
+z_pops <- popsiz_perm %>%
+  select(-PRSALE) %>% 
+  rename(PRSAMP = prov,ZOSAMP = ZOSALE) %>% 
+  group_by(PRSAMP,ZOSAMP,YEAR) %>% 
+  summarise(TOTSALE = sum(TOTSALE))
 
 # popsiz_perm$yr = str_sub(popsiz_perm$YEAR,start = 3,end = 4)
 # tmp = left_join(popsiz_perm,popsiz_s[,c("zone","caste","TOTPERM","yr","prov")])
@@ -641,6 +657,53 @@ sumkillall[which(sumkillall[,"PRSAMP"] == pr &
                    sumkillall[,"ZOSAMP"] == z),"samppr"] <- TRUE
 
 
+sumkillout = allkill[-which(allkill[,"PRSAMP"] == pr &
+                              allkill[,"ZOSAMP"] == z),]
+sumkillout = sumkillout[which(sumkillout$YEAR %in% years),]
+sumkillout_huntpr <- sumkillout[which(sumkillout[,phunt] == pr &
+                                        sumkillout[,zhunt] == z),]
+
+sumkillout_huntout <- sumkillout[-which(sumkillout[,phunt] == pr &
+                                        sumkillout[,zhunt] == z),]
+n_out_huntz <- sumkillout_huntpr %>% 
+  group_by(PRSAMP,ZOSAMP,YEAR) %>% 
+  summarise(nperms_in = n())
+n_out_nohuntz <- sumkillout_huntout %>% 
+  group_by(PRSAMP,ZOSAMP,YEAR) %>% 
+  summarise(nperms_out = n())
+
+n_in_out <- left_join(n_out_nohuntz,n_out_huntz)
+
+n_in_out <- left_join(n_in_out,z_pops)
+if(any(is.na(n_in_out$nperms_in))){
+n_in_out[which(is.na(n_in_out$nperms_in)),"nperms_in"] <- 0
+}
+n_in_out$prz <- paste(n_in_out$PRSAMP,n_in_out$ZOSAMP,sep = "_")
+przs <- unique(n_in_out$prz)
+n_alt_zones <- length(przs)
+n_in_out$nextra <- as.integer(round((n_in_out$nperms_in/n_in_out$nperms_out)*n_in_out$TOTSALE)) #number of extra permits to add to local population based on the proportion of sampled permits in each year and zone(other zones only) that hunterd in this zone
+
+n_in_out_y <- n_in_out %>% 
+  group_by(YEAR) %>% 
+  summarise(nextra = sum(nextra))
+  
+# vvs = c("nperms_out","nperms_in","TOTSALE")
+# 
+# arrive_array <- array(data = 0,dim = c(nyears,n_alt_zones,3))
+# for(y in 1:nyears){
+# yn = years[y]
+# for(zz in 1:n_alt_zones){
+#   zzn = przs[zz]
+#   for(nn in 1:length(vvs)){
+#     vv = vvs[nn]
+#     tmp = n_in_out[which(n_in_out$YEAR == yn & n_in_out$prz == zzn),vv]
+#     arrive_array[y,zz,nn] <- as.integer(tmp)
+#   }
+#
+#   }}
+
+
+
 
 for(y in years){
   yi = y-(FY-1)
@@ -652,7 +715,6 @@ for(y in years){
   #nhunt_samp_prov = sum(tmp["TRUE","TRUE"])
   if(sum(dim(tmp)) == 4){
   nsampprov_huntaltprov = tmp["TRUE","FALSE"]
-  nhuntprov_sampaltprov = tmp["FALSE","TRUE"]
   }else{
     if(!("FALSE" %in% dimnames(tmp)$huntpr)){
     nsampprov_huntaltprov <- 0 
@@ -660,20 +722,12 @@ for(y in years){
       nsampprov_huntaltprov = tmp["TRUE","FALSE"] 
     }
     
-    if(!("FALSE" %in% dimnames(tmp)$samppr)){
-      nhuntprov_sampaltprov <- 0 
-    }else{
-      nhuntprov_sampaltprov = tmp["FALSE","TRUE"] 
-    }
-    
+
   }
   leave_hunt_cf[yi,1] <- nsampprov_huntaltprov
   leave_hunt_cf[yi,2] <- nsampprov
   
-  arrive_hunt_cf[yi,1] <- nhuntprov_sampaltprov
-  arrive_hunt_cf[yi,2] <- nsampprov #changed so that both values represent a proportion of the sampled population of hunters
-  
-  
+
 }
 
 
@@ -728,18 +782,18 @@ for(y in 1:nyears){
     cfact[cc,y] = tmpnum/tmpdenom #ratio of estimated permits in caste[cc]/caste[B and D]
 
     pops[cc,y] <- as.integer(round(permpop*cfact[cc,y],0)) # new division of known renewal hunters into castes B and D
-
+#### this could be a component of the model...
     
   }
   #print(permpop - sum(pops[1:2,y]))
 }
 
-# 
-# for(y in years){
-#   cfact[1,y] <- popsiz_s[which(popsiz_s$SAMPLE == "D" & popsiz_s$)]
-#   
-# }#y
-
+n_arrive = matrix(0,nrow = length(castes),ncol = nyears)
+for(y in 1:nyears){
+  for(cc in 1:length(castes)){
+    n_arrive[cc,y] <- as.integer(round(n_in_out_y[which(n_in_out_y$YEAR == years[y]),"nextra"]*(pops[cc,y]/sum(pops[,y]))))#splitting the number of arriving hunters based on teh yearly distribution of the castes
+  }
+}
 
 # separating active and inactive ------------------------------------------
 
@@ -892,13 +946,14 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
             ncastes = max(castes), # castes (numeric, 1:4)
             castes = castes, # castes (numeric, 1:4)
             nhs = nhs, # integer length = 1 number of active hunters over all years (nrow for sumkill_active)
+            n_alt_zones = n_alt_zones,#number of zones other than this one
             #main data for overall harvest estimates
             hunter = hunter_n_cy, # vector(length = nhs) unique numeric indicator for active hunters by caste and year 
             kill = kill, # vector(length = nhs), total group (ducks, geese, murres) harvest of nhs response
             year = year, # vector(length = nhs), year of response
             caste = caste, # vector(length = nhs), caste of response
             days = days, #vector(length = nhs), number of days spent hunting
-            arrive_hunt_cf = arrive_hunt_cf,# 
+            n_arrive = n_arrive,#matrix nrow = ncastes, ncol = nyears, number of permits to add to the local populations based on the permist sampled outside of this zone but hutning here
             leave_hunt_cf = leave_hunt_cf,
             demof = demof,
             demoa = demoa)#
