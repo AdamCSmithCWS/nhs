@@ -123,7 +123,7 @@ model {
       alpha_psi[y] ~ dnorm(alpha_psi[y-1],tau_alpha_psi) 
     logit(psi[y]) <- alpha_psi[y]
     
-    alpha_pleave[y] ~ dnorm(alpha_pleave[y-1],tau_alpha_psi) 
+    alpha_pleave[y] ~ dnorm(alpha_pleave[y-1],tau_alpha_pleave) 
     logit(pleave[y]) <- alpha_pleave[y]
     
   }

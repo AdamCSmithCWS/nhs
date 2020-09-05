@@ -30,19 +30,13 @@ model {
   for(y in 1:nyears){
     
     ## two correction factors to account for the inter-province hunting
-    ## parrive = proportion of hunting values that were sampled in another province (i.e., the proportion of hunters hunting in prov that are not included in pops, 1+parrive = factor by which pops should be increased)
     ## pleave = proportion of permit population that hunted somewhere else (i.e, the proportion of the pops that are hunting somewhere else and should be removed, factor by which pops should be reduced)
     leave_hunt_cf[y,1] ~ dbinom(pleave[y],leave_hunt_cf[y,2])
+    ## n_arrive[c,y] = caste and year estimate of the number of permits that should be added to the total population
+    ## currently not estimated as part of the model because the number of permits used to estimate this value is extremely large (all permits sampled in all other zones) and so the binomial error associated with it should be trivial
     
     
-    #priors for parrive and pleave simple beta distribution = beta-binomial sub-model
-    alpha_pleave[y] ~ dunif(1,3)
-    beta_pleave[y] ~ dunif(1,3)
-    
-    pleave[y] ~ dbeta(alpha_pleave[y],beta_pleave[y])
-    
-   
-    #### corrections to account for the inter-provincial hunting, and the proportion of the permit-population that are active
+  #### corrections to account for the inter-provincial hunting, and the proportion of the permit-population that are active
   for(c in 1:ncastes){
     
     pops_cor[c,y] <- pops[c,y]+(n_arrive[c,y])-(pops[c,y]*pleave[y])
@@ -103,7 +97,17 @@ for(g in 1:ngroups){
     
   }#i
   
-
+  tau_alpha_pleave ~ dscaled.gamma(0.5,50) # assumption that the
+  alpha_pleave[1] ~ dt(0, 1/2.5^2, 1) # cauchy(0, 2.5) prior (Gelman et al., 2008) doi:10.1214/08-AOAS191
+  logit(pleave[1]) <- alpha_pleave[1]
+  
+  for(y in 2:nyears){
+    
+  alpha_pleave[y] ~ dnorm(alpha_pleave[y-1],tau_alpha_pleave) 
+  logit(pleave[y]) <- alpha_pleave[y]
+  
+  }
+  
   for(g in 1:ngroups){
     ### zip priors beta-binomial priors
     ### psi is the estimated proportion of active other hunters that hunt this group - i.e., the zero component that's in addition to the over-dispersed Poisson-distribution
@@ -111,7 +115,7 @@ for(g in 1:ngroups){
     beta_psi[g] ~ dunif(1,3)
     psi[g] ~ dbeta(alpha_psi[g],beta_psi[g])
    
-    ### group-effects
+    ### group-effects - these are the annual harvest-rate effects for each group, time-series from the first year that group is harvested.
     tau_group[g] ~ dscaled.gamma(0.5,50)#time-series variance
     for(y in 1:fyear[g]){
       group[y,g] ~ dnorm(0,1)
@@ -205,17 +209,11 @@ for(g in 1:ngroups){
  }
 
   for(c in 1:ncastes){
-    ## harvest rate priors
-    # retrans_hunter[c] <- 0.5*(1/tauhunter[c])
-    # sdhunter[c] <- 1/pow(tauhunter[c],0.5)
-    # tauhunter[c] ~ dgamma(0.01,0.01)
-    # nu[c] ~ dgamma(2,0.2)
-    ## caste specific intercept priors
+
    
     #activity (days) priors
     retrans_hunter_day[c] <- (0.5*(1/tauhunter_day[c]))/nu_day_ret[c]
     sdhunter_day[c] <- 1/pow(tauhunter_day[c],0.5)
-    #tauhunter_day[c] ~ dgamma(0.01,0.01)
     tauhunter_day[c] ~ dscaled.gamma(0.5,50) #implicit prior on sigma of a half-t dist: sigma = 0.5*t(df = 50) , i.e., 99% prob sd < 1
     nu_day[c] ~ dgamma(2,0.2)
     nu_day_ret[c] <- (1.422*nu_day[c]^0.906)/(1+(1.422*nu_day[c]^0.906)) #approximate retransformation to equate a t-distribution to a normal distribution - see appendix of Link et al. 2020 BBS model selection paper
@@ -241,60 +239,30 @@ for(g in 1:ngroups){
     
     for(y in 1:nyears){
       
-      # alpha_psucc[c,y] ~ dunif(1,3) #very simple priors for the parameters of the beta priors on pactive and psucc
-      # beta_psucc[c,y] ~ dunif(1,3)
-      # alpha_pactive[c,y] ~ dunif(1,3)
-      # beta_pactive[c,y] ~ dunif(1,3)
-      # 
 
-      #alternative time-series priors for other groups where the number of active and successful has very sparse data
-       # alpha_psucc[c,y] <- phi_psucc[c] * mu_psucc[c,y]
-       # beta_psucc[c,y] <- phi_psucc[c] * (1 - mu_psucc[c,y])
-       # logit(mu_psucc[c,y]) <- mmu_psucc[c,y]
-     # psucc[c,y] ~ dbeta(alpha_psucc[c,y],beta_psucc[c,y])
       for(g in 1:ngroups){
       logit(psucc[g,c,y]) <- mmu_psucc[g,c,y]
       }
-      # alpha_pactive[c,y] = phi_pactive[c] * mu_pactive[c,y]
-      # beta_pactive[c,y] = phi_pactive[c] * (1 - mu_pactive[c,y])
-      # logit(mu_pactive[c,y]) <- mmu_pactive[c] + dnorm(0,tau_mu_pactive[c])
-      # pactive[c,y] ~ dbeta(alpha_pactive[c,y],beta_pactive[c,y])
-      #pactive[c,y] ~ dbeta(alpha_pactive[c,y],beta_pactive[c,y])
+
       logit(pactive[c,y]) <- mmu_pactive[c,y]
       
       ############# hunter-specific effects
       for(h in 1:nhunter_cy[c,y]){
-        ## hntr[c,y,h] is an individual random error term to allow for overdispersion in the harvest,
-        ##  hntr_day[c,y,h] is an individual random error term to allow for overdispersion in the activity (days spent hunting),
-        ##  t-distribution used for overdispersion in activity adn harvest to allow for heavy-tails
-        ## all after accounting for zero-inflation
-        ## variances on both activity and harvest are caste-specific precision to allow hunter-level dispersion to vary among castes
-        ## 
-        
         hntr_day[c,y,h] ~ dt(0,tauhunter_day[c],nu_day[c])
         for(g in 1:ngroups){
         hntr[c,y,g,h] ~ dt(0,tauhunter[c,g],nu[c,g])
         }
-        #hntr[c,y,h] ~ dnorm(0,tauhunter[c]) #alternative normal overdispersion assuming that most of variance in harvest is a function of how many days a hunter spends hunting
-        #n days probably accounts for a bit of the hunting skill effect as well as the activity effect
-        
       }#h
     }#y
     
   }#c
   
-  ### yearly intercepts of total kill by first-difference 
-  ### alternative structure to allow first-differenc time-series model, but appears to be uneccessary and identifiability issues with caste time-series
-  #ann[1] ~ dnorm(0,1) # fixed effects for year-1 annual harvest level
-  ann_day[1] ~ dnorm(0,1) # fixed effect for year-1 annual activity level
+ ann_day[1] ~ dnorm(0,1) # fixed effect for year-1 annual activity level
   
   for(y in 2:nyears){
-    #ann[y] ~ dnorm(ann[y-1],tauyear)
     ann_day[y] ~ dnorm(ann_day[y-1],tauyear_day)
     
-    #ann[y] ~ dnorm(0,0.001)
-    #ann_day[y] ~ dnorm(0,0.001)
-    
+
   }
   
   # first-difference harvest and activity variance priors
@@ -336,7 +304,7 @@ for(g in 1:ngroups){
   
   
 
-  #total harvest estimate by species year and caste
+  #total harvest estimate by group year and caste
   ## mean harvest and days * population sizes of each caste and year * esimated proportion of population that is active to generate final harvest estimates.
   for(y in 1:nyears){
    

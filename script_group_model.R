@@ -190,11 +190,12 @@ dupuni = allkill$uniperm[duplicated(allkill$uniperm)]
 # dupdf = dupdf[order(dupdf$uniperm),]
 
 wmigoo <- which(allkill$PRHUNTG == "")
-allkill[wmigoo,"PRHUNTG"] <- allkill[wmigoo,"PRHUNT"]
+allkill$PRHUNTG = as.character(allkill$PRHUNTG)
+allkill[wmigoo,"PRHUNTG"] <- as.character(allkill[wmigoo,"PRHUNT"])
 allkill[wmigoo,"ZOHUNTG"] <- allkill[wmigoo,"ZOHUNT"]
 
-  
-  
+
+
 wsud = which(allkill$TODUK > 0)
 allkill$SUTODU <- "N"
 allkill[wsud,"SUTODU"] <- "Y"
@@ -205,18 +206,28 @@ allkill$SUTOGO <- "N"
 allkill[wsud,"SUTOGO"] <- "Y"
 
 
+
+tkeepP = which(allkill$PRSAMP %in% provs) #keeps only permits sampled in primary provinces. for now ignores territories
+
+allkill = allkill[tkeepP,]
+
+
+
 nrow(allkill) == length(unique(allkill$uniperm))
- allkill$year = allkill$YEAR-(min(allkill$YEAR)-1)
- allkill$caste = factor(allkill$CASTE,
-                        ordered = T,
-                        levels = c("A","B","D","E"))
+allkill$year = allkill$YEAR-(min(allkill$YEAR)-1)
+allkill$caste = factor(allkill$CASTE,
+                       ordered = T,
+                       levels = c("A","B","D","E"))
 
 
 
- 
- ######## sampling population sizes
+save(list = c("allkill"),
+     file = "data/allkill.RData")
+
+######## sampling population sizes
 popsiz_s = merge(popsiz,provzone[,c("prov","provn")],by.x = "PRSAMP",by.y = "provn",all.x = T)
 popsiz_s = unique(popsiz_s)
+
 
 
 #### total number of permits in each year
@@ -225,47 +236,19 @@ popsiz_perm = merge(perms,provzone[,c("prov","provn")],by.x = "PRSALE",by.y = "p
 popsiz_perm = unique(popsiz_perm)
 
 
+### total number of permits by zone and year
+
+z_pops <- popsiz_perm %>%
+  select(-PRSALE) %>% 
+  rename(PRSAMP = prov,ZOSAMP = ZOSALE) %>% 
+  group_by(PRSAMP,ZOSAMP,YEAR) %>% 
+  summarise(TOTSALE = sum(TOTSALE))
+
+# popsiz_perm$yr = str_sub(popsiz_perm$YEAR,start = 3,end = 4)
+# tmp = left_join(popsiz_perm,popsiz_s[,c("zone","caste","TOTPERM","yr","prov")])
+
+
 ### species lists
-
-# aou.ducks <- sps[which(sps$group == "duck"),"AOU"]
-# aou.goose <- sps[which(sps$group == "goose"),"AOU"]
-# aou.murre <- sps[which(sps$group == "murre"),"AOU"]
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# # correcting the age and sex indicators -----------------------------------
-# 
-# outscse[which(outscse$PAGE != ""),"BAGE"] <- outscse[which(outscse$PAGE != ""),"PAGE"]
-# # outscse[which(outscse$BAGE %in% c("2")),"BAGE"] <- "I"
-# # outscse[which(outscse$BAGE %in% c("3")),"BAGE"] <- "U"
-# # outscse[which(outscse$BAGE %in% c("")),"BAGE"] <- "U"
-# 
-# 
-# 
-# outscse[which(outscse$BAGE %in% c("1","S","T")),"BAGE"] <- "A"
-# outscse[which(outscse$BAGE %in% c("2")),"BAGE"] <- "I"
-# outscse[which(outscse$BAGE %in% c("3")),"BAGE"] <- "U"
-# outscse[which(outscse$BAGE %in% c("")),"BAGE"] <- "U"
-# 
-# outscse[which(outscse$BSEX %in% c("1")),"BSEX"] <- "M"
-# outscse[which(outscse$BSEX %in% c("2")),"BSEX"] <- "F"
-# outscse[which(outscse$BSEX %in% c("3")),"BSEX"] <- "U"
-# outscse[which(outscse$BSEX %in% c("")),"BSEX"] <- "U"
-# 
-# #outscse$BAGE = factor(outscse$BAGE)
-# #round(prop.table(table(outscse$BAGE,outscse$AOU),2),2)
-# 
-# #outscse$BSEX = factor(outscse$BSEX)
-# #round(prop.table(table(outscse$BSEX,outscse$AOU),2),2)
-# 
-# 
-
-
-
 
 
 others = c("COOTK","WOODK","SNIPK","DOVEK","PIGEK","CRANK","RAILK","MURRK")
@@ -357,50 +340,16 @@ for(pr in provs){
   
   
   
-  mod.file = "models/group_model_zip23.R" # 
-  #non_res_combine = c("NF 1","NF 2","PE 1","NS 1","NS 1","BC 2","NT 1","YT 1","NB 1")
-  
-  
-  
-  
+
    zns <- as.integer(unique(allkill[which(allkill[,phunt] == pr),zhunt]))
   zns <- zns[which(zns > 0)]
- # for(z in zns){
+  for(z in zns){
     
 
 
 
   
   
-
- # Set up parallel stuff
-  n_cores <- length(zns)
-  cluster <- makeCluster(n_cores, type = "PSOCK")
-  registerDoParallel(cluster)
-
-
-
-  fullrun <- foreach(z = zns,
-                      .packages = c("jagsUI","tidyverse"),
-                      .inorder = FALSE,
-                      .errorhandling = "pass") %dopar%
-    {
-      
-  
- 
-  
-
-  
-  
-  
-
-
-
-
-
-# periods -----------------------------------------------------------------
-
-
 sumkill = allkill[which(allkill[,phunt] == pr &
                              allkill[,zhunt] == z &
                              allkill$YEAR %in% years),]
@@ -414,136 +363,82 @@ sumkill = allkill[which(allkill[,phunt] == pr &
     
     
     
-    
-  
-# #########################
-# ### 
-# 
-# # compiling calendar info -------------------------------------------------
-# 
-#     
-# ## generate an array 
-# ## periodkill[p,y,h] = total kill in period-x and year-y for each hunter-h
-# ## nhunter_y[y] = number of hunters with calendar information in year-y
-# 
-# 
-#     nhunter_y = vector(length = nyears)
-# names(nhunter_y) = as.character(years)
-# 
-# for(y in years){
-# 
-#   tmp <- cal.spgp[[as.character(y)]]
-#   tmp1 <- tmp[which(tmp$PRHUNT == pr &
-#                       tmp$ZOHUNT == z),]
-#   nhunter_y[as.character(y)] <- length(unique(tmp1$PERMIT))
-#   
-# }
-# 
-# periodkill = array(0,
-#                    dim = c(nperiods,nyears,max(nhunter_y)))
-#   ## the following loop is clumsy and slow, but it works
-# NAcounts = list()
-# length(NAcounts) <- nyears
-# 
-# for(yn in 1:nyears){
-#   y = years[yn]
-#   tmp <- cal.spgp[[as.character(y)]]
-#   tmp1 <- tmp[which(tmp$PRHUNT == pr &
-#                       tmp$ZOHUNT == z),]
-#   tmp1[which(tmp1$MONH >12),"MONH"] = tmp1[which(tmp1$MONH >12),"MONH"]-12
-# tmp1$yearhunt = tmp1$YEAR
-#   tmp1[which(tmp1$MONH < 9),"yearhunt"] = tmp1[which(tmp1$MONH < 9),"YEAR"]+1
-#   tmp1$date = as.Date(paste(tmp1$yearhunt,
-#                             tmp1$MONH,
-#                             tmp1$DAYH,sep = "-"),
-#           format = "%Y-%m-%d")
-# 
-#   if(any(is.na(tmp1$date))){
-#     for(jj in which(is.na(tmp1$date))){
-#       ### if day is 31, then it's likely that the month doesn't have 31 days
-#       ### fix below assumes that the month is correct and the day is wrong
-#       if(tmp1[jj,"DAYH"] == 31){ tmp1[jj,"DAYH"] <- 30 
-#       tmp1[jj,"date"] <- as.Date(paste(tmp1$yearhunt[jj],
-#                                       tmp1$MONH[jj],
-#                                       tmp1$DAYH[jj],sep = "-"),
-#                                 format = "%Y-%m-%d")
-#       }
-#       if(tmp1[jj,"DAYH"] == 29 & tmp1[jj,"MONH"] == 2){ tmp1[jj,"DAYH"] <- 28 
-#       tmp1[jj,"date"] <- as.Date(paste(tmp1$yearhunt[jj],
-#                                        tmp1$MONH[jj],
-#                                        tmp1$DAYH[jj],sep = "-"),
-#                                  format = "%Y-%m-%d")
-#       }
-#       }
-#     }
-#       
-#     
-#   tmp1$week = as.integer(ceiling((tmp1$date-(min(tmp1$date)-1))/7))
-#   
-#   tmp1$hunterf = as.integer(factor(tmp1$PERMIT))
-#   
-#   if(any(is.na(tmp1$COUNT))){
-#     
-#     NAcounts[[yn]] <- tmp1
-#     tmp1[which(is.na(tmp1$COUNT)),"COUNT"] <- 1 ## decision to include a non-zero value because the rows include all of the relevant information (hunter, day, prov, week permit etc, just missing hte count, likely that the program in those few years made a mistake)
-#   }
-#   
-#   for(h in 1:nhunter_y[yn]){
-#   tmp2 = tmp1[which(tmp1$hunterf == h),]
-#     for(per in 1:nperiods){
-#       wks1 = periods[which(periods$period == per),"startweek"]
-#       wks2 = periods[which(periods$period == per),"endweek"]
-#       wt2 = which(tmp2$week %in% c(wks1:wks2))
-#       if(length(wt2) == 0){next}
-#       periodkill[per,yn,h] <- round(sum(tmp2[wt2,"COUNT"]))
-#     
-#   }#per
-#   }#h
-# }#yn
-# 
-# ### below can be commented out but prints the 
-# ### observed proportional composition of the hunt by years (rows) and periods (columns)
-# ### helps for checking that there are no missing data
-# # for(y in 1:nyears){
-# # print(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,],na.rm = F)),3))
-# # if(any(is.na(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,],na.rm = F)),3)))){print(y)}
-# #   }
+ 
 
-
-
-
-
-# Correction factors for inter-provincial hunting -------------------------
-sumkillall = allkill[which(((allkill[,phunt] == pr &
-                               allkill[,zhunt] == z)|(allkill[,"PRSAMP"] == pr &
-                                                        allkill[,"ZOSAMP"] == z)) &
-                             allkill$YEAR %in% years),]
-
-arrive_hunt_cf <- matrix(1,nrow = nyears,ncol = 2)
-leave_hunt_cf <- matrix(1,nrow = nyears,ncol = 2)
-
-
-for(y in years){
-  yi = y-(FY1-1)
-  tmp = table(sumkillall[which(sumkillall$YEAR == y),c("PRSAMP",phunt)])
-  
-  
- nsampprov = sum(tmp[pr,])#number of hunters sampled in that prov/zone (ratio of this to population = simple extrapolation factor)
- nhuntprov = sum(tmp[,pr])#number of hunters hunting in that prov/zone
- nhunt_samp_prov = sum(tmp[pr,pr])
-  nsampprov_huntaltprov = nsampprov-nhunt_samp_prov
-  nhuntprov_sampaltprov = nhuntprov-nhunt_samp_prov
-  
-  leave_hunt_cf[yi,1] <- nsampprov_huntaltprov
-  leave_hunt_cf[yi,2] <- nsampprov
-  
-  arrive_hunt_cf[yi,1] <- nhuntprov_sampaltprov
-  arrive_hunt_cf[yi,2] <- nsampprov #changed so that both values represent a proportion of the sampled population of hunters
-  
-  
-}
-
-
+   
+   sumkillall = allkill[which(((allkill[,phunt] == pr &
+                                  allkill[,zhunt] == z)|(allkill[,"PRSAMP"] == pr &
+                                                           allkill[,"ZOSAMP"] == z)) &
+                                allkill$YEAR %in% years),]
+   
+   arrive_hunt_cf <- matrix(1,nrow = nyears,ncol = 2)
+   leave_hunt_cf <- matrix(1,nrow = nyears,ncol = 2)
+   
+   sumkillall$huntpr <- FALSE
+   sumkillall$samppr <- FALSE
+   
+   sumkillall[which(sumkillall[,phunt] == pr &
+                      sumkillall[,zhunt] == z),"huntpr"] <- TRUE
+   sumkillall[which(sumkillall[,"PRSAMP"] == pr &
+                      sumkillall[,"ZOSAMP"] == z),"samppr"] <- TRUE
+   
+   
+   sumkillout = allkill[-which(allkill[,"PRSAMP"] == pr &
+                                 allkill[,"ZOSAMP"] == z),]
+   sumkillout = sumkillout[which(sumkillout$YEAR %in% years),]
+   sumkillout_huntpr <- sumkillout[which(sumkillout[,phunt] == pr &
+                                           sumkillout[,zhunt] == z),]
+   
+   sumkillout_huntout <- sumkillout[-which(sumkillout[,phunt] == pr &
+                                             sumkillout[,zhunt] == z),]
+   n_out_huntz <- sumkillout_huntpr %>% 
+     group_by(PRSAMP,ZOSAMP,YEAR) %>% 
+     summarise(nperms_in = n())
+   n_out_nohuntz <- sumkillout_huntout %>% 
+     group_by(PRSAMP,ZOSAMP,YEAR) %>% 
+     summarise(nperms_out = n())
+   
+   n_in_out <- left_join(n_out_nohuntz,n_out_huntz)
+   
+   n_in_out <- left_join(n_in_out,z_pops)
+   if(any(is.na(n_in_out$nperms_in))){
+     n_in_out[which(is.na(n_in_out$nperms_in)),"nperms_in"] <- 0
+   }
+   n_in_out$prz <- paste(n_in_out$PRSAMP,n_in_out$ZOSAMP,sep = "_")
+   przs <- unique(n_in_out$prz)
+   n_alt_zones <- length(przs)
+   n_in_out$nextra <- as.integer(round((n_in_out$nperms_in/n_in_out$nperms_out)*n_in_out$TOTSALE)) #number of extra permits to add to local population based on the proportion of sampled permits in each year and zone(other zones only) that hunterd in this zone
+   
+   n_in_out_y <- n_in_out %>% 
+     group_by(YEAR) %>% 
+     summarise(nextra = sum(nextra))
+   
+   
+   
+   for(y in years){
+     yi = y-(FY-1)
+     tmp = table(sumkillall[which(sumkillall$YEAR == y),c("samppr","huntpr")])
+     
+     
+     nsampprov = sum(tmp["TRUE",])#number of hunters sampled in that prov/zone (ratio of this to population = simple extrapolation factor)
+     #nhuntprov = sum(tmp[,"TRUE"])#number of hunters hunting in that prov/zone
+     #nhunt_samp_prov = sum(tmp["TRUE","TRUE"])
+     if(sum(dim(tmp)) == 4){
+       nsampprov_huntaltprov = tmp["TRUE","FALSE"]
+     }else{
+       if(!("FALSE" %in% dimnames(tmp)$huntpr)){
+         nsampprov_huntaltprov <- 0 
+       }else{
+         nsampprov_huntaltprov = tmp["TRUE","FALSE"] 
+       }
+       
+       
+     }
+     leave_hunt_cf[yi,1] <- nsampprov_huntaltprov
+     leave_hunt_cf[yi,2] <- nsampprov
+     
+     
+   }
 
 # collecting and sorting the total kill by caste for the zone -------------
 
@@ -603,11 +498,19 @@ for(y in 1:nyears){
   #print(permpop - sum(pops[1:2,y]))
 }
 
-# 
-# for(y in years){
-#   cfact[1,y] <- popsiz_s[which(popsiz_s$SAMPLE == "D" & popsiz_s$)]
-#   
-# }#y
+
+
+# arrival corrections -----------------------------------------------------
+
+
+n_arrive = matrix(0,nrow = length(castes),ncol = nyears)
+for(y in 1:nyears){
+  for(cc in 1:length(castes)){
+    n_arrive[cc,y] <- as.integer(round(n_in_out_y[which(n_in_out_y$YEAR == years[y]),"nextra"]*(pops[cc,y]/sum(pops[,y]))))#splitting the number of arriving hunters based on teh yearly distribution of the castes
+  }
+}
+
+
 
 
 # separating active and inactive ------------------------------------------
@@ -646,20 +549,6 @@ for(i in 1:ngroups){
   print(grps[i])
 print(nsucc[i,,]/nactive)
   }
-
-# if(length(nsucct) != max(castes)*nyears){
-#   nsucc <- matrix(nrow = max(castes),ncol = nyears,dimnames = list(as.character(levels(sumkill$caste)),as.character(1:nyears)))
-#   for(cc in castes){
-#     ccn = as.character(levels(sumkill$caste)[cc])
-#     for(yy in 1:nyears){
-#       yyn = as.character(yy)
-#       nsucc[ccn,yyn] <- ifelse((ccn %in% names(nsucct[,1]) & yyn %in% names(nsucct[1,]) ), nsucct[ccn,yyn] , 0)
-#     }
-#   }
-# }else{
-#   nsucc <- nsucct
-# }
-
 
 
 if(any(sumkill_active[,wday] < 1 & spgp == "murre")){
@@ -714,53 +603,6 @@ hunter_n_cy = sumkill_active$hunter_n_cy
 
 
 
-# total number of parts by year and period --------------------------------
-
-
-# nparts_py = matrix(nrow = nperiods,
-#            ncol = nyears)
-# for(p in 1:nperiods){
-#   for(y in 1:nyears){
-#     nparts_py[p,y] <- sum(partsarray[p,,y],na.rm = T)# yearl and period sums of all parts
-#   }
-# }
-
-#### still need a predictive array to generate the PEFs 
-#### still need a predictive array to generate the PEFs 
-#### still need a predictive array to generate the PEFs 
-#### still need a predictive array to generate the PEFs 
-#### still need a predictive array to generate the PEFs 
-
-# total number of parts by species and period --------------------------------
-
-
-# nparts_sy = matrix(nrow = nspecies,
-#                    ncol = nyears)
-# for(s in 1:nspecies){
-#   for(y in 1:nyears){
-#     nparts_sy[s,y] <- sum(agesexarray[,s,y],na.rm = T)# yearl and species sums of all parts for age and sex
-#   }
-# }
-
-
-# total harvest by year and hunter from calendars ----------------------------------------
-# 
-# 
-# nkill_yh = matrix(nrow = nyears,
-#                ncol = max(nhunter_y))
-# for(y in 1:nyears){
-#   for(h in 1:nhunter_y[y]){
-#     nkill_yh[y,h] <- sum(periodkill[,y,h],na.rm = T) #simple sum of the data
-#   }
-# }
-# 
-# if(ndemog == 4){
-#   demof <- c(1,2)
-#   demoa <- c(1,3)
-# }else{
-#   demof <- 1
-#   demoa <- 1
-# }
 
 # compiling JAGS data object ----------------------------------------------
 
@@ -785,7 +627,7 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
             year = year, # vector(length = nhs), year of response
             caste = caste, # vector(length = nhs), caste of response
             days = days, #vector(length = nhs), number of days spent hunting
-            arrive_hunt_cf = arrive_hunt_cf,# 
+            n_arrive = n_arrive,# 
             leave_hunt_cf = leave_hunt_cf
             )#
 
@@ -793,8 +635,46 @@ jdat = list(pops = pops, # pops[c.y] total populations of permits by caste and y
 
 
 
+save(list = c("jdat","grps"),
+     file = paste("data/data",pr,z,"other_save.RData",sep = "_"))
 
 
+    }#z
+  
+}#pr
+
+
+
+
+# MCMC loops --------------------------------------------------------------
+
+
+
+fullrun <- foreach(pr = provs2,
+                   .packages = c("jagsUI","tidyverse"),
+                   .inorder = FALSE,
+                   .errorhandling = "pass") %dopar%
+  {
+
+#for(pr in provs2){
+# Set up parallel stuff
+n_cores <- length(zns)
+cluster <- makeCluster(n_cores, type = "PSOCK")
+registerDoParallel(cluster)
+
+
+for(z in 1:3){
+# fullrun <- foreach(z = zns,
+#                    .packages = c("jagsUI","tidyverse"),
+#                    .inorder = FALSE,
+#                    .errorhandling = "pass") %dopar%
+#   {
+    
+    
+    mod.file = "models/group_model.R" # 
+    
+    if(file.exists(paste("data/data",pr,z,"other_save.RData",sep = "_"))){
+    load(paste("data/data",pr,z,"other_save.RData",sep = "_"))
 
 parms = c("NACTIVE_y",
           "NSUCC_yg",
@@ -861,13 +741,13 @@ if(class(out2) != "try-error"){
        file = paste("output/other harvest zip",pr,z,"alt mod.RData"))
   
 rm(list = "out2")
-
+}
 }
 
   }#z
-  stopCluster(cl = cluster)
-  
+
 }#pr
+stopCluster(cl = cluster)
 
 
 
