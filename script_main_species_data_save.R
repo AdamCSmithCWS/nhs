@@ -64,7 +64,7 @@ library(foreach)
 
 #load.module("glm") 
 
- 
+
 
 # load output from data_prep.R --------------------------------------------
 
@@ -99,58 +99,58 @@ names(pubEsts_species) <- c("sp","species","prov","zone","year","age_ratio")
 
 ### compile total harvest estimates into a dataframe of
 #### permit, year, caste, totalkill
- 
+
 cls = c("PERMIT",
-   "CASTE",
-   "YEAR",
-   "SELYEAR",
-   "PRHUNT",
-   "ZOHUNT",
-   "LATD",
-   "LOND",
-   "TODUK",
-   "TOGOK",
-   "COOTK",
-   "WOODK",
-   "SNIPK",
-   "DOVEK",
-   "PIGEK",
-   "CRANK",
-   "RAILK",
-   "MURRK",
-   "RNDMURK",
-   "DAYWF",
-   "DAYOT",
-   "DAYM",
-   "PRHUNTG",
-   "ZOHUNTG",
-   "LATG",
-   "LONG",
-   "PRHUNTM",
-   "ZOHUNTM",
-   "LATM",
-   "LONM",
-   "SUCCWF",
-   "SUTODU",
-   "SUTOGO",
-   "SUCCOT",
-   "SUCCM",
-   "ACTIVEOT",
-   "ACTIVE",
-   "ACTIVEWF",
-   "ACTIVEM",
-   "POTNTL",
-   "PRSALE",
-   "ZOSALE",
-   "PRSAMP",
-   "ZOSAMP")
+        "CASTE",
+        "YEAR",
+        "SELYEAR",
+        "PRHUNT",
+        "ZOHUNT",
+        "LATD",
+        "LOND",
+        "TODUK",
+        "TOGOK",
+        "COOTK",
+        "WOODK",
+        "SNIPK",
+        "DOVEK",
+        "PIGEK",
+        "CRANK",
+        "RAILK",
+        "MURRK",
+        "RNDMURK",
+        "DAYWF",
+        "DAYOT",
+        "DAYM",
+        "PRHUNTG",
+        "ZOHUNTG",
+        "LATG",
+        "LONG",
+        "PRHUNTM",
+        "ZOHUNTM",
+        "LATM",
+        "LONM",
+        "SUCCWF",
+        "SUTODU",
+        "SUTOGO",
+        "SUCCOT",
+        "SUCCM",
+        "ACTIVEOT",
+        "ACTIVE",
+        "ACTIVEWF",
+        "ACTIVEM",
+        "POTNTL",
+        "PRSALE",
+        "ZOSALE",
+        "PRSAMP",
+        "ZOSAMP")
 allkill <- NULL
 
 for(y in years){
   tmp1 <- harvw[[as.character(y)]]
   tmp <- tmp1[,which(names(tmp1) %in% cls)]
-#tmp = tmp1
-
+  #tmp = tmp1
+  
   if(y == years[1]){
     allkill <- tmp
   }else{
@@ -165,9 +165,9 @@ if(length(trem)>0){
 
 
 tkp = which(allkill$POTNTL == "Y")
-if(length(tkp)>0){
-  allkill = allkill[tkp,]
-}### removing the hunters sampled from last year's permit file who indicated they didn't buy a permit this year
+# if(length(tkp)>0){
+allkill = allkill[tkp,]
+#}### removing the hunters sampled from last year's permit file who indicated they didn't buy a permit this year
 ### and are therefore not potential hunters
 
 
@@ -177,52 +177,70 @@ if(length(trem)>0){
 }### removes a single permit from 1985 with no permit number
 
 
-# tkp = which(allkill$PRHUNT %in% c("AB","BC","MB","NB","NF","NS","NT","ON","PE","PQ","SK","YT","")) #drops NU and non provincial values
-# if(length(tkp)>0){
-#   allkill = allkill[tkp,]
-# }### 
-
-
 
 allkill$uniperm = allkill$PERMIT + allkill$SELYEAR*1000000 + allkill$YEAR*10000000000
 dupuni = allkill$uniperm[duplicated(allkill$uniperm)]
+## there are no duplicates.
 # dupdf = allkill[which(allkill$uniperm %in% dupuni),]
 # dupdf = dupdf[order(dupdf$uniperm),]
 
 wmigoo <- which(allkill$PRHUNTG == "")
-allkill[wmigoo,"PRHUNTG"] <- allkill[wmigoo,"PRHUNT"]
+allkill$PRHUNTG = as.character(allkill$PRHUNTG)
+allkill[wmigoo,"PRHUNTG"] <- as.character(allkill[wmigoo,"PRHUNT"])
 allkill[wmigoo,"ZOHUNTG"] <- allkill[wmigoo,"ZOHUNT"]
 
-  
-  
+
+
 wsud = which(allkill$TODUK > 0)
 allkill$SUTODU <- "N"
 allkill[wsud,"SUTODU"] <- "Y"
 
 
-wsug = which(allkill$TOGOK > 0)
+wsud = which(allkill$TOGOK > 0)
 allkill$SUTOGO <- "N"
-allkill[wsug,"SUTOGO"] <- "Y"
+allkill[wsud,"SUTOGO"] <- "Y"
+
+
+
+tkeepP = which(allkill$PRSAMP %in% provs) #keeps only permits sampled in primary provinces. for now ignores territories
+
+allkill = allkill[tkeepP,]
+
 
 
 nrow(allkill) == length(unique(allkill$uniperm))
- allkill$year = allkill$YEAR-(min(allkill$YEAR)-1)
- allkill$caste = factor(allkill$CASTE,
-                        ordered = T,
-                        levels = c("A","B","D","E"))
+allkill$year = allkill$YEAR-(min(allkill$YEAR)-1)
+allkill$caste = factor(allkill$CASTE,
+                       ordered = T,
+                       levels = c("A","B","D","E"))
 
 
 
- 
- ######## sampling population sizes
+save(list = c("allkill"),
+     file = "data/allkill.RData")
+
+######## sampling population sizes
 popsiz_s = merge(popsiz,provzone[,c("prov","provn")],by.x = "PRSAMP",by.y = "provn",all.x = T)
 popsiz_s = unique(popsiz_s)
+
 
 
 #### total number of permits in each year
 
 popsiz_perm = merge(perms,provzone[,c("prov","provn")],by.x = "PRSALE",by.y = "provn",all.x = T)
 popsiz_perm = unique(popsiz_perm)
+
+
+### total number of permits by zone and year
+
+z_pops <- popsiz_perm %>%
+  select(-PRSALE) %>% 
+  rename(PRSAMP = prov,ZOSAMP = ZOSALE) %>% 
+  group_by(PRSAMP,ZOSAMP,YEAR) %>% 
+  summarise(TOTSALE = sum(TOTSALE))
+
+# popsiz_perm$yr = str_sub(popsiz_perm$YEAR,start = 3,end = 4)
+# tmp = left_join(popsiz_perm,popsiz_s[,c("zone","caste","TOTPERM","yr","prov")])
 
 
 ### species lists
@@ -261,15 +279,6 @@ outscse[which(outscse$BSEX %in% c("")),"BSEX"] <- "U"
 
 #outscse$BSEX = factor(outscse$BSEX)
 #round(prop.table(table(outscse$BSEX,outscse$AOU),2),2)
-
-
-
-### for a given species and year, need estimates of the sex and age structure
-## assume independence of age and sex?
-## use a strongly informative prior on the variance, given the small number of parts
-## or estimate all 4 (or 9 incl unknowns) categories independently, with an 
-## use the same time-series structure used for hte other multinomial sub-models
-
 
 
 
