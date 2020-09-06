@@ -2,7 +2,7 @@
 
 
 comp_plot_axsy <- function(group = spgp,
-                             var = "axcomp_axsy",
+                             var = "kill_ysax",
                              prov = "",
                              zone = "",
                              M = out2,
@@ -37,9 +37,12 @@ comp_plot_axsy <- function(group = spgp,
 
 
   dd <- dd[which(dd$year >= FY),]
-  my_col <-  scale_color_viridis_d(aesthetics = c("colour","fill"), begin = 0.3,end = 0.9,option = "B",direction = -1)
+  # my_col <-  scale_color_viridis_d(aesthetics = c("colour","fill"), begin = 0.3,end = 0.9,option = "B",direction = -1)
+  # 
   
-  
+  sphr <- dd %>% group_by(sp,yr) %>% 
+    summarise(.,sphrv = sum(mean))
+  source("functions/palette.R")
   for(i in 1:nrow(dd)){
       ss = dd[i,"sp"]
      yy = dd[i,"yr"]
@@ -49,7 +52,7 @@ comp_plot_axsy <- function(group = spgp,
     d = dd[i,"d"]
     dd[i,"raw_count"] <- raw[d,ss,yy]
     dd[i,"raw_pd"] <- raw[d,ss,yy]/sum(raw[,ss,yy])
-    
+    dd[i,"raw_harv"] <- dd[i,"raw_pd"]*sphr[which(sphr$sp == ss & sphr$yr == yy),"sphrv"]
   }
   
   
@@ -58,32 +61,55 @@ comp_plot_axsy <- function(group = spgp,
 # part counts to plot ---------------------------------------------------
 
   
-  ulim = max(dd$uci)
-  ddb = dd
-  for(ss in 1:nspecies){
-    ws = which(ddb$sp == ss)
-    ddb[ws,"partsplot"] <- (ddb[ws,"nparts"]/max(ddb[ws,"nparts"]))*(ulim/2)
-    if(max(ddb[ws,"nparts"]) == 0){
-      ddb[ws,"partsplot"] <- 0
-      
+ # ulim = max(dd$uci)
+   ddb = dd
+  # for(ss in 1:nspecies){
+  #   ws = which(ddb$sp == ss)
+  #   ddb[ws,"partsplot"] <- (ddb[ws,"nparts"]/max(ddb[ws,"nparts"]))*(ulim/3)
+  #   if(max(ddb[ws,"nparts"]) == 0){
+  #     ddb[ws,"partsplot"] <- 0
+  # 
+  #   }
+  # ddb[ws,"partsplot"] <- (ddb[ws,"nparts"]/max(ddb[ws,"nparts"]))*(ulim/3)
+  # }
+
+  ddb = unique(ddb[,c("AOU","demo","year","nparts")])
+  
+  for(ii in 1:nrow(ddb)){
+    t_aou = ddb[ii,"AOU"]
+    t_d = ddb[ii,"demo"]
+    t_y = ddb[ii,"year"]
+    n = ddb[ii,"nparts"]
+    # if(n > 0){
+    #   print(paste(t_aou,t_d,t_y))
+    # }
+    t_tmp <- data.frame(AOU = rep(t_aou,n),
+                        demo = rep(t_d,n),
+                        year = rep(t_y,n))
+    
+    if(ii == 1){
+      ddb_plot = t_tmp
+    }else{
+      ddb_plot = bind_rows(ddb_plot,t_tmp)
     }
-  ddb[ws,"partsplot"] <- (ddb[ws,"nparts"]/max(ddb[ws,"nparts"]))*(ulim/2)
+    
+    
   }
   
-  ddb = unique(ddb[,c("AOU","demo","year","nparts","partsplot")])
-  ddbmx = tapply(ddb$partsplot,ddb$AOU,max)
-  if(any(is.na(ddbmx))){ddbmx[which(is.na(ddbmx))] <- 0}
-  wm = NULL
-  ddbmn = tapply(ddb$partsplot,ddb$AOU,min)
-  if(any(is.na(ddbmn))){ddbmn[which(is.na(ddbmn))] <- 0}
-  wmn = NULL
   
-  for(j in 1:length(ddbmx)){
-    wm[j] <- which(ddb$partsplot == ddbmx[j] & ddb$AOU == names(ddbmx)[j])[1]
-    wmn[j] <- which(ddb$partsplot == ddbmn[j] & ddb$AOU == names(ddbmn)[j])[1]
-  }
-  ddbm = ddb[c(wm,wmn),]
-  
+  # ddbmx = tapply(ddb$partsplot,ddb$AOU,max)
+  # if(any(is.na(ddbmx))){ddbmx[which(is.na(ddbmx))] <- 0}
+  # wm = NULL
+  # ddbmn = tapply(ddb$partsplot,ddb$AOU,min)
+  # if(any(is.na(ddbmn))){ddbmn[which(is.na(ddbmn))] <- 0}
+  # wmn = NULL
+  # 
+  # for(j in 1:length(ddbmx)){
+  #   wm[j] <- which(ddb$partsplot == ddbmx[j] & ddb$AOU == names(ddbmx)[j])[1]
+  #   wmn[j] <- which(ddb$partsplot == ddbmn[j] & ddb$AOU == names(ddbmn)[j])[1]
+  # }
+  # ddbm = ddb[c(wm,wmn),]
+  # 
   if(ndemog == 4){
   outggs <- list()
   length(outggs) <- nspecies
@@ -95,16 +121,17 @@ comp_plot_axsy <- function(group = spgp,
   
 for(pp in 1:length(outggs)){
   outgg = ggplot(data = dd,aes(x = year,y = mean,group = demo,fill = demo))+
-    geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = partsplot),fill = grey(0.7),alpha = 1,stat = "identity",width = 0.2)+
+    #geom_bar(data = ddb,inherit.aes = FALSE,aes(x = year,y = partsplot),fill = grey(0.7),alpha = 1,stat = "identity",width = 0.2)+
     #geom_point(aes(colour = demo),size = 0.5)+
+    geom_dotplot(data = ddb_plot,mapping = aes(x = year),drop = TRUE,binaxis = "x", stackdir = "up",method = "histodot",binwidth = 1,width = 0.3,inherit.aes = FALSE,fill = grDevices::grey(0.6),colour = grDevices::grey(0.6),alpha = 0.2,dotsize = 0.5)+
     geom_line(aes(colour = demo))+
-    geom_point(aes(x = year,y = raw_pd,colour = demo))+
+    geom_point(aes(x = year,y = raw_harv,colour = demo))+
     labs(title = paste0("Age and sex proportions ",prov," zn",zone," (mean and 95 CI)"))+
     geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.1)+
-    scale_y_continuous(limits = c(0,1))+
+    scale_y_continuous(limits = c(0,NA))+
     my_col+
     theme_classic()+
-    geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = partsplot,label = nparts),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
+    #geom_text_repel(data = ddbm,inherit.aes = FALSE,aes(x = year,y = partsplot,label = nparts),size = 3,colour = grey(0.2),alpha = 0.75,nudge_y = ulim*-0.1)+
     facet_wrap_paginate(facets = ~AOU+demo,nrow = 2,ncol = 2,scales = "free",page = pp)
   outggs[[pp]] <- outgg
 }

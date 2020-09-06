@@ -648,9 +648,12 @@ save(list = c("jdat","grps"),
 
 # MCMC loops --------------------------------------------------------------
 
+n_cores <- length(provs)
+cluster <- makeCluster(n_cores, type = "PSOCK")
+registerDoParallel(cluster)
 
 
-fullrun <- foreach(pr = provs2,
+fullrun <- foreach(pr = provs,
                    .packages = c("jagsUI","tidyverse"),
                    .inorder = FALSE,
                    .errorhandling = "pass") %dopar%
@@ -658,9 +661,6 @@ fullrun <- foreach(pr = provs2,
 
 #for(pr in provs2){
 # Set up parallel stuff
-n_cores <- length(zns)
-cluster <- makeCluster(n_cores, type = "PSOCK")
-registerDoParallel(cluster)
 
 
 for(z in 1:3){

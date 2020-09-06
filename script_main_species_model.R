@@ -216,9 +216,9 @@ nrow(allkill) == length(unique(allkill$uniperm))
 
 
 
- save(list = c("allkill"),
-      file = "data/allkill.RData")
- 
+ # save(list = c("allkill"),
+ #      file = "data/allkill.RData")
+ # 
  ######## sampling population sizes
 popsiz_s = merge(popsiz,provzone[,c("prov","provn")],by.x = "PRSAMP",by.y = "provn",all.x = T)
 popsiz_s = unique(popsiz_s)
@@ -292,7 +292,7 @@ outscse[which(outscse$BSEX %in% c("")),"BSEX"] <- "U"
 
 
 
-for(spgp in c("duck","goose","murre")){
+for(spgp in c("murre","duck","goose")[1:2]){
 ### begining of loop through provinces only engage this loop if running the full analysis
 ### for a single province and zone, skip the next 4 lines
 ### and enter something like the following (e.g., to run Ontario-zone 3)
@@ -414,7 +414,7 @@ for(spgp in c("duck","goose","murre")){
    
   for(z in zns){
 
-
+if(file.exists(paste("data/data",pr,z,spgp,"save.RData",sep = "_"))){
 load(paste("data/data",pr,z,spgp,"save.RData",sep = "_"))
 
 
@@ -484,10 +484,9 @@ if(class(out2) != "try-error"){
        file = paste("output/full harvest zip",pr,z,spgp,"alt mod.RData"))
   
 
-rm(list = "out2")
 
 }
-
+}
   }#z
 
 }#pr
@@ -1008,34 +1007,7 @@ jjcomp = jjcomp +1
 
 
   # 
-  # 
-  # jjhunter = 1
-  # hunter_list <- list()
-  # 
-  # 
-  # for(pr in provs2){
-  #   zns <- unique(period[which(period$pr == pr),"zo"])
-  #   for(z in zns){
-  #     #       if(file.exists(paste("output/full harvest",pr,z,spgp,"mod.RData"))){
-  #     # load(paste("output/full harvest",pr,z,spgp,"mod.RData"))
-  #       if(file.exists(paste("output/hunter_effects",pr,z,spgp,"alt mod.RData"))){
-  #         
-  #         load(paste("output/hunter_effects",pr,z,spgp,"alt mod.RData"))#        load(paste("output/full harvest caste time",pr,z,spgp,"mod.RData"))
-  #         
-  #         
-  #         
-  #         
-  #         
-  #         
-  #         hunter_list[[jjhunter]] <- comp_plot_hunter(prov = pr,zone = z)
-  #         
-  #         jjhunter = 1+jjhunter      
-  #       }
-  #       
-  #     rm(out3)   
-  #   
-  #   }
-  # }
+
 
   
   # plotting pdfs -----------------------------------------------------------
@@ -1044,13 +1016,7 @@ jjcomp = jjcomp +1
   
   asuf <- c("ZIP")
   
-#   pdf(paste0("output/sdhunter timeseries",asuf," ",spgp,".pdf"),
-#   width = 8,
-#   height = 6)
-# for(jj in 1:length(sdhunter_list)){
-#   print(sdhunter_list[[jj]])
-# }
-# dev.off()
+
 
 
   #asuf <- c(" alt")
