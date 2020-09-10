@@ -772,7 +772,7 @@ for(spgp in c("duck","goose","murre")){
     succ = sumkill[which(sumkill[,wsucc] == "Y"),]
     nsucc <- as.matrix(table(succ$caste,succ$year))
     
-    if(pr == "YT"){
+    if(pr %in% c("YT","NT")){
       nsucc <- (table(sumkill[,wsucc],sumkill$caste,sumkill$year))
       nsucc <- nsucc["Y",,]
     } 
