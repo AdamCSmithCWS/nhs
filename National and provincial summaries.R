@@ -493,30 +493,63 @@ nat_sums_a <- tmp_sp %>%
 zone_sums_c <- tmp_sp_demo %>%
   group_by(AOU,BAGE,prov,zone,year,.draw) %>%
   summarise(sum = sum(.value)) %>%
+  group_by(AOU,prov,zone,year,.draw) %>%
+  pivot_wider(names_from = BAGE,
+              values_from = sum) %>% 
+  group_by(AOU,prov,zone,year,.draw) %>%
+  summarise(rati = I/A) %>% 
   group_by(AOU,prov,zone,year) %>%
-  summarise(mean = mean(sum),
-            median = quantile(sum,0.5,names = FALSE),
-            lci = quantile(sum,0.025,names = FALSE),
-            uci = quantile(sum,0.975,names = FALSE))
+  summarise(mean = mean(rati),
+            median = quantile(rati,0.5,names = FALSE),
+            lci = quantile(rati,0.025,names = FALSE),
+            uci = quantile(rati,0.975,names = FALSE))
+
+
 
 prov_sums_c <- tmp_sp_demo %>%
   group_by(AOU,BAGE,prov,year,.draw) %>%
-  summarise(sum = sum(.value)) %>%
-  group_by(AOU,BAGE,prov,year) %>%
-  summarise(mean = mean(sum),
-            median = quantile(sum,0.5,names = FALSE),
-            lci = quantile(sum,0.025,names = FALSE),
-            uci = quantile(sum,0.975,names = FALSE))
+  summarise(sum = sum(.value)) %>%  
+  group_by(AOU,prov,year,.draw) %>%
+  pivot_wider(names_from = BAGE,
+              values_from = sum) %>% 
+  group_by(AOU,prov,year,.draw) %>%
+  summarise(rati = I/A) %>% 
+  group_by(AOU,prov,year) %>%
+  summarise(mean = mean(rati),
+            median = quantile(rati,0.5,names = FALSE),
+            lci = quantile(rati,0.025,names = FALSE),
+            uci = quantile(rati,0.975,names = FALSE))
+
+  # group_by(AOU,BAGE,prov,year,.draw) %>%
+  # summarise(sum = sum(.value)) %>%
+  # group_by(AOU,BAGE,prov,year) %>%
+  # summarise(mean = mean(sum),
+  #           median = quantile(sum,0.5,names = FALSE),
+  #           lci = quantile(sum,0.025,names = FALSE),
+  #           uci = quantile(sum,0.975,names = FALSE))
 
 
 nat_sums_c <- tmp_sp_demo %>%
   group_by(AOU,BAGE,year,.draw) %>%
-  summarise(sum = sum(.value)) %>%
-  group_by(AOU,BAGE,year) %>%
-  summarise(mean = mean(sum),
-            median = quantile(sum,0.5,names = FALSE),
-            lci = quantile(sum,0.025,names = FALSE),
-            uci = quantile(sum,0.975,names = FALSE))
+  summarise(sum = sum(.value)) %>%  
+  group_by(AOU,year,.draw) %>%
+  pivot_wider(names_from = BAGE,
+              values_from = sum) %>% 
+  group_by(AOU,year,.draw) %>%
+  summarise(rati = I/A) %>% 
+  group_by(AOU,year) %>%
+  summarise(mean = mean(rati),
+            median = quantile(rati,0.5,names = FALSE),
+            lci = quantile(rati,0.025,names = FALSE),
+            uci = quantile(rati,0.975,names = FALSE))
+
+
+  # summarise(sum = sum(.value)) %>%
+  # group_by(AOU,BAGE,year) %>%
+  # summarise(mean = mean(sum),
+  #           median = quantile(sum,0.5,names = FALSE),
+  #           lci = quantile(sum,0.025,names = FALSE),
+  #           uci = quantile(sum,0.975,names = FALSE))
 
 
 # age and sex harvest --------------------------------------------------------------
