@@ -220,9 +220,9 @@ allkill$caste = factor(allkill$CASTE,
                        levels = c("A","B","D","E"))
 
 
-
-save(list = c("allkill"),
-     file = "data/allkill.RData")
+# 
+# save(list = c("allkill"),
+#      file = "data/allkill.RData")
 
 ######## sampling population sizes
 popsiz_s = merge(popsiz,provzone[,c("prov","provn")],by.x = "PRSAMP",by.y = "provn",all.x = T)
@@ -528,7 +528,12 @@ if(wk == "MURRK"){
 sumkill[,ws] <- factor(sumkill[,ws],levels = c("N","Y"),ordered = TRUE)
 #
   for(y in 1:nyears){
-    succt <- sumkill[which(sumkill[,"year"] == y),]
+    # if(pr %in% c("YT","NT")){
+    #   nsucc <- (table(sumkill[,wsucc],sumkill$caste,sumkill$year))
+    #   nsucc <- nsucc["Y",,]
+    # } 
+    
+        succt <- sumkill[which(sumkill[,"year"] == y),]
 nsucct <- as.matrix(table(succt$caste,succt[,ws]))
 
   nsucc[i,castes,y] <- nsucct[,"Y"]
@@ -542,9 +547,13 @@ npotential <- as.matrix(table(sumkill$caste,sumkill$year))
 
 
 sumkill_active = sumkill[which(sumkill[,wact] == "Y"),]
-
-nactive <- as.matrix(table(sumkill_active$caste,sumkill_active$year))
-
+nactive <- (table(sumkill_active$caste,sumkill_active$year))
+if(pr %in% c("YT","NT")){
+  #nactive <- array(NA,dim = c(length(castes),nyears))
+  nactive <- (table(sumkill[,wact],sumkill$caste,sumkill$year))
+  nactive <- nactive["Y",,]
+   }
+  
 for(i in 1:ngroups){
   print(grps[i])
 print(nsucc[i,,]/nactive)

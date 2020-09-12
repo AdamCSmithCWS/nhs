@@ -61,6 +61,10 @@ pubEsts_species_all[which(is.na(pubEsts_species_all$prov)),"prov"] <- "Canada"
 names(pubEsts_age_sex_all) <- c("sp","species","prov","zone","year","age_ratio")
 pubEsts_age_sex_all[which(is.na(pubEsts_age_sex_all$prov)),"prov"] <- "Canada"
 
+pubEsts_age_sex_all <- pubEsts_age_sex_all[which(pubEsts_age_sex_all$year > 1975),]
+pubEsts_species_all <- pubEsts_species_all[which(pubEsts_species_all$year > 1975),]
+pubEsts_simple_all <- pubEsts_simple_all[which(pubEsts_simple_all$year > 1975),]
+
 
 species_web_names = unique(pubEsts_species_all[,c("sp","species")])
 

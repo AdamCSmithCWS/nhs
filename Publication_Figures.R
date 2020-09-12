@@ -60,6 +60,10 @@ pubEsts_species_all[which(is.na(pubEsts_species_all$prov)),"prov"] <- "Canada"
 names(pubEsts_age_sex_all) <- c("sp","species","prov","zone","year","age_ratio")
 pubEsts_age_sex_all[which(is.na(pubEsts_age_sex_all$prov)),"prov"] <- "Canada"
 
+pubEsts_age_sex_all <- pubEsts_age_sex_all[which(pubEsts_age_sex_all$year > 1975),]
+pubEsts_species_all <- pubEsts_species_all[which(pubEsts_species_all$year > 1975),]
+pubEsts_simple_all <- pubEsts_simple_all[which(pubEsts_simple_all$year > 1975),]
+
 
 species_web_names = unique(pubEsts_species_all[,c("sp","species")])
 
@@ -157,53 +161,53 @@ nat_sums_b <- left_join(nat_sums_b,provs,by = "prov")
 zone_sums_b <- left_join(zone_sums_b,provs,by = "prov")
 
 sums_b <- bind_rows(nat_sums_b,prov_sums_b)
-zone_sums_b <- left_join(zone_sums_b,species_web_names)
 
 names(pubEsts_simple_all) <- c("var","name","province","zone","resid","year","mean","sd","lci","uci","model")
 pubEsts_simple_all1 = filter(pubEsts_simple_all,is.na(zone))
 vrs = unique(pubEsts_simple_all1[,c("var","name")])
 
+zone_sums_b <- left_join(zone_sums_b,vrs,by = "var")
 sums_b <- left_join(sums_b,vrs,by = "var")
 both_b <- bind_rows(sums_b,pubEsts_simple_all1)
 zone_both_b <- bind_rows(zone_sums_b,pubEsts_simple_all[which(!is.na(pubEsts_simple_all$zone)),])
 
-
-
-# C tables ----------------------------------------------------------------
-
-names(pubEsts_age_sex_all) <- c("AOU","species","province","zone","year","mean","model")
-
-nat_sums_c$model <- "new"
-nat_sums_c$prov <- "Canada"
-prov_sums_c$model <- "new"
-zone_sums_c$model <- "new"
-
-prov_sums_c <- left_join(prov_sums_c,provs,by = "prov")
-nat_sums_c <- left_join(nat_sums_c,provs,by = "prov")
-zone_sums_c <- left_join(zone_sums_c,provs,by = "prov")
-
-sums_c <- bind_rows(nat_sums_c,prov_sums_c)
-names(species_web_names) <- c("AOU","species")
-sums_c <- left_join(sums_c,species_web_names)
-zone_sums_c <- left_join(zone_sums_c,species_web_names)
-
-sums_c <- filter(sums_c,BAGE == "I") #just the immature summaries to replicate the age ratios on the website
-zone_sums_c <- filter(zone_sums_c,BAGE == "I")
-zone_sums_c2 <- mutate(zone_sums_c,
-                       mean = mean/(1-mean),
-                       median = median/(1-median),
-                       lci = lci/(1-lci),
-                       uci = uci/(1-uci),
-                       .keep = "all")
-
-
-both_c <- bind_rows(sums_c,pubEsts_age_sex_all[which(is.na(pubEsts_age_sex_all$zone)),])
-zone_both_c <- bind_rows(zone_sums_c2,pubEsts_age_sex_all[which(!is.na(pubEsts_age_sex_all$zone)),])
-
-### not totally sure why there are na values in the species columns...
-both_c <- both_c[which(!is.na(both_c$species)),]
-zone_both_c <- zone_both_c[which(!is.na(zone_both_c$species)),]
-
+# 
+# 
+# # C tables ----------------------------------------------------------------
+# 
+# names(pubEsts_age_sex_all) <- c("AOU","species","province","zone","year","mean","model")
+# 
+# nat_sums_c$model <- "new"
+# nat_sums_c$prov <- "Canada"
+# prov_sums_c$model <- "new"
+# zone_sums_c$model <- "new"
+# 
+# prov_sums_c <- left_join(prov_sums_c,provs,by = "prov")
+# nat_sums_c <- left_join(nat_sums_c,provs,by = "prov")
+# zone_sums_c <- left_join(zone_sums_c,provs,by = "prov")
+# 
+# sums_c <- bind_rows(nat_sums_c,prov_sums_c)
+# names(species_web_names) <- c("AOU","species")
+# sums_c <- left_join(sums_c,species_web_names)
+# zone_sums_c <- left_join(zone_sums_c,species_web_names)
+# 
+# sums_c <- filter(sums_c,BAGE == "I") #just the immature summaries to replicate the age ratios on the website
+# zone_sums_c <- filter(zone_sums_c,BAGE == "I")
+# zone_sums_c2 <- mutate(zone_sums_c,
+#                        mean = mean/(1-mean),
+#                        median = median/(1-median),
+#                        lci = lci/(1-lci),
+#                        uci = uci/(1-uci),
+#                        .keep = "all")
+# 
+# 
+# both_c <- bind_rows(sums_c,pubEsts_age_sex_all[which(is.na(pubEsts_age_sex_all$zone)),])
+# zone_both_c <- bind_rows(zone_sums_c2,pubEsts_age_sex_all[which(!is.na(pubEsts_age_sex_all$zone)),])
+# 
+# ### not totally sure why there are na values in the species columns...
+# both_c <- both_c[which(!is.na(both_c$species)),]
+# zone_both_c <- zone_both_c[which(!is.na(zone_both_c$species)),]
+# 
 
 
 
@@ -250,11 +254,6 @@ print(p1+p2+p3+p4)
 dev.off()
 
 
-p2 = plot_sel_general(dat = zone_both_b,
-                      g = "TOGOK",
-                      p = "ON",
-                      z = 2,
-                      spgp = "goose")
 # Figure 2 - Four example species harvest estimates ---------------------------------------
 
 # Mallard harvest in SK 3
@@ -292,3 +291,37 @@ pdf("Figures/Figure 2.pdf",
     height = 180/25)
 print(p1+p2+p3+p4)
 dev.off()
+
+
+
+
+# Figure 2 - Four example CVs of national species harvest estimates ---------------------------------------
+
+# Mallard harvest in SK 3
+# CAGO small harvest in MB 1
+# BSCO in NF 2
+# NOPI in SK 3 -changing precision and sample sizes
+
+source("Functions/comparison_CV_by_species.R")
+
+p1 = comp_plot_species_CV(dat = both_a,
+                 sp = c("Mallard",
+                        "American Black Duck",
+                        "Common Eider",
+                        "Black Scoter",
+                 "Lesser Snow Goose: white phase",
+                 "Canada Goose"),
+                 reg = "Canada",
+                 labs_inc = T,
+                 lbl_y = c(2000,1989),
+                 lab_sp = "American Black Duck")
+
+
+pdf("Figures/Figure 3.pdf",
+    width = 180/25,
+    height = 180/25)
+print(p1)
+dev.off()
+
+
+

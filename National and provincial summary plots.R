@@ -62,6 +62,12 @@ names(pubEsts_age_sex_all) <- c("sp","species","prov","zone","year","age_ratio")
 pubEsts_age_sex_all[which(is.na(pubEsts_age_sex_all$prov)),"prov"] <- "Canada"
 
 
+pubEsts_age_sex_all <- pubEsts_age_sex_all[which(pubEsts_age_sex_all$year > 1975),]
+pubEsts_species_all <- pubEsts_species_all[which(pubEsts_species_all$year > 1975),]
+pubEsts_simple_all <- pubEsts_simple_all[which(pubEsts_simple_all$year > 1975),]
+
+
+
 species_web_names = unique(pubEsts_species_all[,c("sp","species")])
 
 var_names_sim <- unique(pubEsts_simple_all[,c("var","name")])
@@ -383,15 +389,7 @@ names(species_web_names) <- c("AOU","species")
 sums_c <- left_join(sums_c,species_web_names)
 zone_sums_c <- left_join(zone_sums_c,species_web_names)
 
-sums_c <- filter(sums_c,BAGE == "I") #just the immature summaries to replicate the age ratios on the website
-zone_sums_c <- filter(zone_sums_c,BAGE == "I")
-zone_sums_c2 <- mutate(zone_sums_c,
-                         mean = mean/(1-mean),
-                         median = median/(1-median),
-                         lci = lci/(1-lci),
-                         uci = uci/(1-uci),
-                       .keep = "all")
-                      
+
 
 both_c <- bind_rows(sums_c,pubEsts_age_sex_all[which(is.na(pubEsts_age_sex_all$zone)),])
 zone_both_c <- bind_rows(zone_sums_c2,pubEsts_age_sex_all[which(!is.na(pubEsts_age_sex_all$zone)),])

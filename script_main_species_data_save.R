@@ -381,7 +381,7 @@ for(spgp in c("duck","goose","murre")){
   
   
   
-  for(pr in provs2){
+  for(pr in provs2[11:12]){
   
   
   
@@ -581,10 +581,10 @@ for(spgp in c("duck","goose","murre")){
     ### below can be commented out but prints the 
     ### observed proportional composition of the hunt by years (rows) and periods (columns)
     ### helps for checking that there are no missing data
-    # for(y in 1:nyears){
-    # print(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,],na.rm = F)),3))
-    # if(any(is.na(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,],na.rm = F)),3)))){print(y)}
-    #   }
+    for(y in 1:nyears){
+    print(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,],na.rm = F)),3))
+    if(any(is.na(round(rowSums(periodkill[,y,],na.rm = F)/sum(rowSums(periodkill[,y,],na.rm = F)),3)))){print(y)}
+      }
     
     
     
@@ -772,7 +772,10 @@ for(spgp in c("duck","goose","murre")){
     succ = sumkill[which(sumkill[,wsucc] == "Y"),]
     nsucc <- as.matrix(table(succ$caste,succ$year))
     
-    
+    if(pr %in% c("YT","NT")){
+      nsucc <- (table(sumkill[,wsucc],sumkill$caste,sumkill$year))
+      nsucc <- nsucc["Y",,]
+    } 
     
     sumkill_active = sumkill[which(sumkill[,wact] == "Y"),]
     
