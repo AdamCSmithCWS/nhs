@@ -5,6 +5,7 @@ jags_dim <- function(dim = 1,
                      cl = "Parameter",
                      dat = NULL){
   ##3 function to extract the indicator value of a multi-dimension jagsUI summary table
+  require(stringr)
   
 
   pat = paste0("(?<=",var,"\\[")

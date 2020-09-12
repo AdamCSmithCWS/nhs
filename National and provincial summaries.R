@@ -414,7 +414,7 @@ save(list = c("pubEsts_species_all",
 ############# figure out which tables should be produced and in what format
 
 
-load("national_provincial_summaries.RData")
+#load("national_provincial_summaries.RData")
 
 
 
@@ -483,6 +483,7 @@ nat_sums_a <- tmp_sp %>%
 
 
 # age ratios --------------------------------------------------------------
+
 
 
 zone_sums_c <- tmp_sp_demo %>%
