@@ -91,6 +91,7 @@ names(regs_other) <- others
 for(spgp in others){ 
   tmp <- read.csv(file = paste0("data/reg_",spgp,".csv"))
   names(tmp)[which(names(tmp) == "QC")] <- "PQ"
+  names(tmp)[which(names(tmp) == "YK")] <- "YT"
   regs_other[[spgp]] <- tmp
 }
 
@@ -560,6 +561,62 @@ nat_sums_c <- tmp_sp_demo %>%
 # saving the summarized files ---------------------------------------------
 
 
+# sex ratios --------------------------------------------------------------
+
+
+
+zone_sums_c2 <- tmp_sp_demo %>%
+  filter(BSEX %in% c("F","M")) %>% 
+  group_by(AOU,BSEX,prov,zone,year,.draw) %>%
+  summarise(sum = sum(.value)) %>%
+  group_by(AOU,prov,zone,year,.draw) %>%
+  pivot_wider(names_from = BSEX,
+              values_from = sum) %>% 
+  group_by(AOU,prov,zone,year,.draw) %>%
+  summarise(rati = F/M) %>% 
+  group_by(AOU,prov,zone,year) %>%
+  summarise(mean = mean(rati),
+            median = quantile(rati,0.5,names = FALSE),
+            lci = quantile(rati,0.025,names = FALSE),
+            uci = quantile(rati,0.975,names = FALSE))
+
+
+
+prov_sums_c2 <- tmp_sp_demo %>%
+  filter(BSEX %in% c("F","M")) %>% 
+  group_by(AOU,BSEX,prov,year,.draw) %>%
+  summarise(sum = sum(.value)) %>%  
+  group_by(AOU,prov,year,.draw) %>%
+  pivot_wider(names_from = BSEX,
+              values_from = sum) %>% 
+  group_by(AOU,prov,year,.draw) %>%
+  summarise(rati = F/M) %>% 
+  group_by(AOU,prov,year) %>%
+  summarise(mean = mean(rati),
+            median = quantile(rati,0.5,names = FALSE),
+            lci = quantile(rati,0.025,names = FALSE),
+            uci = quantile(rati,0.975,names = FALSE))
+
+
+
+nat_sums_c2 <- tmp_sp_demo %>%
+  filter(BSEX %in% c("F","M")) %>% 
+  group_by(AOU,BSEX,year,.draw) %>%
+  summarise(sum = sum(.value)) %>%  
+  group_by(AOU,year,.draw) %>%
+  pivot_wider(names_from = BSEX,
+              values_from = sum) %>% 
+  group_by(AOU,year,.draw) %>%
+  summarise(rati = F/M) %>% 
+  group_by(AOU,year) %>%
+  summarise(mean = mean(rati),
+            median = quantile(rati,0.5,names = FALSE),
+            lci = quantile(rati,0.025,names = FALSE),
+            uci = quantile(rati,0.975,names = FALSE))
+
+
+
+
 
 save(list = c("nat_sums_a",
               "prov_sums_a",
@@ -569,7 +626,10 @@ save(list = c("nat_sums_a",
               "zone_sums_b",
               "nat_sums_c",
               "prov_sums_c",
-              "zone_sums_c"),
+              "zone_sums_c",
+              "nat_sums_c2",
+              "prov_sums_c2",
+              "zone_sums_c2"),
      file = "data/Posterior_summaries.RData")
 
 

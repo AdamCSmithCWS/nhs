@@ -392,7 +392,7 @@ zone_sums_c <- left_join(zone_sums_c,species_web_names)
 
 
 both_c <- bind_rows(sums_c,pubEsts_age_sex_all[which(is.na(pubEsts_age_sex_all$zone)),])
-zone_both_c <- bind_rows(zone_sums_c2,pubEsts_age_sex_all[which(!is.na(pubEsts_age_sex_all$zone)),])
+zone_both_c <- bind_rows(zone_sums_c,pubEsts_age_sex_all[which(!is.na(pubEsts_age_sex_all$zone)),])
 
 ### not totally sure why there are na values in the species columns...
 both_c <- both_c[which(!is.na(both_c$species)),]
@@ -426,35 +426,37 @@ for(pp in 1:length(ttt)){
 dev.off()
 
 
+
+
+
+ttt = comp_plot_species(dat = both_c,reg = "Canada",sp = sp_vars[which(sp_vars$group == "diving_ducks"),"species"])
+pdf(file = "Figures/National_diving_duck_age_ratios.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+ttt = comp_plot_species(dat = both_c,reg = "Canada",
+                        sp = sp_vars[which(sp_vars$group == "sea_ducks"),"species"])
+pdf(file = "Figures/National_sea_duck_age_ratios.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+ttt = comp_plot_species(dat = both_c,reg = "Canada",
+                        sp = sp_vars[which(sp_vars$group == "puddle_ducks"),"species"])
+pdf(file = "Figures/National_puddle_duck_age_ratios.pdf",width = 8.5,height = 11)
+for(pp in 1:length(ttt)){
+  print(ttt[[pp]])
+}
+dev.off()
+
+
+
+
 ttt = comp_plot_species(dat = both_c,reg = "Canada",sp = sp_vars[which(sp_vars$source == "goose"),"species"])
 pdf(file = "Figures/National_goose_age_ratios.pdf",width = 8.5,height = 11)
-for(pp in 1:length(ttt)){
-  print(ttt[[pp]])
-}
-dev.off()
-
-
-
-ttt = comp_plot_species_CV(dat = both_c)
-
-pdf(file = "Figures/species_age_ratios_CV.pdf",width = 8.5,height = 11)
-for(pp in 1:length(ttt)){
-  print(ttt[[pp]])
-}
-dev.off()
-
-ttt = comp_plot_species_CV(dat = both_c,reg = "Canada",sp = sp_vars[which(sp_vars$source == "duck"),"species"])
-
-pdf(file = "Figures/national_duck_age_ratios_CV.pdf",width = 8.5,height = 11)
-for(pp in 1:length(ttt)){
-  print(ttt[[pp]])
-}
-dev.off()
-
-
-ttt = comp_plot_species_CV(dat = both_c,reg = "Canada",sp = sp_vars[which(sp_vars$source == "goose"),"species"])
-
-pdf(file = "Figures/national_goose_age_ratios_CV.pdf",width = 8.5,height = 11)
 for(pp in 1:length(ttt)){
   print(ttt[[pp]])
 }
