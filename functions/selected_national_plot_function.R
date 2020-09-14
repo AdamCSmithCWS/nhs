@@ -1,7 +1,7 @@
 ### 
 
 
-plot_sel_general <- function(dat = both_b,
+plot_sel_national <- function(dat = both_b,
                               g = "TODUK",
                         p = "Canada",
                         z = NULL,

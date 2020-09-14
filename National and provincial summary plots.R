@@ -112,7 +112,7 @@ source("functions/comparison_simple.R")
 source("functions/comparison_by_species.R")
 source("functions/comparison_CV_by_species.R")
 
-
+load("data/allkill.RData")
 
 
 
@@ -429,7 +429,12 @@ dev.off()
 
 
 
-ttt = comp_plot_species(dat = both_c,reg = "Canada",sp = sp_vars[which(sp_vars$group == "diving_ducks"),"species"])
+ttt = comp_plot_species(dat = both_c,reg = "Canada",sp = sp_vars[which(sp_vars$group == "diving_ducks"),"species"],
+                        add_samplesize = FALSE,
+                        add_nwings = TRUE,
+                        nwing_scale = 0.1)
+
+
 pdf(file = "Figures/National_diving_duck_age_ratios.pdf",width = 8.5,height = 11)
 for(pp in 1:length(ttt)){
   print(ttt[[pp]])
@@ -437,7 +442,10 @@ for(pp in 1:length(ttt)){
 dev.off()
 
 ttt = comp_plot_species(dat = both_c,reg = "Canada",
-                        sp = sp_vars[which(sp_vars$group == "sea_ducks"),"species"])
+                        sp = sp_vars[which(sp_vars$group == "sea_ducks"),"species"],
+                        add_samplesize = FALSE,
+                        add_nwings = TRUE,
+                        nwing_scale = 0.1)
 pdf(file = "Figures/National_sea_duck_age_ratios.pdf",width = 8.5,height = 11)
 for(pp in 1:length(ttt)){
   print(ttt[[pp]])
@@ -445,7 +453,10 @@ for(pp in 1:length(ttt)){
 dev.off()
 
 ttt = comp_plot_species(dat = both_c,reg = "Canada",
-                        sp = sp_vars[which(sp_vars$group == "puddle_ducks"),"species"])
+                        sp = sp_vars[which(sp_vars$group == "puddle_ducks"),"species"],
+                        add_samplesize = FALSE,
+                        add_nwings = TRUE,
+                        nwing_scale = 0.1)
 pdf(file = "Figures/National_puddle_duck_age_ratios.pdf",width = 8.5,height = 11)
 for(pp in 1:length(ttt)){
   print(ttt[[pp]])
