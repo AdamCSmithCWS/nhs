@@ -475,6 +475,38 @@ dev.off()
 
 
 
+
+
+
+# C alternate tables - sex ratio ----------------------------------------------------------------
+
+
+nat_sums_c2$model <- "new"
+nat_sums_c2$prov <- "Canada"
+prov_sums_c2$model <- "new"
+zone_sums_c2$model <- "new"
+
+prov_sums_c2 <- left_join(prov_sums_c2,provs,by = "prov")
+nat_sums_c2 <- left_join(nat_sums_c2,provs,by = "prov")
+zone_sums_c2 <- left_join(zone_sums_c2,provs,by = "prov")
+
+sums_c2 <- bind_rows(nat_sums_c2,prov_sums_c2)
+names(species_web_names) <- c("AOU","species")
+sums_c2 <- left_join(sums_c2,species_web_names)
+zone_sums_c2 <- left_join(zone_sums_c2,species_web_names)
+
+
+
+both_c <- bind_rows(sums_c,pubEsts_age_sex_all[which(is.na(pubEsts_age_sex_all$zone)),])
+zone_both_c <- bind_rows(zone_sums_c,pubEsts_age_sex_all[which(!is.na(pubEsts_age_sex_all$zone)),])
+
+### not totally sure why there are na values in the species columns...
+both_c <- both_c[which(!is.na(both_c$species)),]
+zone_both_c <- zone_both_c[which(!is.na(zone_both_c$species)),]
+
+
+
+
 # table output and generation ---------------------------------------------
 
 ############# consider if this is necessary. since everything is graphed.
