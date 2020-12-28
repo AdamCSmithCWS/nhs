@@ -68,7 +68,7 @@ casteslist = read.csv("data/caste table.csv",stringsAsFactors = F)
 #         #"JDLWA",
 #         "YRHUNT",
 #         #"JDHUN",
-        "WEEK")
+#        "WEEK")
 # #
 # for (y in years){
 #   dir.yr <- paste0(home.fold1,y)
@@ -384,3 +384,64 @@ write.csv(period.murre,"data/period.murre.csv",row.names = F)
 
 
 save.image(file = paste0("data/parts and harvest survey info",Y,".RData"))
+
+
+
+
+# compile harsum info -----------------------------------------------------
+harsums <- list()
+length(harsums) <- length(years)
+names(harsums) <- names(years)
+specieslevel = FALSE
+zone = TRUE
+
+  for (y in names(years)) {
+    tmp <- read.fwf(paste("m:/My Documents/Harvest Survey A146/HARSUM/HARSUM",y,".txt",sep = ""),widths = c(4,2,-1,1,1,6,7,7), col.names = c("year","prov","zone","caste","species","harvest","se"), colClasses = c("integer","character","integer","character","character","numeric","numeric"), na.strings = ".",strip.white = T)
+    if (specieslevel) {
+      spcl <- "specieslevelenglish"
+      tmp <- merge(tmp,sps[,c("specieslevelenglish","AOU")],by.x = "species",by.y = "AOU")
+      tmp2 <- tmp[which(tmp$prov %in% provs & tmp$species %in% sps[which(sps$specieslevelenglish %in% species),"AOU"]),] 
+      }else{
+        spcl <- "species"
+        tmp2 <- tmp
+      }
+    tmp2[,"var"] <- tmp2[,"se"]^2
+    tmp2 <- tmp2[which(!is.na(tmp2[,spcl])),]
+    
+    # if (zone == T) {tmphse <- unique(tmp2[,c("prov","zone",spcl)])}else{
+    #   tmphse <- unique(tmp2[,c("prov",spcl)])}
+    # for (sp in unique(tmp2[,spcl])) {
+    #   tmp3 <- tmp2[which(tmp2[,spcl] == sp),]
+    #   for (p in unique(tmp3$prov)) {
+    #     tmp4a <- tmp3[which(tmp3$prov == p),]
+    #     if (zone == T) {
+    #       for (z in unique(tmp4a$zone)) {
+    #         tmp4 <- tmp4a[which(tmp4a$zone == z),]
+    #         
+    #         tmphse[which(tmphse$prov == p & tmphse$zone == z & tmphse[,spcl] == sp),"harvest"] <-  sum(tmp4[,"harvest"],na.rm = T)
+    #         tmphse[which(tmphse$prov == p & tmphse$zone == z & tmphse[,spcl] == sp),"se"] <-  sqrt(sum(tmp4[,"var"],na.rm = T))
+    #       }#z
+    #     }else{
+    #       tmp4 <- tmp4a
+    #       tmphse[which(tmphse$prov == p & tmphse[,spcl] == sp),"harvest"] <-  sum(tmp4[,"harvest"],na.rm = T)
+    #       tmphse[which(tmphse$prov == p & tmphse[,spcl] == sp),"se"] <-  sqrt(sum(tmp4[,"var"],na.rm = T))
+    #       
+    #     }
+    #     
+    #   }#p
+    # }#sp
+    tmp2[,"year"] <- as.integer(y)
+    harsums[[y]] <-  tmp2
+    if (as.integer(y) == min(years)) {harsumdt <- tmp2} else {harsumdt <- rbind(harsumdt,tmp2)}
+  }#y
+write.csv(harsumdt,"data/harsum76_18.csv",row.names = FALSE)  
+  
+ 
+ 
+
+
+
+
+
+
+

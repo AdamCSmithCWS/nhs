@@ -99,6 +99,7 @@ sim_vars <- read.csv("data/website_variable_names_in.csv")
 sp_vars <- read.csv("data/website_species_variable_names_in.csv")
 
 
+harsum = read.csv("data/harsum76_18.csv")
 
 
 load("data/Posterior_summaries.RData")
@@ -350,31 +351,13 @@ dev.off()
 
 
 
-# Figure 4 - age ratio examples -------------------------------------------
-
-source("Functions/comparison_by_species.R")
+# Figure 5 - caste level estimates  -------------------------------------------
 
 
 
-p1 = comp_plot_species(dat = both_c,
-                       sp = c("Wood Duck",
-                              "American Black Duck",
-                              "Greater Scaup",
-                              "Canvasback",
-                              "Canada Goose: small races",
-                              "Ross' Goose"),
-                       reg = "Canada",
-                       labs_inc = T,
-                       lbl_y = c(1999,2014),
-                       lab_sp = "Ross' Goose",
-                       add_samplesize = FALSE,
-                       add_nwings = TRUE,
-                       samplesize_scale = 1,
-                       nwing_scale = 0.1,
-                       title_base = "Age Ratio (Immatures/Adults)")
 
 
-pdf("Figures/Figure 4.pdf",
+pdf("Figures/Figure 5.pdf",
     width = 180/25,
     height = 180/25)
 print(p1)
