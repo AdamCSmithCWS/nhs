@@ -100,7 +100,7 @@ sp_vars <- read.csv("data/website_species_variable_names_in.csv")
 
 
 harsum = read.csv("data/harsum76_18.csv")
-
+load("kill_caste_summary.RData")
 
 load("data/Posterior_summaries.RData")
 

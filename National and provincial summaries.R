@@ -616,8 +616,6 @@ nat_sums_c2 <- tmp_sp_demo %>%
 
 
 
-
-
 save(list = c("nat_sums_a",
               "prov_sums_a",
               "zone_sums_a",
@@ -631,6 +629,181 @@ save(list = c("nat_sums_a",
               "prov_sums_c2",
               "zone_sums_c2"),
      file = "data/Posterior_summaries.RData")
+
+
+
+# extra loop to store caste-level total harvest estimates -----------------
+
+for(pr in provs){
+  
+ 
+ 
+  for(z in 1:3){
+    if(file.exists(paste("output/full harvest zip",pr,z,"duck","alt mod.RData"))){
+      load(paste("output/full harvest zip",pr,z,"duck","alt mod.RData"))
+      
+      ### using tidybayes package functions to compile posterior samples into dataframes
+      tmp_killd <- out2$samples %>% gather_draws(kill_cy[c,y]) 
+      
+  
+      tmp_killd$var <- "TODUK_Caste"
+      tmp_killd$name <- "Total ducks harvest by caste"
+      
+      
+      ys <- data.frame(y = 1:jdat$nyears,
+                       year = years) 
+      
+      cs <- data.frame(c = 1:jdat$ncastes,
+                       caste = factor(c("A","B","D","E")[1:jdat$ncastes],
+                                      ordered = T,
+                                      levels = c("A","B","D","E")))
+      
+      
+      tmp_killd <- full_join(tmp_killd,ys,by = "y")
+      tmp_killd <- full_join(tmp_killd,cs,by = "c")
+      
+      tmp_killd$prov <- pr
+      tmp_killd$zone <- z
+      
+      tmp_kill <- tmp_killd
+
+    }
+    
+
+# Goose -------------------------------------------------------------------
+
+    
+    if(file.exists(paste("output/full harvest zip",pr,z,"goose","alt mod.RData"))){
+      load(paste("output/full harvest zip",pr,z,"goose","alt mod.RData"))
+      
+      ### using tidybayes package functions to compile posterior samples into dataframes
+      tmp_killg <- out2$samples %>% gather_draws(kill_cy[c,y]) 
+      
+      
+      tmp_killg$var <- "TOGOK_Caste"
+      tmp_killg$name <- "Total goose harvest by caste"
+      
+      
+      ys <- data.frame(y = 1:jdat$nyears,
+                       year = years) 
+      
+      cs <- data.frame(c = 1:jdat$ncastes,
+                       caste = factor(c("A","B","D","E")[1:jdat$ncastes],
+                                      ordered = T,
+                                      levels = c("A","B","D","E")))
+      
+      
+      tmp_killg <- full_join(tmp_killg,ys,by = "y")
+      tmp_killg <- full_join(tmp_killg,cs,by = "c")
+      
+      tmp_killg$prov <- pr
+      tmp_killg$zone <- z
+      
+      tmp_kill <- bind_rows(tmp_kill,tmp_killg)
+    }
+    
+    
+    
+    # Murres -------------------------------------------------------------------
+    
+    
+    if(file.exists(paste("output/full harvest zip",pr,z,"murre","alt mod.RData"))){
+      load(paste("output/full harvest zip",pr,z,"murre","alt mod.RData"))
+      
+      ### using tidybayes package functions to compile posterior samples into dataframes
+      tmp_killm <- out2$samples %>% gather_draws(kill_cy[c,y]) 
+      
+      
+      tmp_killm$var <- "TOMURK_Caste"
+      tmp_killm$name <- "Total murre harvest by caste"
+      
+      
+      ys <- data.frame(y = 1:jdat$nyears,
+                       year = years[c((length(years)-(jdat$nyears-1)):length(years))]) 
+      
+      cs <- data.frame(c = 1:jdat$ncastes,
+                       caste = factor(c("A","B","D","E")[1:jdat$ncastes],
+                                      ordered = T,
+                                      levels = c("A","B","D","E")))
+      
+      
+      tmp_killm <- full_join(tmp_killm,ys,by = "y")
+      tmp_killm <- full_join(tmp_killm,cs,by = "c")
+      
+      tmp_killm$prov <- pr
+      tmp_killm$zone <- z
+      
+      tmp_kill <- bind_rows(tmp_kill,tmp_killm)
+      
+      
+    }
+    
+    if(pr == "AB" & z == 1){
+    kill_caste <- tmp_kill
+    }else{
+      kill_caste <- bind_rows(kill_caste,tmp_kill)
+    }
+    
+    }#z
+}#pr
+
+
+#save(list = "kill_caste",file = "kill_caste.RData")
+#load("kill_caste.RData")
+
+
+
+zone_kill_caste <- kill_caste %>%
+  group_by(var,prov,zone,year,caste,.draw) %>%
+  summarise(sum = sum(.value)) %>%
+  group_by(var,prov,zone,year,caste) %>%
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE,na.rm = T),
+            lci = quantile(sum,0.025,names = FALSE,na.rm = T),
+            uci = quantile(sum,0.975,names = FALSE,na.rm = T))
+
+
+prov_kill_caste <- kill_caste %>%
+  group_by(var,prov,year,caste,.draw) %>%
+  summarise(sum = sum(.value)) %>%
+  group_by(var,prov,year,caste) %>%
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE,na.rm = T),
+            lci = quantile(sum,0.025,names = FALSE,na.rm = T),
+            uci = quantile(sum,0.975,names = FALSE,na.rm = T))
+
+
+nat_kill_caste <- kill_caste %>%
+  group_by(var,year,caste,.draw) %>%
+  summarise(sum = sum(.value)) %>%
+  group_by(var,year,caste) %>%
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE,na.rm = T),
+            lci = quantile(sum,0.025,names = FALSE,na.rm = T),
+            uci = quantile(sum,0.975,names = FALSE,na.rm = T))
+
+
+
+save(list = c("zone_kill_caste",
+              "prov_kill_caste",
+              "nat_kill_caste"),file = "kill_caste_summary.RData")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
