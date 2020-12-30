@@ -639,6 +639,8 @@ for(pr in provs){
  
  
   for(z in 1:3){
+   
+    
     if(file.exists(paste("output/full harvest zip",pr,z,"duck","alt mod.RData"))){
       load(paste("output/full harvest zip",pr,z,"duck","alt mod.RData"))
       
@@ -654,9 +656,9 @@ for(pr in provs){
                        year = years) 
       
       cs <- data.frame(c = 1:jdat$ncastes,
-                       caste = factor(c("A","B","D","E")[1:jdat$ncastes],
+                       caste = factor(c("D","B","A","E")[1:jdat$ncastes],
                                       ordered = T,
-                                      levels = c("A","B","D","E")))
+                                      levels = c("D","B","A","E")))
       
       
       tmp_killd <- full_join(tmp_killd,ys,by = "y")
@@ -666,8 +668,9 @@ for(pr in provs){
       tmp_killd$zone <- z
       
       tmp_kill <- tmp_killd
+      rm(list = "out2")
 
-    }
+    
     
 
 # Goose -------------------------------------------------------------------
@@ -688,9 +691,9 @@ for(pr in provs){
                        year = years) 
       
       cs <- data.frame(c = 1:jdat$ncastes,
-                       caste = factor(c("A","B","D","E")[1:jdat$ncastes],
+                       caste = factor(c("D","B","A","E")[1:jdat$ncastes],
                                       ordered = T,
-                                      levels = c("A","B","D","E")))
+                                      levels = c("D","B","A","E")))
       
       
       tmp_killg <- full_join(tmp_killg,ys,by = "y")
@@ -714,7 +717,7 @@ for(pr in provs){
       tmp_killm <- out2$samples %>% gather_draws(kill_cy[c,y]) 
       
       
-      tmp_killm$var <- "TOMURK_Caste"
+      tmp_killm$var <- "MURRK_Caste"
       tmp_killm$name <- "Total murre harvest by caste"
       
       
@@ -722,9 +725,9 @@ for(pr in provs){
                        year = years[c((length(years)-(jdat$nyears-1)):length(years))]) 
       
       cs <- data.frame(c = 1:jdat$ncastes,
-                       caste = factor(c("A","B","D","E")[1:jdat$ncastes],
+                       caste = factor(c("D","B","A","E")[1:jdat$ncastes],
                                       ordered = T,
-                                      levels = c("A","B","D","E")))
+                                      levels = c("D","B","A","E")))
       
       
       tmp_killm <- full_join(tmp_killm,ys,by = "y")
@@ -743,7 +746,7 @@ for(pr in provs){
     }else{
       kill_caste <- bind_rows(kill_caste,tmp_kill)
     }
-    
+    }
     }#z
 }#pr
 

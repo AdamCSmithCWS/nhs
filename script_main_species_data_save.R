@@ -212,7 +212,7 @@ nrow(allkill) == length(unique(allkill$uniperm))
 allkill$year = allkill$YEAR-(min(allkill$YEAR)-1)
 allkill$caste = factor(allkill$CASTE,
                        ordered = T,
-                       levels = c("A","B","D","E"))
+                       levels = c("D","B","A","E"))
 
 
 
