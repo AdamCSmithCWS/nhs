@@ -7,6 +7,21 @@
 
 
 
+### 
+
+# species changes for final harvest survey estimates ----------------------
+
+### recode all 1720 as 1722 (large race Canada Geese)
+### recode all 1691 as 1690 (white-phase lesser snow goose - drop blue phase)
+### Drop Black Brant - 1740
+### drop Eurasian Green-winged Teal - 1380
+### consider splitting eastern and western Harlequin ducks
+# 1550 = western, 1551 = eastern?
+### consider splitting eastern and western Barrow's Goldeneye
+# 1520 = western, 1521 = eastern?
+
+
+
 Y <- 2019
 years <- 1976:Y
 

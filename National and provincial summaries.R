@@ -135,8 +135,8 @@ for(pr in provs){
     regs[which(regs$YEAR < 1992), "SNIPK"] <- 0
   }### remove Snipe hunt per 1991
   if("MURRK" %in% grps){
-    regs[which(regs$YEAR >2012 | regs$YEAR < 2001), "MURRK"] <- 0
-  }### remove Snipe hunt per 1991
+    regs[which(regs$YEAR <2014 ), "MURRK"] <- 0
+  }### remove Murre hunt pre 2014
   reg_mat <- as.matrix(regs[,grps]) #to enter model as data ensuring that group-level annual estimates are never > 0 in years with no season.
   grps_f <- factor(grps,levels = grps,ordered = TRUE) #ensures consistent ordering of the harvested groups
   

@@ -289,7 +289,7 @@ dev.off()
 
 
 
-# Figure 3 - Four example CVs of national species harvest estimates ---------------------------------------
+# Figure 3 - Six example CVs of national species harvest estimates ---------------------------------------
 
 source("Functions/comparison_CV_by_species.R")
 
@@ -314,29 +314,35 @@ dev.off()
 
 
 
+# Figure 4 uncommon species including Species of Conservation Concern --------------------------------
 
-# Figure 4 - age ratio examples -------------------------------------------
-
+# national Harlequin Duck
+# national King Eider
+# national Common Eider
+# national Brant
+# Eastern Barrow's Goldeneye
+# Newfoundland and Labrador Surf Scoter
 source("Functions/comparison_by_species.R")
 
 
 
-p1 = comp_plot_species(dat = both_c,
-                          sp = c("Wood Duck",
-                                 "American Black Duck",
-                                 "Greater Scaup",
-                                 "Canvasback",
-                                 "Canada Goose: small races",
-                                 "Ross' Goose"),
-                          reg = "Canada",
-                          labs_inc = T,
-                          lbl_y = c(1999,2014),
-                          lab_sp = "Ross' Goose",
+p1 = comp_plot_species(dat = both_a,
+                       sp = c("Harlequin Duck",
+                              "Barrow's Goldeneye",
+                              "King Eider",
+                              "Common Eider",
+                              "Brant",
+                              "Surf Scoter"),
+                       reg = "Canada",
+                       labs_inc = T,
+                       lbl_y = c(2014,1986),
+                       lab_sp = "Harlequin Duck",
                        add_samplesize = FALSE,
                        add_nwings = TRUE,
                        samplesize_scale = 1,
-                       nwing_scale = 0.1,
-                       title_base = "Age Ratio (Immatures/Adults)")
+                       nwing_scale = 1,
+                       title_base = "Harvest",
+                       add_n_labs = FALSE)
 
 
 pdf("Figures/Figure 4.pdf",
@@ -348,8 +354,77 @@ dev.off()
 
 
 
+# Figure 5 - age ratio examples -------------------------------------------
 
-# Figure 5 - caste level estimates  -------------------------------------------
+
+
+
+p1 = comp_plot_species(dat = both_c,
+                       sp = c("Wood Duck",
+                              "American Black Duck",
+                              "Greater Scaup",
+                              "Canvasback",
+                              "Canada Goose: small races",
+                              "Ross' Goose"),
+                       reg = "Canada",
+                       labs_inc = T,
+                       lbl_y = c(1999,2014),
+                       lab_sp = "Ross' Goose",
+                       add_samplesize = FALSE,
+                       add_nwings = TRUE,
+                       samplesize_scale = 1,
+                       nwing_scale = 0.1,
+                       title_base = "Age Ratio (Immatures/Adults)")
+
+
+pdf("Figures/Figure 5.pdf",
+    width = 180/25,
+    height = 180/25)
+print(p1)
+dev.off()
+
+
+
+# FIgure 6 Murres ---------------------------------------------------------------
+
+
+
+p1 = comp_plot_species(dat = both_a,
+                       sp = c("Thick-billed Murre",
+                              "Common Murre"),
+                       reg = "Canada",
+                       labs_inc = T,
+                       lbl_y = c(2019,2014),
+                       lab_sp = "Thick-billed Murre",
+                       add_samplesize = FALSE,
+                       add_nwings = TRUE,
+                       samplesize_scale = 1,
+                       nwing_scale = 0.1,
+                       title_base = "Harvest",
+                       add_n_labs = TRUE,
+                       startYear = 2014,
+                       facet_scales = "fixed")
+### this needs to be fixed, currently murrk data are only summarized from simple model
+p2 = plot_sel_general(dat = both_b,
+                      g = "MURRK",
+                      p = "Canada",
+                      z = NULL,
+                      # labs_inc = TRUE,
+                      # lbl_y = c(1982,1995),
+                      spgp = "murre")
+
+## add 4th plot to show the species proportions
+# p3 = ???
+  
+pdf("Figures/Figure 6.pdf",
+    width = 180/25,
+    height = 180/25)
+print(p1)
+dev.off()
+
+
+
+# Figure Not Used - caste level estimates  -------------------------------------------
 ## not included because the relative precision of estimates from the two models doesn't vary much by caste
 
 harsum = read.csv("data/harsum76_18.csv")

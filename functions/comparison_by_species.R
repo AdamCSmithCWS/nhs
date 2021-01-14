@@ -13,7 +13,11 @@ comp_plot_species <- function(dat = both_a,
                               labs_inc = FALSE,
                               lbl_y = c(1990,1995),
                               lab_sp = NULL,
-                              unit = NULL){
+                              unit = NULL,
+                              add_n_labs = TRUE,
+                              startYear = NULL,
+                              facet_scales = "free"){
+  
   
   
   if(is.null(unit)){unit <- title_base}
@@ -136,12 +140,19 @@ comp_plot_species <- function(dat = both_a,
   if(!is.null(reg)){
     nreg <- length(reg)
     outggs <- vector(mode = "list",length = nreg)
+    
+    sps = unique(dat$species)
+    nspecies <- length(sps)
+    
+    
     if(by_zone){
-      my_facets <- facet_wrap(facets = ~species+zone,ncol = 3,scales = "free")
+      my_facets <- facet_wrap(facets = ~species+zone,ncol = 3,scales = facet_scales)
       
     }else{
-      my_facets <- facet_wrap(facets = ~species,ncol = 3,scales = "free")
-      
+      my_facets <- facet_wrap(facets = ~species,ncol = 3,scales = facet_scales)
+      if(nspecies == 1){
+        my_facets <- NULL
+      }
     }
     for(ppn in 1:length(reg)){
       pp = reg[ppn]
@@ -159,7 +170,10 @@ comp_plot_species <- function(dat = both_a,
         lbs$lbl <- paste(toupper(lbs$model),"model")
       }
       
+      if(!is.null(startYear)){datp <- filter(datp,year >= startYear)}
       
+      
+      #}
       outgg = ggplot(data = datp,aes(x = year,y = mean,group = mod,fill = mod))+
         geom_point(aes(colour = mod),size = 0.5)+
         geom_line(aes(colour = mod))+
@@ -175,20 +189,26 @@ comp_plot_species <- function(dat = both_a,
       #print(outgg)
       
       if(add_samplesize){
+        if(!is.null(startYear)){ss <- filter(ss,year >= startYear)}
+        
         outgg <- outgg + ggplot2::geom_dotplot(data = ss,mapping = ggplot2::aes(x = year),drop = TRUE,binaxis = "x", stackdir = "up",method = "histodot",binwidth = 1,width = 0.2,inherit.aes = FALSE,fill = grDevices::grey(0.6),colour = grDevices::grey(0.6),alpha = 0.2,dotsize = 0.3)+
-          annotate(geom = "text",x = 1990,y = 0,label = paste0("Each grey dot represents ",round(1/samplesize_scale,0)," responses"),colour = grey(0.4),size = 2)
+          annotate(geom = "text",x = max(c(1990,startYear)),y = 0,label = paste0("Each grey dot represents ",round(1/samplesize_scale,0)," responses"),colour = grey(0.4),size = 2, hjust = 0)
         
       }
       
       if(add_nwings){
-        outgg <- outgg + ggplot2::geom_dotplot(data = nwings,mapping = ggplot2::aes(x = year),drop = TRUE,binaxis = "x", stackdir = "up",method = "histodot",binwidth = 1,width = 0.2,inherit.aes = FALSE,fill = grDevices::grey(0.6),colour = grDevices::grey(0.6),alpha = 0.2,dotsize = 0.3)+
-          annotate(geom = "text",x = 1990,y = 0,label = paste0("Each grey dot represents ",round(1/nwing_scale,0)," parts"),colour = grey(0.4),size = 2)
+        if(!is.null(startYear)){nwings <- filter(nwings,year >= startYear)}
         
+        outgg <- outgg + ggplot2::geom_dotplot(data = nwings,mapping = ggplot2::aes(x = year),drop = TRUE,binaxis = "x", stackdir = "up",method = "histodot",binwidth = 1,width = 0.2,inherit.aes = FALSE,fill = grDevices::grey(0.6),colour = grDevices::grey(0.6),alpha = 0.2,dotsize = 0.3)
+         
+          if(add_n_labs){ 
+            outgg <- outgg + annotate(geom = "text",x = max(c(1990,startYear)),y = 0,label = paste0("Each grey dot represents ",round(1/nwing_scale,0)," parts"),colour = grey(0.4),size = 2, hjust = 0)
+          }
       }
       
       if(labs_inc){
         outgg <- outgg + geom_text_repel(data = lbs,aes(x = year,y = mean,label = lbl,group = mod,colour = mod),
-                                         nudge_y = max(datp$mean,na.rm = T)*0.2,nudge_x = -4,size = 3)
+                                         nudge_y = max(lbs$mean,na.rm = T)*0.4,nudge_x = diff(range(dat$year))*0.1,size = 3)
       }
       
       outggs[[ppn]] <- outgg
@@ -204,13 +224,19 @@ comp_plot_species <- function(dat = both_a,
     outggs <- vector(mode = "list",length = nspecies)
     
     if(by_zone){
-      my_facets <- facet_wrap(facets = ~province+zone,ncol = 3,scales = "free")
+      my_facets <- facet_wrap(facets = ~province+zone,ncol = 3,scales = facet_scales)
     }else{
-      my_facets <- facet_wrap(facets = ~province,ncol = 3,scales = "free")
+      my_facets <- facet_wrap(facets = ~province,ncol = 3,scales = facet_scales)
+    if(nspecies == 1){
+      my_facets <- NULL
     }
+    }
+    
 for(ppn in 1:nspecies){
   pp = sps[ppn]
   datp <- filter(dat,species == pp)
+  if(!is.null(startYear)){datp <- filter(datp,year >= startYear)}
+  
   outgg = ggplot(data = datp,aes(x = year,y = mean,group = mod,fill = mod))+
     geom_point(aes(colour = mod),size = 0.5)+
     geom_line(aes(colour = mod))+
