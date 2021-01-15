@@ -8,7 +8,8 @@ plot_sel_general <- function(dat = both_b,
                         spgp = "duck",
                         labs_inc = FALSE,
                         lbl_y = c(1990,1995),
-                        region_in_title = FALSE){
+                        region_in_title = FALSE,
+                        startYear = 1976){
   
   
   pr = as.character(unique(dat[which(dat$prov == p),"province"]))
@@ -16,7 +17,7 @@ plot_sel_general <- function(dat = both_b,
      dat <- filter(dat,
                    var %in% g,
                   province %in% pr,
-                  year > 1975)
+                  year > (startYear - 1))
     
       if(!is.null(z)){
        dat <- filter(dat,zone %in% z)
@@ -120,7 +121,8 @@ source("Functions/palette.R")
         #                 colour = grey(0.7),min.segment.length = 0,size = 3)+
         theme_classic()+
         theme(legend.position = "none",
-              title = element_text(size = 9))
+              title = element_text(size = 9))+
+        coord_cartesian(xlim = c(startYear, 2019))
       
       if(labs_inc){
         outgg <- outgg+geom_text_repel(data = lbs,aes(label = lbl,colour = mod),

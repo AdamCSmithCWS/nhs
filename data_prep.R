@@ -341,12 +341,16 @@ for(pr in "NF"){
   if(anyNA(pzones)){pzones <- pzones[-which(is.na(pzones))]}
   for(z in pzones){
     tmp <- outscse[which(outscse$PRHUNT == pr & outscse$ZOHUNT == z & outscse$AOU %in% sps[which(sps$group == "murre"),"AOU"]),]
-    
+    wkblank = data.frame(WEEK = as.integer(1:max(tmp$WEEK)),
+                         AOU_bl = 300)
+    tmp <- merge(tmp,wkblank,by = c("WEEK"),all.y = TRUE)
+    #tmp[which(is.na(tmp$AOU)),"AOU"]
     testm <- table(tmp[,c("AOU")],tmp[,c("WEEK")])
     
     wsums <- colSums(testm)
     wprops <- wsums/sum(wsums)
     
+    if(length(unique(names(testm[1,]))) != max(as.integer(names(testm[1,]))))
     ##### identify periods based on weeks with at least 5% of the parts across all years
     per1 <- 1
     per2 <- NA
