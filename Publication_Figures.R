@@ -402,12 +402,12 @@ p1 = comp_plot_species(dat = both_a,
                               "Common Murre"),
                        reg = "Canada",
                        labs_inc = T,
-                       lbl_y = c(2019,2014),
-                       lab_sp = "Thick-billed Murre",
+                       lbl_y = c(2015,2017),
+                       lab_sp = "Common Murre",
                        add_samplesize = FALSE,
                        add_nwings = TRUE,
                        samplesize_scale = 1,
-                       nwing_scale = 0.1,
+                       nwing_scale = 0.05,
                        title_base = "Harvest",
                        add_n_labs = TRUE,
                        startYear = 2014,
@@ -419,7 +419,12 @@ p2 = plot_sel_general(dat = both_b,
                       z = NULL,
                       # labs_inc = TRUE,
                       # lbl_y = c(1982,1995),
-                      spgp = "murre")
+                      spgp = "murre",
+                      startYear = 2014)
+### explore the species proportions by period in 2015 adn 2016. 
+### in these years, the Common Murre parts were less common in periods 4,5,6
+### how much of hte harvest occurred during those periods in those years?
+
 
 ## add 4th plot to show the species proportions
 # p3 = ???
