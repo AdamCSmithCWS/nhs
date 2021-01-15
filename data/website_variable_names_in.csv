@@ -6,7 +6,7 @@ CRANK,Crane harvest,kill_yg,other
 DAYOT,Non-waterfowl hunting days,days_y,other
 DAYWF,Waterfowl hunting days,days_y,duck
 DOVEK,Dove harvest,kill_yg,other
-MURRK,Murre harvest,kill_yg,murre
+MURRK,Murre harvest,kill_y,murre
 PIGEK,Band-tailed Pigeon harvest,kill_yg,other
 POTNTL,Potential hunters,,
 RAILK,Rail harvest,kill_yg,other

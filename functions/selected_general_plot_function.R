@@ -7,7 +7,8 @@ plot_sel_general <- function(dat = both_b,
                         z = NULL,
                         spgp = "duck",
                         labs_inc = FALSE,
-                        lbl_y = c(1990,1995)){
+                        lbl_y = c(1990,1995),
+                        region_in_title = FALSE){
   
   
   pr = as.character(unique(dat[which(dat$prov == p),"province"]))
@@ -93,6 +94,11 @@ plot_sel_general <- function(dat = both_b,
   
 source("Functions/palette.R")  
 
+  if(region_in_title){
+    ttle = paste(pr,gp)
+  }else{
+    ttle = gp
+  }
   
   if(labs_inc){
     lbs = dat[which(dat$model == "new" & dat$year == lbl_y[1] |
@@ -105,7 +111,7 @@ source("Functions/palette.R")
         geom_point(aes(colour = mod),size = 0.5)+
         geom_line(aes(colour = mod))+
         ylab("")+
-        labs(title = paste(pr,gp))+
+        labs(title = ttle)+
         geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
         scale_y_continuous(limits = c(0,NA),labels = scales::comma)+
         my_col+

@@ -200,6 +200,14 @@ both_c <- both_c[which(!is.na(both_c$species)),]
 zone_both_c <- zone_both_c[which(!is.na(zone_both_c$species)),]
 
 
+both_b$name <- gsub(both_b$name,pattern = " (total)",
+                    replacement = "", fixed = TRUE)
+
+both_b$name <- gsub(both_b$name,pattern = "ucks",
+                    replacement = "uck", fixed = TRUE)
+
+both_b$name <- gsub(both_b$name,pattern = "eese",
+                    replacement = "oose", fixed = TRUE)
 
 
 ###########################################################
@@ -244,7 +252,7 @@ p4 = plot_sel_general(dat = both_b,
 pdf("Figures/Figure 1.pdf",
     width = 180/25,
     height = 180/25)
-print(p1+p2+p3+p4)
+print(p1+p4+p2+p3)
 dev.off()
 
 
