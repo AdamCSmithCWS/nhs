@@ -711,6 +711,10 @@ for(spgp in c("goose","duck","murre")){
                                "SUTOGO",
                                "TOGOK",
                                "DAYWF"),
+                      murre = c("ACTIM",
+                                "SUMURR",
+                                "MURRK",
+                                "DAYMUR"),
                       stringsAsFactors = F) ## add ofther spgp columns to match
 
 plts = list()
@@ -1036,7 +1040,8 @@ jjcomp = jjcomp +1
     plt = simcomp_list[[pp]]
     for(j in 1:length(plt)){
       print(plt[[j]])
-    }}
+    }
+    }
   dev.off()
   
   
