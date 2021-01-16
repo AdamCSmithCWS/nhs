@@ -445,7 +445,9 @@ parms = c("NACTIVE_y",
           "pcomp_psy",
           "parrive",
           "pleave",
-          "psi")
+          "psi",
+          "pkill_py",
+          "mut")
 
 
 #adaptSteps = 200              # Number of steps to "tune" the samplers.
