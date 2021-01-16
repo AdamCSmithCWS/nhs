@@ -184,17 +184,45 @@ casteslist = read.csv("data/caste table.csv",stringsAsFactors = F)
 # 
 # save.image(file = "data/stored_SAS_download.RData")
 
+# calm[[as.character(2019)]]$YEAR <- 2019### one off temporary fix, should never be necessary again
+
 # Fix species AOU values incl Eiders --------------------------------------
 
 load("data/stored_SAS_download.RData")
+
+if(any(calm[[as.character(2019)]]$YEAR != 2019)){stop("ERROR murre calendar info for 2019 is wrong")}
 
 outscse[which(outscse$AOU == 1600),"AOU"] <- 1590 #cod for COEI changed in ~1990
 
 #fixing historical data with -weeks
 tof <- which(outscse$WEEK < 1) #small % of parts have negative weeks because the dates indicate hunting in August (range from -5 to -1)
 outscse[tof,"MONH"] <- 9 #this works because all tof have MONH == 8, it's just hunters getting the month wrong
-outscse[tof,"WEEK"] <- outscse[tof,"WEEK"]+6 #this just boosts each estimate into the next month
 
+first_day <- "09-01" ### No hunting in August, so all week definitions begin on September 1
+
+
+
+# setting all weeks based on days since Sept 1 ----------------------------
+
+outscse$date = as.Date(paste(outscse$YRHUNT,
+                          outscse$MONH,
+                          outscse$DAYH,sep = "-"),
+                    format = "%Y-%m-%d")
+
+for(y in years){
+min_day_y <- as.Date(paste(y,first_day,sep = "-"),format = "%Y-%m-%d")
+
+wy = which(outscse$YEAR == y)
+
+outscse[wy,"WEEK"] = as.integer(ceiling((outscse[wy,"date"]-(min_day_y-1))/7))
+
+}
+# outscse$WKdif = outscse$WEEK - outscse$WEEK2
+# 
+# 
+
+
+######################
 #define periods across all years
 
 zones <- 1:3
