@@ -514,7 +514,25 @@ for(spgp in c("duck","goose","murre")){
                           tmp$ZOHUNT == z),]
       nhunter_y[as.character(y)] <- length(unique(tmp1$PERMIT))
       
+      
+      # ### identify earliest day in the hunting season across all years
+      # tmp1[which(tmp1$MONH >12),"MONH"] = tmp1[which(tmp1$MONH >12),"MONH"]-12
+      # tmp1[which(tmp1$MONH < 9),"MONH"] = NA
+      # tmp1$date = as.Date(paste(tmp1$MONH,
+      #                           tmp1$DAYH,sep = "-"),
+      #                     format = "%m-%d")
+      # 
+      # 
+      # 
+      # if(y == years[[1]]){
+      #   min_day = min(tmp1$date,na.rm = TRUE)
+      # }else{
+      #   min_day = min(c(min_day,min(tmp1$date,na.rm = TRUE)))
+      # }
+      # 
     }
+    min_day <- "09-01" ### No hunting in August, so all week definitions begin on September 1
+              #substr(as.character(min_day),start = 6,stop = nchar(as.character(min_day)))
     
     periodkill = array(0,
                        dim = c(nperiods,nyears,max(nhunter_y)))
@@ -554,8 +572,9 @@ for(spgp in c("duck","goose","murre")){
         }
       }
       
+      min_day_y <- as.Date(paste(y,min_day,sep = "-"),format = "%Y-%m-%d")
       
-      tmp1$week = as.integer(ceiling((tmp1$date-(min(tmp1$date)-1))/7))
+      tmp1$week = as.integer(ceiling((tmp1$date-(min_day_y-1))/7))
       
       tmp1$hunterf = as.integer(factor(tmp1$PERMIT))
       
