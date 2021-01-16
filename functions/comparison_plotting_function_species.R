@@ -49,7 +49,7 @@ for(pp in 1:(ceiling(nspecies/9))){
     scale_y_continuous(limits = c(0,NA))+
     my_col+
     theme_classic()+
-    facet_wrap_paginate(facets = ~AOU,nrow = 3,ncol = 3,scales = "free",page = pp)
+    facet_wrap_paginate(facets = ~AOU,nrow = 2,ncol = 2,scales = "free",page = pp)
   outggs[[pp]] <- outgg
 }
   
