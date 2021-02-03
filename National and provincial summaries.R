@@ -651,8 +651,71 @@ nat_sums_asxy <- tmp_sp_demo %>%
 
 
 
+# Age specific harvests -------------------------------------------
 
 
+
+zone_sums_ag <- tmp_sp_demo %>%
+  group_by(AOU,BAGE,prov,zone,year,.draw) %>%
+  summarise(sum = sum(.value)) %>%
+  group_by(AOU,BAGE,prov,zone,year) %>%
+  summarise(mean = mean(.value),
+            median = quantile(.value,0.5,names = FALSE),
+            lci = quantile(.value,0.025,names = FALSE),
+            uci = quantile(.value,0.975,names = FALSE))
+
+prov_sums_ag <- tmp_sp_demo %>%
+  group_by(AOU,BAGE,prov,year,.draw) %>%
+  summarise(sum = sum(.value)) %>%
+  group_by(AOU,BAGE,prov,year) %>%
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE),
+            lci = quantile(sum,0.025,names = FALSE),
+            uci = quantile(sum,0.975,names = FALSE))
+
+
+nat_sums_ag <- tmp_sp_demo %>%
+  group_by(AOU,BAGE,year,.draw) %>%
+  summarise(sum = sum(.value)) %>%
+  group_by(AOU,BAGE,year) %>%
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE),
+            lci = quantile(sum,0.025,names = FALSE),
+            uci = quantile(sum,0.975,names = FALSE))
+
+
+
+# sex specific harvests -------------------------------------------
+
+
+
+zone_sums_sx <- tmp_sp_demo %>%
+  group_by(AOU,BSEX,prov,zone,year,.draw) %>%
+  summarise(sum = sum(.value)) %>%
+  group_by(AOU,BSEX,prov,zone,year) %>%
+  summarise(mean = mean(.value),
+            median = quantile(.value,0.5,names = FALSE),
+            lci = quantile(.value,0.025,names = FALSE),
+            uci = quantile(.value,0.975,names = FALSE))
+
+prov_sums_sx <- tmp_sp_demo %>%
+  group_by(AOU,BSEX,prov,year,.draw) %>%
+  summarise(sum = sum(.value)) %>%
+  group_by(AOU,BSEX,prov,year) %>%
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE),
+            lci = quantile(sum,0.025,names = FALSE),
+            uci = quantile(sum,0.975,names = FALSE))
+
+
+nat_sums_sx <- tmp_sp_demo %>%
+  group_by(AOU,BSEX,year,.draw) %>%
+  summarise(sum = sum(.value)) %>%
+  group_by(AOU,BSEX,year) %>%
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE),
+            lci = quantile(sum,0.025,names = FALSE),
+            uci = quantile(sum,0.975,names = FALSE))
 
 
 
@@ -681,7 +744,13 @@ save(list = c("nat_sums_a",
               "zone_sums_c2",
               "nat_sums_asxy",
               "prov_sums_asxy",
-              "zone_sums_asxy"),
+              "zone_sums_asxy",
+              "nat_sums_ag",
+              "prov_sums_ag",
+              "zone_sums_ag",
+              "nat_sums_sx",
+              "prov_sums_sx",
+              "zone_sums_sx"),
      file = "data/Posterior_summaries.RData")
 
 
