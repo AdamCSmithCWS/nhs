@@ -659,10 +659,10 @@ zone_sums_ag <- tmp_sp_demo %>%
   group_by(AOU,BAGE,prov,zone,year,.draw) %>%
   summarise(sum = sum(.value)) %>%
   group_by(AOU,BAGE,prov,zone,year) %>%
-  summarise(mean = mean(.value),
-            median = quantile(.value,0.5,names = FALSE),
-            lci = quantile(.value,0.025,names = FALSE),
-            uci = quantile(.value,0.975,names = FALSE))
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE),
+            lci = quantile(sum,0.025,names = FALSE),
+            uci = quantile(sum,0.975,names = FALSE))
 
 prov_sums_ag <- tmp_sp_demo %>%
   group_by(AOU,BAGE,prov,year,.draw) %>%
@@ -693,10 +693,10 @@ zone_sums_sx <- tmp_sp_demo %>%
   group_by(AOU,BSEX,prov,zone,year,.draw) %>%
   summarise(sum = sum(.value)) %>%
   group_by(AOU,BSEX,prov,zone,year) %>%
-  summarise(mean = mean(.value),
-            median = quantile(.value,0.5,names = FALSE),
-            lci = quantile(.value,0.025,names = FALSE),
-            uci = quantile(.value,0.975,names = FALSE))
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE),
+            lci = quantile(sum,0.025,names = FALSE),
+            uci = quantile(sum,0.975,names = FALSE))
 
 prov_sums_sx <- tmp_sp_demo %>%
   group_by(AOU,BSEX,prov,year,.draw) %>%
@@ -771,7 +771,7 @@ save(list = c("nat_sums_a",
 
 
 
-# extra loop to store caste-level total harvest estimates -----------------
+ # extra loop to store caste-level total harvest estimates -----------------
 
 for(pr in provs){
   
