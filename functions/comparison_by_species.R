@@ -16,7 +16,8 @@ comp_plot_species <- function(dat = both_a,
                               unit = NULL,
                               add_n_labs = TRUE,
                               startYear = NULL,
-                              facet_scales = "free"){
+                              facet_scales = "free",
+                              yup = NA){
   
   
   
@@ -177,10 +178,10 @@ comp_plot_species <- function(dat = both_a,
       outgg = ggplot(data = datp,aes(x = year,y = mean,group = mod,fill = mod))+
         geom_point(aes(colour = mod),size = 0.5)+
         geom_line(aes(colour = mod))+
-        labs(title = paste(pp,title_base))+
+        labs(x = "",title = paste(pp,title_base))+
         ylab(unit)+
         geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
-        scale_y_continuous(limits = c(0,NA))+
+        scale_y_continuous(limits = c(0,yup))+
         my_col+
         theme_classic()+
         theme(legend.position = "none",
@@ -240,9 +241,9 @@ for(ppn in 1:nspecies){
   outgg = ggplot(data = datp,aes(x = year,y = mean,group = mod,fill = mod))+
     geom_point(aes(colour = mod),size = 0.5)+
     geom_line(aes(colour = mod))+
-    labs(title = paste0(pp," Harvest (mean and 95 CI)"))+
+    labs(x = "",title = paste0(pp," Harvest (mean and 95 CI)"))+
     geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
-    scale_y_continuous(limits = c(0,NA))+
+    scale_y_continuous(limits = c(0,yup))+
     my_col+
     theme_classic()+
     theme(legend.position = "none")+
