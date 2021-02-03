@@ -553,10 +553,6 @@ nat_sums_c <- tmp_sp_demo %>%
   #           uci = quantile(sum,0.975,names = FALSE))
 
 
-# age and sex harvest --------------------------------------------------------------
-## should be the same as above but grouped by BAGE and BSEX, but with an additional tmp file that combines the demo proportions with the kill_ys values
-## this above combining step needs to happen in the previous script
-
 
 # saving the summarized files ---------------------------------------------
 
@@ -616,6 +612,61 @@ nat_sums_c2 <- tmp_sp_demo %>%
 
 
 
+
+
+
+# age and sex harvest --------------------------------------------------------------
+## should be the same as above but grouped by BAGE and BSEX, but with an additional tmp file that combines the demo proportions with the kill_ys values
+## this above combining step needs to happen in the previous script
+
+# Age and Sex specific harvests -------------------------------------------
+
+
+
+zone_sums_asxy <- tmp_sp_demo %>%
+  group_by(AOU,BSEX,BAGE,prov,zone,year) %>%
+  summarise(mean = mean(.value),
+            median = quantile(.value,0.5,names = FALSE),
+            lci = quantile(.value,0.025,names = FALSE),
+            uci = quantile(.value,0.975,names = FALSE))
+
+prov_sums_asxy <- tmp_sp_demo %>%
+  group_by(AOU,BSEX,BAGE,prov,year,.draw) %>%
+  summarise(sum = sum(.value)) %>%
+  group_by(AOU,BSEX,BAGE,prov,year) %>%
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE),
+            lci = quantile(sum,0.025,names = FALSE),
+            uci = quantile(sum,0.975,names = FALSE))
+
+
+nat_sums_asxy <- tmp_sp_demo %>%
+  group_by(AOU,BSEX,BAGE,year,.draw) %>%
+  summarise(sum = sum(.value)) %>%
+  group_by(AOU,BSEX,BAGE,year) %>%
+  summarise(mean = mean(sum),
+            median = quantile(sum,0.5,names = FALSE),
+            lci = quantile(sum,0.025,names = FALSE),
+            uci = quantile(sum,0.975,names = FALSE))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ # Export to files ---------------------------------------------------------
+
+
 save(list = c("nat_sums_a",
               "prov_sums_a",
               "zone_sums_a",
@@ -627,8 +678,27 @@ save(list = c("nat_sums_a",
               "zone_sums_c",
               "nat_sums_c2",
               "prov_sums_c2",
-              "zone_sums_c2"),
+              "zone_sums_c2",
+              "nat_sums_asxy",
+              "prov_sums_asxy",
+              "zone_sums_asxy"),
      file = "data/Posterior_summaries.RData")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
