@@ -256,6 +256,21 @@ print(p1+p4+p2+p3)
 dev.off()
 
 
+
+
+# full suite of graphs ----------------------------------------------------
+
+source("Functions/simple_plot_function_b.R")
+all1 = plot_simple_b()
+
+pdf("Figures/All_Figure_1.pdf",
+    width = 11,
+    height = 8.5)
+for(j in 1:length(all1)){
+  print(all1[[j]])
+}
+dev.off()
+
 # Figure 2 - Four example species harvest estimates ---------------------------------------
 
 # Mallard harvest in SK 3
@@ -295,6 +310,16 @@ print(p1+p2+p3+p4)
 dev.off()
 
 
+source("Functions/simple_plot_function_a.R")
+all1 = plot_simple_a()
+
+pdf("Figures/All_Figure_2.pdf",
+    width = 11,
+    height = 8.5)
+for(j in 1:length(all1)){
+  print(all1[[j]])
+}
+dev.off()
 
 
 # Figure 3 - Six example CVs of national species harvest estimates ---------------------------------------
@@ -392,7 +417,7 @@ print(p1)
 dev.off()
 
 
-
+ 
 
 
 
