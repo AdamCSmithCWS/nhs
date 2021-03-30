@@ -7,11 +7,6 @@ library(ggrepel)
 library(ggforce)
 library(patchwork)
 
-### caste level summaries
-### full summaries
-### harvest, activity, total group-level and species-level
-### age-sex summaries
-### age-sex raw data for website - 
 
 Y <- 2019
 FY = 1976
@@ -68,9 +63,11 @@ pubEsts_simple_all <- pubEsts_simple_all[which(pubEsts_simple_all$year > 1975),]
 species_web_names = unique(pubEsts_species_all[,c("sp","species")])
 
 var_names_sim <- unique(pubEsts_simple_all[,c("var","name")])
-# write.csv(var_names_sim,"data/website_variable_names.csv",row.names = F)
-# 
-# write.csv(species_web_names,"data/website_species_variable_names.csv",row.names = F)
+
+
+
+
+
 
 # load all output from species models and other models --------------------------
 
@@ -217,7 +214,7 @@ allkill <- allkill[which(allkill$PRHUNT %in% provs$prov[1:12]),]
 
 
 
-# Figure 1 - Four example general harvest estimates ---------------------------------------
+# Figure 2 - Four example general harvest estimates ---------------------------------------
 
 # Mallard harvest in SK 3
 # CAGO small harvest in MB 1
@@ -249,14 +246,14 @@ p4 = plot_sel_general(dat = both_b,
                       z = NULL,
                       spgp = "duck")
 
-pdf("Figures/Figure 1.pdf",
+pdf("Figures/Figure 2.pdf",
     width = 180/25,
     height = 180/25)
 print(p1+p4+p2+p3)
 dev.off()
 
 
-# Figure 2 - Four example species harvest estimates ---------------------------------------
+# Figure 3 - Four example species harvest estimates ---------------------------------------
 
 # Mallard harvest in SK 3
 # CAGO small harvest in MB 1
@@ -288,7 +285,7 @@ p4 = plot_sel_sp(dat = zone_both_a,
                  z = 3,
                  spgp = "duck")
 
-pdf("Figures/Figure 2.pdf",
+pdf("Figures/Figure 3.pdf",
     width = 180/25,
     height = 180/25)
 print(p1+p2+p3+p4)
@@ -297,7 +294,7 @@ dev.off()
 
 
 
-# Figure 3 - Six example CVs of national species harvest estimates ---------------------------------------
+# Figure 4 - Six example CVs of national species harvest estimates ---------------------------------------
 
 source("Functions/comparison_CV_by_species.R")
 
@@ -314,7 +311,7 @@ p1 = comp_plot_species_CV(dat = both_a,
                  lab_sp = "American Black Duck")
 
 
-pdf("Figures/Figure 3.pdf",
+pdf("Figures/Figure 4.pdf",
     width = 180/25,
     height = 180/25)
 print(p1)
@@ -322,7 +319,7 @@ dev.off()
 
 
 
-# Figure 4 uncommon species including Species of Conservation Concern --------------------------------
+# Figure 5 uncommon species including Species of Conservation Concern --------------------------------
 
 # national Harlequin Duck
 # national King Eider
@@ -353,7 +350,7 @@ p1 = comp_plot_species(dat = both_a,
                        add_n_labs = FALSE)
 
 
-pdf("Figures/Figure 4.pdf",
+pdf("Figures/Figure 5.pdf",
     width = 180/25,
     height = 180/25)
 print(p1)
@@ -362,7 +359,7 @@ dev.off()
 
 
 
-# Figure 5 - age ratio examples -------------------------------------------
+# Figure 6 - age ratio examples -------------------------------------------
 
 
 
@@ -385,7 +382,7 @@ p1 = comp_plot_species(dat = both_c,
                        title_base = "Age Ratio (Immatures/Adults)")
 
 
-pdf("Figures/Figure 5.pdf",
+pdf("Figures/Figure 6.pdf",
     width = 180/25,
     height = 180/25)
 print(p1)
@@ -396,7 +393,7 @@ dev.off()
 
 
 
-# Figure 6 Mallard age ratios ---------------------------------------------
+# Figure 7 Mallard age ratios ---------------------------------------------
 
 p1 = comp_plot_species(dat = both_c,
                        sp = "Mallard",
@@ -495,7 +492,7 @@ p6 = parts_by_harvest(sp = "Mallard",reg = c("Saskatchewan","Ontario"))
 
 
 
-pdf("Figures/Figure 6.pdf",
+pdf("Figures/Figure 7.pdf",
     width = 180/25,
     height = 180/25)
 print((p1[[1]]+p2[[1]])/
@@ -506,7 +503,7 @@ dev.off()
 
 
 
-# Figure 7 - age and sex specific harvests --------------------------------
+# Figure Alt - age and sex specific harvests --------------------------------
 source("Functions/Demographics_plot.R")
 
 nat_sums_ag$province = "Canada"
@@ -521,7 +518,7 @@ tmp = demogr_plot(plot_ag,
                   lab_sp = "Canada Goose")
 
 
-pdf("Figures/Figure 7.pdf",
+pdf("Figures/Figure alt1.pdf",
     width = 180/25,
     height = 180/25)
 print(tmp)
@@ -549,7 +546,7 @@ tmp = demogr_plot(plot_asxy,
                   lab_sp = "American Black Duck")
 
 
-pdf("Figures/Figure 7alt.pdf",
+pdf("Figures/Figure alt2.pdf",
     width = 180/25,
     height = 180/25)
 print(tmp)
@@ -574,7 +571,7 @@ tmp = demogr_plot(plot_asxy,
                   lab_sp = "Common Goldeneye")
 
 
-pdf("Figures/Figure 7alt2.pdf",
+pdf("Figures/Figure alt3.pdf",
     width = 180/25,
     height = 180/25)
 print(tmp)
@@ -601,7 +598,7 @@ tmp = demogr_plot(nat_sums_sx,
                   lab_sp = sp_plots[1])
 
 
-pdf("Figures/Figure 7alt3.pdf",
+pdf("Figures/Figure alt4.pdf",
     width = 180/25,
     height = 180/25)
 print(tmp)
@@ -626,143 +623,12 @@ tmp = demogr_plot(plot_ag,
                   lab_sp = sp_plots[2])
 
 
-pdf("Figures/Figure 7alt4.pdf",
+pdf("Figures/Figure alt5.pdf",
     width = 180/25,
     height = 180/25)
 print(tmp)
 
 dev.off()
-
-# 
-# # FIgure X Murres not used ---------------------------------------------------------------
-# 
-# 
-# 
-# p1 = comp_plot_species(dat = both_a,
-#                        sp = c("Thick-billed Murre",
-#                               "Common Murre"),
-#                        reg = "Canada",
-#                        labs_inc = T,
-#                        lbl_y = c(2015,2017),
-#                        lab_sp = "Common Murre",
-#                        add_samplesize = FALSE,
-#                        add_nwings = TRUE,
-#                        samplesize_scale = 1,
-#                        nwing_scale = 0.05,
-#                        title_base = "Harvest",
-#                        add_n_labs = TRUE,
-#                        startYear = 2014,
-#                        facet_scales = "fixed")
-# p2 = plot_sel_general(dat = both_b,
-#                       g = "MURRK",
-#                       p = "Canada",
-#                       z = NULL,
-#                       # labs_inc = TRUE,
-#                       # lbl_y = c(1982,1995),
-#                       spgp = "murre",
-#                       startYear = 2014)
-# ### explore the species proportions by period in 2015 adn 2016. 
-# ### in these years, the Common Murre parts were less common in periods 4,5,6
-# ### how much of hte harvest occurred during those periods in those years?
-# 
-# 
-# ## add 4th plot to show the species proportions
-# # p3 = ???
-# 
-# 
-# # Figure Not Used - caste level estimates  -------------------------------------------
-# ## not included because the relative precision of estimates from the two models doesn't vary much by caste
-# 
-# harsum = read.csv("data/harsum76_18.csv")
-# load("kill_caste_summary.RData")
-# 
-# 
-# harsum$variance = harsum$var
-# harsum$var = paste0(harsum$species,"_Caste")
-# harsum$mean = harsum$harvest
-# harsum$lci = harsum$harvest-(1.96*harsum$se)
-# harsum$lci[which(harsum$lci < 0)] <- 0
-# harsum$uci = harsum$harvest+(1.96*harsum$se)
-# harsum2 <- harsum %>% 
-#   select(var,prov,zone,year,caste,mean,lci,uci) %>% 
-#   filter(var %in% unique(zone_kill_caste$var),
-#          caste %in% c("D","B","A","E"),
-#          year > 1975)
-# #above filter drops murrk data because variable that should be MURRK_Caste in zone_kill_caste is called TOMURK_Caste
-# #done because Murre harvest info is not the focus of the paper, but should be fixed and explored
-# harsum2$model = "old"
-# harsum2$caste <- factor(harsum2$caste,
-#                                 ordered = T,
-#                                 levels = c("D","B","A","E"))
-# 
-# zone_kill_caste$model = "new"
-# zone_kill_caste$caste <- factor(zone_kill_caste$caste,
-#                                 ordered = T,
-#                                 levels = c("D","B","A","E")) 
-# zone_caste <- bind_rows(zone_kill_caste,
-#                         harsum2)
-# 
-# zone_caste <- left_join(zone_caste,provs,by = "prov")
-# 
-# 
-# source("Functions/selected_zone_caste_plot_function.R")
-# 
-# pdf("output/duck_caste_estimates.pdf")
-# for(prv in provs$prov[1:12]){
-#   
-# p1 <- vector(mode = "list",length = 4)
-# names(p1) <- c("D","B","A","E")
-# 
-# for(cc in c("D","B","A","E")){
-# try(p1[[cc]] <- plot_sel_sp_caste(dat = zone_caste,
-#                        v = "TODUK_Caste",
-#                        p = prv,
-#                        z = 1,
-#                        c = cc,
-#                        spgp = "duck"))
-#   
-# 
-# }
-# 
-# print((p1[[1]]+p1[[2]])/(p1[[3]]+p1[[4]]))
-# rm(list = "p1")
-# }
-# dev.off()
-# 
-# 
-# 
-# pdf("output/goose_caste_estimates.pdf")
-# for(prv in provs$prov[1:12]){
-#   
-#   p1 <- vector(mode = "list",length = 4)
-#   names(p1) <- c("D","B","A","E")
-#   
-#   for(cc in c("D","B","A","E")){
-#     try(p1[[cc]] <- plot_sel_sp_caste(dat = zone_caste,
-#                                       v = "TOGOK_Caste",
-#                                       p = prv,
-#                                       z = 1,
-#                                       c = cc,
-#                                       spgp = "goose"))
-#     
-#     
-#   }
-#   
-#   print((p1[[1]]+p1[[2]])/(p1[[3]]+p1[[4]]))
-#   rm(list = "p1")
-# }
-# dev.off()
-# 
-# 
-# 
-# # 
-# # pdf("Figures/Figure 5.pdf",
-# #     width = 180/25,
-# #     height = 180/25)
-# # print(p1)
-# # dev.off()
-# # 
-# 
 
 
 
