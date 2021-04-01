@@ -508,133 +508,133 @@ dev.off()
 
 
 
-
-# Figure Alt - age and sex specific harvests --------------------------------
-source("Functions/Demographics_plot.R")
-
-nat_sums_ag$province = "Canada"
-plot_ag <- left_join(nat_sums_ag,sp_vars,by = c("AOU" = "sp"))
-sp_plots = sp_vars[which(sp_vars$source == "goose"),"species"]
-sp_plots = sp_plots[-which(grepl(sp_plots,pattern = "Brant"))]
-tmp = demogr_plot(plot_ag,
-                    sp = sp_plots,
-                  add_nwings = TRUE,
-                  nwing_scale = 0.02,
-                  labs_inc = TRUE,
-                  lab_sp = "Canada Goose")
-
-
-pdf("Figures/Figure alt1.pdf",
-    width = 180/25,
-    height = 180/25)
-print(tmp)
-
-dev.off()
-
-
-
-
-nat_sums_asxy$province = "Canada"
-plot_asxy <- left_join(nat_sums_asxy,sp_vars,by = c("AOU" = "sp"))
-sp_plots = sp_vars[which(sp_vars$group == "puddle_ducks"),"species"]
-sp_plots = sp_plots[c(1,2,10,11)]
-
-tmp = demogr_plot(plot_asxy,
-                  reg = "Canada",
-                  sp = sp_plots,
-                  age = FALSE,
-                  sex = FALSE,
-                  lbl_y = c(1982,1985,1998,2006),
-                  both = TRUE,
-                  add_nwings = TRUE,
-                  nwing_scale = 0.02,
-                  labs_inc = TRUE,
-                  lab_sp = "American Black Duck")
-
-
-pdf("Figures/Figure alt2.pdf",
-    width = 180/25,
-    height = 180/25)
-print(tmp)
-
-dev.off()
-
-
-
-sp_plots = sp_vars[which(sp_vars$group == "sea_ducks"),"species"]
-sp_plots = sp_plots[c(4,6,1,2)]
-
-tmp = demogr_plot(plot_asxy,
-                  reg = "Canada",
-                  sp = sp_plots,
-                  age = FALSE,
-                  sex = FALSE,
-                  lbl_y = c(2005,1998,1985,1988),
-                  both = TRUE,
-                  add_nwings = TRUE,
-                  nwing_scale = 0.1,
-                  labs_inc = TRUE,
-                  lab_sp = "Common Goldeneye")
-
-
-pdf("Figures/Figure alt3.pdf",
-    width = 180/25,
-    height = 180/25)
-print(tmp)
-
-dev.off()
-
-
-
-nat_sums_sx$province = "Canada"
-nat_sums_sx <- left_join(nat_sums_sx,sp_vars,by = c("AOU" = "sp"))
-sp_plots = sp_vars[which(sp_vars$group == "puddle_ducks"),"species"]
-sp_plots = sp_plots[c(1,2,10,11)]
-
-tmp = demogr_plot(nat_sums_sx,
-                  reg = "Canada",
-                  sp = sp_plots,
-                  age = FALSE,
-                  sex = TRUE,
-                  lbl_y = c(1982,1985,1998,2006),
-                  both = FALSE,
-                  add_nwings = TRUE,
-                  nwing_scale = 0.01,
-                  labs_inc = TRUE,
-                  lab_sp = sp_plots[1])
-
-
-pdf("Figures/Figure alt4.pdf",
-    width = 180/25,
-    height = 180/25)
-print(tmp)
-
-dev.off()
-
-
-
-
-sp_plots = sp_vars[which(sp_vars$group == "puddle_ducks"),"species"]
-sp_plots = sp_plots[c(1,2,10,11)]
-tmp = demogr_plot(plot_ag,
-                  reg = "Canada",
-                  sp = sp_plots,
-                  age = TRUE,
-                  sex = FALSE,
-                  lbl_y = c(1982,1998),
-                  both = FALSE,
-                  add_nwings = TRUE,
-                  nwing_scale = 0.01,
-                  labs_inc = TRUE,
-                  lab_sp = sp_plots[2])
-
-
-pdf("Figures/Figure alt5.pdf",
-    width = 180/25,
-    height = 180/25)
-print(tmp)
-
-dev.off()
-
+# 
+# # Figure Alt - age and sex specific harvests --------------------------------
+# source("Functions/Demographics_plot.R")
+# 
+# nat_sums_ag$province = "Canada"
+# plot_ag <- left_join(nat_sums_ag,sp_vars,by = c("AOU" = "sp"))
+# sp_plots = sp_vars[which(sp_vars$source == "goose"),"species"]
+# sp_plots = sp_plots[-which(grepl(sp_plots,pattern = "Brant"))]
+# tmp = demogr_plot(plot_ag,
+#                     sp = sp_plots,
+#                   add_nwings = TRUE,
+#                   nwing_scale = 0.02,
+#                   labs_inc = TRUE,
+#                   lab_sp = "Canada Goose")
+# 
+# 
+# pdf("Figures/Figure alt1.pdf",
+#     width = 180/25,
+#     height = 180/25)
+# print(tmp)
+# 
+# dev.off()
+# 
+# 
+# 
+# 
+# nat_sums_asxy$province = "Canada"
+# plot_asxy <- left_join(nat_sums_asxy,sp_vars,by = c("AOU" = "sp"))
+# sp_plots = sp_vars[which(sp_vars$group == "puddle_ducks"),"species"]
+# sp_plots = sp_plots[c(1,2,10,11)]
+# 
+# tmp = demogr_plot(plot_asxy,
+#                   reg = "Canada",
+#                   sp = sp_plots,
+#                   age = FALSE,
+#                   sex = FALSE,
+#                   lbl_y = c(1982,1985,1998,2006),
+#                   both = TRUE,
+#                   add_nwings = TRUE,
+#                   nwing_scale = 0.02,
+#                   labs_inc = TRUE,
+#                   lab_sp = "American Black Duck")
+# 
+# 
+# pdf("Figures/Figure alt2.pdf",
+#     width = 180/25,
+#     height = 180/25)
+# print(tmp)
+# 
+# dev.off()
+# 
+# 
+# 
+# sp_plots = sp_vars[which(sp_vars$group == "sea_ducks"),"species"]
+# sp_plots = sp_plots[c(4,6,1,2)]
+# 
+# tmp = demogr_plot(plot_asxy,
+#                   reg = "Canada",
+#                   sp = sp_plots,
+#                   age = FALSE,
+#                   sex = FALSE,
+#                   lbl_y = c(2005,1998,1985,1988),
+#                   both = TRUE,
+#                   add_nwings = TRUE,
+#                   nwing_scale = 0.1,
+#                   labs_inc = TRUE,
+#                   lab_sp = "Common Goldeneye")
+# 
+# 
+# pdf("Figures/Figure alt3.pdf",
+#     width = 180/25,
+#     height = 180/25)
+# print(tmp)
+# 
+# dev.off()
+# 
+# 
+# 
+# nat_sums_sx$province = "Canada"
+# nat_sums_sx <- left_join(nat_sums_sx,sp_vars,by = c("AOU" = "sp"))
+# sp_plots = sp_vars[which(sp_vars$group == "puddle_ducks"),"species"]
+# sp_plots = sp_plots[c(1,2,10,11)]
+# 
+# tmp = demogr_plot(nat_sums_sx,
+#                   reg = "Canada",
+#                   sp = sp_plots,
+#                   age = FALSE,
+#                   sex = TRUE,
+#                   lbl_y = c(1982,1985,1998,2006),
+#                   both = FALSE,
+#                   add_nwings = TRUE,
+#                   nwing_scale = 0.01,
+#                   labs_inc = TRUE,
+#                   lab_sp = sp_plots[1])
+# 
+# 
+# pdf("Figures/Figure alt4.pdf",
+#     width = 180/25,
+#     height = 180/25)
+# print(tmp)
+# 
+# dev.off()
+# 
+# 
+# 
+# 
+# sp_plots = sp_vars[which(sp_vars$group == "puddle_ducks"),"species"]
+# sp_plots = sp_plots[c(1,2,10,11)]
+# tmp = demogr_plot(plot_ag,
+#                   reg = "Canada",
+#                   sp = sp_plots,
+#                   age = TRUE,
+#                   sex = FALSE,
+#                   lbl_y = c(1982,1998),
+#                   both = FALSE,
+#                   add_nwings = TRUE,
+#                   nwing_scale = 0.01,
+#                   labs_inc = TRUE,
+#                   lab_sp = sp_plots[2])
+# 
+# 
+# pdf("Figures/Figure alt5.pdf",
+#     width = 180/25,
+#     height = 180/25)
+# print(tmp)
+# 
+# dev.off()
+# 
 
 
