@@ -645,6 +645,12 @@ write.csv(outscse,file = "data/outscse_spec_comp_survey_data.csv",
 save.image(file = paste0("data/parts and harvest survey info",Y,".RData"))
 
 
+#annonymizing the survey response data
+load("data/allkill.RData")
+allkill <- allkill[which(allkill$PRHUNT %in% provs$prov[1:12]),]
+allkill <- select(allkill,-c(LATD,LOND,LATG,LONG,PERMIT,
+                             uniperm))
+write.csv(allkill,file = "data/allkill.csv",row.names = FALSE)
 
 
 

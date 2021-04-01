@@ -2,8 +2,14 @@
 #############################3
 ## script to summarize the zone level estimates into the national and provincial estimates
 
+## this script requires the output from the model_run scripts for all groups, models, and zones
+## we have included the output from this script in the archived repo
+## so users can explore the output from this script and re-create the figures in the 
+## paper
+
 ### WARNING: 
 ### This script is configured to run on a computer with a lot of memory, 
+### if desired, it is possible to modify this
 ### >120GB of RAM required (alternative configurations are possible, with adjustments to the code)
 ### the output of this script is stored in a relatively small (17MB) .RData file
 ### which is included in the repository and supplies the data necessary to 

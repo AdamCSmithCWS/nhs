@@ -1,0 +1,38 @@
+var,name,newvar,source
+ACTIOT,Active non-waterfowl hunters,NACTIVE_y,other
+ACTIWF,Active waterfowl hunters,NACTIVE_y,duck
+COOTK,Coot harvest,kill_yg,other
+CRANK,Crane harvest,kill_yg,other
+DAYOT,Non-waterfowl hunting days,days_y,other
+DAYWF,Waterfowl hunting days,days_y,duck
+DOVEK,Dove harvest,kill_yg,other
+MURRK,Murre harvest,kill_y,murre
+PIGEK,Band-tailed Pigeon harvest,kill_yg,other
+POTNTL,Potential hunters,,
+RAILK,Rail harvest,kill_yg,other
+SNIPK,Snipe harvest,kill_yg,other
+SUCOOT,Successful coots hunters,NSUCC_yg,other
+SUCRAN,Successful cranes hunters,NSUCC_yg,other
+SUDOVE,Successful doves hunters,NSUCC_yg,other
+SUMURR,Successful murres hunters ,NSUCC_yg,other
+SUPIGE,Successful band-tailed pigeons hunters,NSUCC_yg,other
+SURAIL,Successful rails hunters,NSUCC_yg,other
+SUSNIP,Successful snipe hunters,NSUCC_yg,other
+SUTODU,Successful ducks hunters (total),NSUCC_y,duck
+SUTOGO,Successful geese hunters (total),NSUCC_y,goose
+SUTOOT,Successful non-waterfowl hunters (total),NSUCC_y,other
+SUTOWF,Successful waterfowl hunters (total),,
+SUWOOD,Successful woodcock hunters,NSUCC_yg,other
+TODUK,Total ducks harvest,kill_y,duck
+TOGOK,Total geese harvest,kill_y,goose
+TOOTK,Total non-waterfowl harvest,kill_y,other
+TOWFK,Total waterfowl harvest,,
+WOODK,Woodcock harvest,kill_yg,other
+DACOOT,Hunting days coots ,days_yg,other
+DACRAN,Hunting days cranes,days_yg,other
+DADOVE,Hunting days doves,days_yg,other
+DAMURR,Hunting days murres ,days_yg,other
+DAPIGE,Hunting days band-tailed pigeons,days_yg,other
+DARAIL,Hunting days rails,days_yg,other
+DASNIP,Hunting days snipe,days_yg,other
+DAWOOD,Hunting days woodcock,days_yg,other

@@ -71,7 +71,7 @@ var_names_sim <- unique(pubEsts_simple_all[,c("var","name")])
 
 # load all output from species models and other models --------------------------
 
-load(paste0("data/parts and harvest survey info",Y,".RData"))
+#load(paste0("data/parts and harvest survey info",Y,".RData"))
 
 provzone <- read.csv("data/Province and zone table.csv")
 
@@ -209,9 +209,14 @@ both_b$name <- gsub(both_b$name,pattern = "eese",
 
 ###########################################################
 # plotting ----------------------------------------------------------------
-load("data/allkill.RData")
-allkill <- allkill[which(allkill$PRHUNT %in% provs$prov[1:12]),]
 
+## raw species parts data no permit or location information
+outscse <- read.csv("data/outscse_spec_comp_survey_data.csv")
+
+
+
+
+allkill <- read.csv("data/allkill.csv") ## raw data summary of survey responses for plotting
 
 
 # Figure 2 - Four example general harvest estimates ---------------------------------------
