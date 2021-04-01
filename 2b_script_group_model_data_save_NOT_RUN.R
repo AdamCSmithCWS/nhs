@@ -76,7 +76,7 @@ keep_E <- paste(rep(c("MB","NB","SK"),each = 3),rep(c(1,2,3),times = 3))
 # province and zone loops -------------------------------------------------
 non_res_combine <- non_res_combine[-which(non_res_combine %in% keep_E)]
 
-for(pr in provs){
+for(pr in provs[12]){
   
   
   #################### try keeping all caste effects constant through time - done (except caste-D day effect)

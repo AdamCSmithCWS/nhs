@@ -186,7 +186,7 @@ for(spgp in c("duck","goose","murre")){
   
   
   
-  for(pr in provs2[11:12]){
+  for(pr in provs2){
   
   
   

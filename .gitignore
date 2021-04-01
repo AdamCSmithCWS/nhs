@@ -15,5 +15,6 @@ data/stored_SAS_download.RData
 data/web_files_FR/
 national_provincial_summaries.RData
 data/allkill.RData
-
+data/outscse*
+data/z*
 

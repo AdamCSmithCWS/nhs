@@ -564,6 +564,8 @@ allkill$caste = factor(allkill$CASTE,
 save(list = c("allkill"),
      file = "data/allkill.RData")
 
+
+
 load("data/allkill.RData")
 
 
