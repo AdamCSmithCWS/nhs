@@ -243,19 +243,15 @@ model {
         totkill_hcy[y,c,h] <- exp(ann[y] + cst[c,y] + hntr[c,y,h] + ann_day[y] + cst_day[c,y] + hntr_day[c,y,h]) *psi[y]
         totdays_hcy[y,c,h] <- exp(ann_day[y] + cst_day[c,y] + hntr_day[c,y,h])
         }
-      #mean per-hunter kill and days by year and caste
-      mean_totkill_yc_alt[y,c] <- mean(totkill_hcy[y,c,1:nhunter_cy[c,y]]) #mean kill per active hunter
-      mean_totdays_yc_alt[y,c] <- mean(totdays_hcy[y,c,1:nhunter_cy[c,y]]) #mean days per active hunter
 
-      #mean per-hunter kill and days by year and caste - alternative estimate
+      #mean per-hunter kill and days by year and caste
       mean_totkill_yc[y,c] <- exp(ann[y] + cst[c,y] + ann_day[y] + cst_day[c,y] + retrans_hunter_day[c] + retrans_hunter[c]) *psi[y]
       mean_totdays_yc[y,c] <- exp(ann_day[y] + cst_day[c,y] + retrans_hunter_day[c])
       
       for(p in 1:nperiods){
         ## estimate of the mean (per hunter) kill per period, caste, and year
         mean_kill_pcy[p,c,y] <-  pkill_py[p,y] * mean_totkill_yc[y,c]
-        #mean_kill_pcy[p,c,y] <-  pkill_py[p,y] * mean_totkill_retrans_yc[y,c] #alternate harvest estimate using retransformation fators
-        
+
         for(s in 1:nspecies){
           # estimate of the mean (per hunter) kill, by period, caste, year, and species
           # mean kill by period caste and year * proportional composition of each species in each period and year
@@ -345,8 +341,7 @@ model {
       pkill_py[p,y] <- delta_py[p,y] / sum(delta_py[1:nperiods,y])
       delta_py[p,y] ~ dgamma(exp_alpha_py[p,y], 1)
       exp_alpha_py[p,y] <- exp(alpha_py[p,y])
-      # alphat[p,y] <- mut[p]*kappat ### mut[p] is the mean proportion of the hunt occurring in period p across all years
-      # 
+
        } #y
   }#p
 

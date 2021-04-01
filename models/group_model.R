@@ -289,13 +289,10 @@ for(g in 1:ngroups){
         }
       #mean per-hunter kill and days by year and caste
       for(g in 1:ngroups){
-        mean_totkill_ycg_alt[y,c,g] <- mean(totkill_hcy[y,c,1:nhunter_cy[c,y],g]) #mean kill per active hunter
-        #mean per-hunter kill and days by year and caste - alternative estimate
+        #mean per-hunter kill and days by year and caste
         mean_totkill_ycg[y,c,g] <- exp(group[y,g] + cst[c,y] + ann_day[y] + cst_day[c,y] + retrans_hunter_day[c] + retrans_hunter[c,g]) *psi[g]*reg_mat[y,g]
       }
-      mean_totdays_yc_alt[y,c] <- mean(totdays_hcy[y,c,1:nhunter_cy[c,y]]) #mean days per active hunter
-
-
+      
       mean_totdays_yc[y,c] <- exp(ann_day[y] + cst_day[c,y] + retrans_hunter_day[c])
       
 
