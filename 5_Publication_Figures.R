@@ -6,6 +6,9 @@ library(ggmcmc)
 library(ggrepel)
 library(ggforce)
 library(patchwork)
+library(sf)
+library(RColorBrewer)
+library(ggthemes)
 
 
 Y <- 2019
@@ -210,6 +213,71 @@ both_b$name <- gsub(both_b$name,pattern = "eese",
 ###########################################################
 # plotting ----------------------------------------------------------------
 
+
+
+
+# Figure 1 Map of regions -------------------------------------------------
+
+
+
+## load map
+base_map = st_read(dsn = "input_map",
+                   layer = "Harvest_Survey_Zones_2017")
+
+prov_swap = function(x){
+  if(x %in% c("NF","PQ")){
+    if(x == "NF"){x2 <- "NL"}
+    if(x == "PQ"){x2 <- "QC"}
+  }else{
+    x2 <- x
+  }
+  
+  return(x2)
+}
+base_map2 = base_map %>% group_by(Zonename) %>% 
+  mutate(prov2 = prov_swap(PROV),
+         labl = paste(prov2,ZONE,sep = " - "))
+#plot(base_map)
+labs = st_coordinates(st_centroid(base_map2))
+
+labls = data.frame(x = labs[,"X"],
+                   y = labs[,"Y"],
+                   labl = base_map2$labl,
+                   col = base_map2$labl)
+
+
+fg1 = ggplot()+
+  geom_sf(data = base_map2,alpha = 1,size = 0.3)+ #aes(fill = labl)
+  geom_label_repel(data = labls,aes(x = x, y = y, label = labl),#,colour = labl),
+                   fill = alpha(c("white"),0.5),
+                   nudge_y = 5000,
+                   min.segment.length = 0,
+                   segment.size = 0.6,
+                   segment.color = "black",
+                   fontface = "bold",
+                   size = 2,
+                   label.size = 0.1)+
+  # scale_colour_viridis_d(aesthetics = c("fill","colour"),
+  #                        begin = 0.1,end = 0.9)+
+  xlab("")+
+  ylab("")+
+  theme_light()+
+    theme(axis.title=element_blank(), axis.text=element_text(size = 5), axis.ticks=element_blank(),
+          legend.position = "none")+
+  scale_x_continuous(breaks = c(-120,-100,-80,-60))
+
+#print(fg1)
+
+
+pdf("Figures/Figure 1.pdf",
+    width = 85/25,
+    height = 80/25)
+print(fg1)
+dev.off()
+
+
+
+
 ## raw species parts data no permit or location information
 outscse <- read.csv("data/outscse_spec_comp_survey_data.csv")
 
@@ -217,6 +285,11 @@ outscse <- read.csv("data/outscse_spec_comp_survey_data.csv")
 
 
 allkill <- read.csv("data/allkill.csv") ## raw data summary of survey responses for plotting
+
+
+
+
+
 
 
 # Figure 2 - Four example general harvest estimates ---------------------------------------
