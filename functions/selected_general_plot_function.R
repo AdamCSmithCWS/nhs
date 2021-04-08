@@ -108,10 +108,11 @@ source("Functions/palette.R")
   }
 
       outgg = ggplot(data = dat,aes(x = year,y = mean,group = mod,fill = mod))+
-        geom_dotplot(data = nresp,aes(x = year),inherit.aes = FALSE,binwidth = 1,colour = grey(0.5),fill = grey(0.5),alpha = 0.1,method = "histodot",dotsize = 0.2)+
+        #geom_dotplot(data = nresp,aes(x = year),inherit.aes = FALSE,binwidth = 1,colour = grey(0.5),fill = grey(0.5),alpha = 0.1,method = "histodot",dotsize = 0.2)+
         geom_point(aes(colour = mod),size = 0.5)+
         geom_line(aes(colour = mod))+
         ylab("")+
+        xlab("")+
         labs(title = ttle)+
         geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
         scale_y_continuous(limits = c(0,NA),labels = scales::comma)+

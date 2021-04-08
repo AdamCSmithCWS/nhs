@@ -7,7 +7,8 @@ plot_sel_sp <- function(dat = zone_both_a,
                               z = 3,
                         spgp = "duck",
                         labs_inc = FALSE,
-                        lbl_y = c(1990,1995)){
+                        lbl_y = c(1990,1995),
+                        dots_x = 10){
   
   
   pr = as.character(unique(dat[which(dat$prov == p),"province"]))
@@ -35,18 +36,21 @@ for(y in 2:length(jdat$nhunter_y)){
   
   ssp = sp.save.out[which(sp.save.out$spfact == as.character(unique(dat$AOU))),"spn"]
   
-  nwing = data.frame(year = rep(as.integer(names(jdat$nhunter_y[1])),each = jdat$nparts_sy[ssp,1]),
-                     nresp = rep(1,each = jdat$nparts_sy[ssp,1]))
+  npy = jdat$nparts_sy[ssp,]
+  min_p <- min(npy[which(npy > 0)])
+  nwing = data.frame(year = rep(as.integer(names(jdat$nhunter_y[1])),each = ceiling(jdat$nparts_sy[ssp,1]/dots_x)),
+                     nresp = rep(1,each = ceiling(jdat$nparts_sy[ssp,1]/dots_x)))
   for(y in 2:length(jdat$nhunter_y)){
-    tmp = data.frame(year = rep(as.integer(names(jdat$nhunter_y[y])),each = jdat$nparts_sy[ssp,y]),
-                     nresp = rep(1,each = jdat$nparts_sy[ssp,y]))
+    tmp = data.frame(year = rep(as.integer(names(jdat$nhunter_y[y])),each = ceiling(jdat$nparts_sy[ssp,y]/dots_x)),
+                     nresp = rep(1,each = ceiling(jdat$nparts_sy[ssp,y]/dots_x)))
     nwing <- bind_rows(nwing,tmp)
+    
   }
  
   tt = table(nwing$year)
-  tt = tt[which(tt > 1)]
+  tt = tt[which(tt > 0)]
   
-  nwing_lab = data.frame(np = paste(min(tt),"parts in",names(tt)[which.min(tt)]),
+  nwing_lab = data.frame(np = paste(min_p,"parts in",names(tt)[which.min(tt)]),
                          year = as.integer(names(tt)[which.min(tt)]),
                          mean = 0)
   if(nwing_lab$year > 1985){
@@ -62,10 +66,11 @@ for(y in 2:length(jdat$nhunter_y)){
   }
 
       outgg = ggplot(data = dat,aes(x = year,y = mean,group = mod,fill = mod))+
-        geom_dotplot(data = nwing,aes(x = year),inherit.aes = FALSE,binwidth = 1,colour = grey(0.5),fill = grey(0.5),alpha = 0.1,method = "histodot",dotsize = 0.2)+
+        geom_dotplot(data = nwing,aes(x = year),inherit.aes = FALSE,binwidth = 1,colour = grey(0.1),fill = grey(0.5),alpha = 0.1,method = "histodot",dotsize = 0.6)+
         geom_point(aes(colour = mod),size = 0.5)+
         geom_line(aes(colour = mod))+
         ylab("")+
+        xlab("")+
         labs(title = paste(p,"zone",z,sp))+
         geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
         scale_y_continuous(limits = c(0,NA),labels = scales::comma)+

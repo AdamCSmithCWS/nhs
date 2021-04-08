@@ -68,13 +68,35 @@ comp_plot_species <- function(dat = both_a,
   # add n wings -------------------------------------------------------------
   
   if(add_nwings){
+    
+    # npy = jdat$nparts_sy[ssp,]
+    # min_p <- min(npy[which(npy > 0)])
+    # nwing = data.frame(year = rep(as.integer(names(jdat$nhunter_y[1])),each = ceiling(jdat$nparts_sy[ssp,1]/dots_x)),
+    #                    nresp = rep(1,each = ceiling(jdat$nparts_sy[ssp,1]/dots_x)))
+    # for(y in 2:length(jdat$nhunter_y)){
+    #   tmp = data.frame(year = rep(as.integer(names(jdat$nhunter_y[y])),each = ceiling(jdat$nparts_sy[ssp,y]/dots_x)),
+    #                    nresp = rep(1,each = ceiling(jdat$nparts_sy[ssp,y]/dots_x)))
+    #   nwing <- bind_rows(nwing,tmp)
+    #   
+    # }
+    # 
+    # tt = table(nwing$year)
+    # tt = tt[which(tt > 0)]
+    # 
+    # nwing_lab = data.frame(np = paste(min_p,"parts in",names(tt)[which.min(tt)]),
+    #                        year = as.integer(names(tt)[which.min(tt)]),
+    #                        mean = 0)
+    
+    
     if(reg == "Canada"){
       nws <- outscse
       nwingsa = select(.data = nws,
                        YEAR,AOU) %>% 
         rename(year = YEAR) %>% 
-        group_by(AOU) %>% 
-        slice_sample(prop = nwing_scale)
+        group_by(AOU,year) %>% 
+        summarise(nw = ceiling(n()*nwing_scale))%>% 
+        slice(rep(seq_len(n()), nw)) %>% 
+        select(-nw)
       
     }else{
       if(is.null(z)){
@@ -84,8 +106,10 @@ comp_plot_species <- function(dat = both_a,
           rename(year = YEAR,
                  prov = PRHUNT) %>% 
           left_join(provzone[,c("prov","province")],by = c("prov")) %>% 
-          group_by(AOU,province) %>% 
-          slice_sample(prop = nwing_scale)
+          group_by(AOU,province,year) %>% 
+          summarise(nw = ceiling(n()*nwing_scale))%>% 
+          slice(rep(seq_len(n()), nw)) %>% 
+          select(-nw)
         
       }else{
         nws <- outscse[which(outscse$PRHUNT == reg2 & outscse$ZOHUNT == z & !is.na(outscse$YEAR)),]
@@ -95,8 +119,10 @@ comp_plot_species <- function(dat = both_a,
                  prov = PRHUNT,
                  zone = ZOHUNT) %>% 
           left_join(provzone[,c("prov","zone","province")],by = c("prov","zone")) %>% 
-          group_by(AOU,province,zone) %>% 
-          slice_sample(prop = nwing_scale)
+          group_by(AOU,province,zone,year) %>% 
+          summarise(nw = ceiling(n()*nwing_scale))%>% 
+          slice(rep(seq_len(n()), nw)) %>% 
+          select(-nw)
       }
       
       
@@ -178,14 +204,16 @@ comp_plot_species <- function(dat = both_a,
       outgg = ggplot(data = datp,aes(x = year,y = mean,group = mod,fill = mod))+
         geom_point(aes(colour = mod),size = 0.5)+
         geom_line(aes(colour = mod))+
-        labs(x = "",title = paste(pp,title_base))+
+        #labs(x = "",title = paste(pp,title_base))+
         ylab(unit)+
+        xlab("")+
         geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
         scale_y_continuous(limits = c(0,yup))+
         my_col+
         theme_classic()+
         theme(legend.position = "none",
-              strip.text = element_text(size = 7))+
+              strip.text = element_text(size = 8),
+              axis.text = element_text(size = 8))+
         my_facets
       #print(outgg)
       
@@ -198,9 +226,13 @@ comp_plot_species <- function(dat = both_a,
       }
       
       if(add_nwings){
+        
+        
+        
+        
         if(!is.null(startYear)){nwings <- filter(nwings,year >= startYear)}
         
-        outgg <- outgg + ggplot2::geom_dotplot(data = nwings,mapping = ggplot2::aes(x = year),drop = TRUE,binaxis = "x", stackdir = "up",method = "histodot",binwidth = 1,width = 0.2,inherit.aes = FALSE,fill = grDevices::grey(0.6),colour = grDevices::grey(0.6),alpha = 0.2,dotsize = 0.3)
+        outgg <- outgg + ggplot2::geom_dotplot(data = nwings,mapping = ggplot2::aes(x = year),drop = TRUE,binaxis = "x", stackdir = "up",method = "histodot",binwidth = 1,width = 0.2,inherit.aes = FALSE,fill = grDevices::grey(0.5),colour = grDevices::grey(0.3),alpha = 0.2,dotsize = 0.6)
          
           if(add_n_labs){ 
             outgg <- outgg + annotate(geom = "text",x = max(c(1990,startYear)),y = 0,label = paste0("Each grey dot represents ",round(1/nwing_scale,0)," parts"),colour = grey(0.4),size = 2, hjust = 0)

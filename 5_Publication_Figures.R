@@ -236,7 +236,7 @@ prov_swap = function(x){
 }
 base_map2 = base_map %>% group_by(Zonename) %>% 
   mutate(prov2 = prov_swap(PROV),
-         labl = paste(prov2,ZONE,sep = " - "))
+         labl = paste(prov2,ZONE,sep = ""))
 #plot(base_map)
 labs = st_coordinates(st_centroid(base_map2))
 
@@ -248,15 +248,18 @@ labls = data.frame(x = labs[,"X"],
 
 fg1 = ggplot()+
   geom_sf(data = base_map2,alpha = 1,size = 0.3)+ #aes(fill = labl)
-  geom_label_repel(data = labls,aes(x = x, y = y, label = labl),#,colour = labl),
-                   fill = alpha(c("white"),0.5),
-                   nudge_y = 5000,
+  geom_label_repel(data = labls,aes(x = x, y = y,label = labl),#,colour = labl),, vjust = "inward"
+                   fill = alpha(c("white"),0.8),
+                   nudge_y = -5000,
+                   nudge_x = -1000,
+                   
                    min.segment.length = 0,
                    segment.size = 0.6,
                    segment.color = "black",
                    fontface = "bold",
                    size = 2,
-                   label.size = 0.1)+
+                   label.size = 0.01,
+                   label.padding = 0.13)+
   # scale_colour_viridis_d(aesthetics = c("fill","colour"),
   #                        begin = 0.1,end = 0.9)+
   xlab("")+
@@ -266,7 +269,7 @@ fg1 = ggplot()+
           legend.position = "none")+
   scale_x_continuous(breaks = c(-120,-100,-80,-60))
 
-#print(fg1)
+print(fg1)
 
 
 pdf("Figures/Figure 1.pdf",
@@ -424,7 +427,7 @@ p1 = comp_plot_species(dat = both_a,
                        add_samplesize = FALSE,
                        add_nwings = TRUE,
                        samplesize_scale = 1,
-                       nwing_scale = 1,
+                       nwing_scale = 0.1,
                        title_base = "Harvest",
                        add_n_labs = FALSE)
 
@@ -457,8 +460,9 @@ p1 = comp_plot_species(dat = both_c,
                        add_samplesize = FALSE,
                        add_nwings = TRUE,
                        samplesize_scale = 1,
-                       nwing_scale = 0.1,
-                       title_base = "Age Ratio (Immatures/Adults)")
+                       nwing_scale = 0.02,
+                       title_base = "Age Ratio (Immatures/Adults)",
+                       add_n_labs = FALSE)
 
 
 pdf("Figures/Figure 6.pdf",
@@ -481,13 +485,13 @@ p1 = comp_plot_species(dat = both_c,
                        add_samplesize = FALSE,
                        add_nwings = TRUE,
                        samplesize_scale = 0.01,
-                       nwing_scale = 0.01,
+                       nwing_scale = 0.005,
                        title_base = "",
                        labs_inc = FALSE,
                        lbl_y = c(1990,1995),
                        lab_sp = NULL,
                        unit = "Age Ratio",
-                       add_n_labs = TRUE,
+                       add_n_labs = FALSE,
                        startYear = NULL,
                        facet_scales = "free",
                        yup = 7.5)
@@ -498,14 +502,13 @@ p2 = comp_plot_species(dat = both_c,
                        z = NULL,
                        add_samplesize = FALSE,
                        add_nwings = TRUE,
-                       samplesize_scale = 0.01,
-                       nwing_scale = 0.01,
+                       nwing_scale = 0.005,
                        title_base = "",
                        labs_inc = FALSE,
                        lbl_y = c(1990,1995),
                        lab_sp = NULL,
                        unit = "Age Ratio",
-                       add_n_labs = TRUE,
+                       add_n_labs = FALSE,
                        startYear = NULL,
                        facet_scales = "free",
                        yup = 7.5)
@@ -553,13 +556,13 @@ p5 = comp_plot_species(dat = both_c,
                        add_samplesize = FALSE,
                        add_nwings = TRUE,
                        samplesize_scale = 0.01,
-                       nwing_scale = 0.01,
+                       nwing_scale = 0.005,
                        title_base = "",
                        labs_inc = TRUE,
                        lbl_y = c(1997,1977),
                        lab_sp = NULL,
                        unit = "Age Ratio",
-                       add_n_labs = TRUE,
+                       add_n_labs = FALSE,
                        startYear = NULL,
                        facet_scales = "free")
 

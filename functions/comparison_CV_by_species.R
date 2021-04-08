@@ -71,7 +71,8 @@ comp_plot_species_CV <- function(dat = both_a,
         geom_point(aes(colour = mod),size = 0.5)+
         geom_line(aes(colour = mod))+
         ylab("Coefficient of Variation (SD/mean)")+
-        labs(title = paste0("Variance of ",pp," harvest estimates by year"))+
+        xlab("")+
+        #labs(title = paste0("Variance of ",pp," harvest estimates by year"))+
         #geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
         scale_y_continuous(limits = c(0,NA))+
         my_col+
