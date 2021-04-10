@@ -247,15 +247,15 @@ labls = data.frame(x = labs[,"X"],
 
 
 fg1 = ggplot()+
-  geom_sf(data = base_map2,alpha = 1,size = 0.3)+ #aes(fill = labl)
+  geom_sf(data = base_map2,alpha = 1,size = 0.1,fill = grey(0.95))+ #aes(fill = labl)
   geom_label_repel(data = labls,aes(x = x, y = y,label = labl),#,colour = labl),, vjust = "inward"
                    fill = alpha(c("white"),0.8),
-                   nudge_y = -5000,
-                   nudge_x = -1000,
+                   # nudge_y = -1000,
+                   # nudge_x = -1000,
                    
-                   min.segment.length = 0,
-                   segment.size = 0.6,
-                   segment.color = "black",
+                   min.segment.length = 0.1,
+                   segment.size = 0.2,
+                   segment.color = grey(0.2),
                    fontface = "bold",
                    size = 2,
                    label.size = 0.01,
