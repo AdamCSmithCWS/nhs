@@ -210,6 +210,20 @@ both_b$name <- gsub(both_b$name,pattern = "eese",
                     replacement = "oose", fixed = TRUE)
 
 
+
+## raw species parts data no permit or location information
+outscse <- read.csv("data/outscse_spec_comp_survey_data.csv")
+
+
+
+
+allkill <- read.csv("data/allkill.csv") ## raw data summary of survey responses for plotting
+
+
+
+
+
+
 ###########################################################
 # plotting ----------------------------------------------------------------
 
@@ -278,16 +292,6 @@ pdf("Figures/Figure 1.pdf",
 print(fg1)
 dev.off()
 
-
-
-
-## raw species parts data no permit or location information
-outscse <- read.csv("data/outscse_spec_comp_survey_data.csv")
-
-
-
-
-allkill <- read.csv("data/allkill.csv") ## raw data summary of survey responses for plotting
 
 
 
@@ -385,12 +389,14 @@ p1 = comp_plot_species_CV(dat = both_a,
                         "American Black Duck",
                         "Common Eider",
                         "Black Scoter",
-                 "Lesser Snow Goose: white phase",
+                 "Greater Snow Goose",
                  "Canada Goose"),
                  reg = "Canada",
                  labs_inc = T,
-                 lbl_y = c(2000,1989),
-                 lab_sp = "American Black Duck")
+                 lbl_y = c(2001,1986),
+                 add_nwings = TRUE,
+                 nwing_scale = 0.005,
+                 lab_sp = "Black Scoter")
 
 
 pdf("Figures/Figure 4.pdf",

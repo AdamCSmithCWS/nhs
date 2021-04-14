@@ -212,7 +212,7 @@ comp_plot_species <- function(dat = both_a,
         my_col+
         theme_classic()+
         theme(legend.position = "none",
-              strip.text = element_text(size = 8),
+              strip.text = element_text(size = 10),
               axis.text = element_text(size = 8))+
         my_facets
       #print(outgg)
