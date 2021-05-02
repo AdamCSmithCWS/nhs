@@ -5,12 +5,12 @@ sp,species,newvar,source,as_var,group,species_lower_case
 1300,Red-breasted Merganser,kill_ys,duck,axcomp_axsy,diving_ducks,red-breasted merganser
 1310,Hooded Merganser,kill_ys,duck,axcomp_axsy,diving_ducks,hooded merganser
 1320,Mallard,kill_ys,duck,axcomp_axsy,puddle_ducks,mallard
-1330,American Black Duck,kill_ys,duck,axcomp_axsy,puddle_ducks,american black duck
+1330,American Black Duck,kill_ys,duck,axcomp_axsy,puddle_ducks,American black duck
 1350,Gadwall,kill_ys,duck,axcomp_axsy,puddle_ducks,gadwall
 1360,Eurasian Wigeon,kill_ys,duck,axcomp_axsy,puddle_ducks,eurasian wigeon
-1370,American Wigeon,kill_ys,duck,axcomp_axsy,puddle_ducks,american wigeon
-1380,Eurasian Green-winged Teal,kill_ys,duck,axcomp_axsy,puddle_ducks,eurasian green-winged teal
-1390,American Green-winged Teal,kill_ys,duck,axcomp_axsy,puddle_ducks,american green-winged teal
+1370,American Wigeon,kill_ys,duck,axcomp_axsy,puddle_ducks,American wigeon
+1380,Eurasian Green-winged Teal,kill_ys,duck,axcomp_axsy,puddle_ducks,Eurasian green-winged teal
+1390,American Green-winged Teal,kill_ys,duck,axcomp_axsy,puddle_ducks,American green-winged teal
 1400,Blue-winged Teal,kill_ys,duck,axcomp_axsy,puddle_ducks,blue-winged teal
 1420,Northern Shoveler,kill_ys,duck,axcomp_axsy,puddle_ducks,northern shoveler
 1430,Northern Pintail,kill_ys,duck,axcomp_axsy,puddle_ducks,northern pintail

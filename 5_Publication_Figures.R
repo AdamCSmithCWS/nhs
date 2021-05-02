@@ -234,7 +234,7 @@ allkill <- read.csv("data/allkill.csv") ## raw data summary of survey responses 
 
 
 
-
+write.csv()
 
 
 ###########################################################
@@ -353,7 +353,18 @@ pdf("Figures/Figure 2.pdf",
 print(p1+p4+p2+p3)
 dev.off()
 
-
+# pdf("Figures/Supplemental_general_estimates.pdf")
+# for(j in unique(both_b$var)){
+#   spgpt <- sim_vars[which(sim_vars$var == j),"source"]
+#   if(spgpt == "other"){next}
+#   tmp = plot_sel_general(dat = both_b,
+#                         g = j,
+#                         p = "Canada",
+#                         z = NULL,
+#                         spgp = spgpt)
+#   print(tmp)
+# }
+# dev.off()
 
 # Figure 3 - Four example species harvest estimates ---------------------------------------
 
@@ -477,7 +488,7 @@ p1 = comp_plot_species(dat = both_c,
                               "Ross' Goose"),
                        reg = "Canada",
                        labs_inc = T,
-                       lbl_y = c(1982,2010),
+                       lbl_y = c(1983,2010),
                        lab_sp = "Greater Scaup",
                        add_samplesize = FALSE,
                        add_nwings = TRUE,
