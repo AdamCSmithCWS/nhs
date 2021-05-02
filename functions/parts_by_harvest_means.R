@@ -8,7 +8,7 @@ parts_by_harvest <- function(dat = both_a,
                               add_nwings = TRUE,
                               samplesize_scale = 1,
                               nwing_scale = 1,
-                              title_base = "Parts per Harvest",
+                              title_base = "Parts per estimated harvest",
                               labs_inc = FALSE,
                               lbl_y = c(1990,1995),
                               lab_sp = NULL,
@@ -120,7 +120,8 @@ parts_by_harvest <- function(dat = both_a,
         scale_y_continuous(limits = c(0,NA))+
         #my_col+
         theme_classic()+
-        theme(legend.position = "none",
+        theme(text = element_text(family = "Times"),
+              legend.position = "none",
               strip.text = element_text(size = 7))
       
       
@@ -153,7 +154,8 @@ parts_by_harvest <- function(dat = both_a,
         scale_y_continuous(limits = c(0,NA))+
         #my_col+
         theme_classic()+
-        theme(legend.position = "none",
+        theme(text = element_text(family = "Times"),
+              legend.position = "none",
               strip.text = element_text(size = 7))+
         my_facets
       #print(outgg)

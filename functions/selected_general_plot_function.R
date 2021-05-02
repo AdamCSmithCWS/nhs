@@ -14,6 +14,7 @@ plot_sel_general <- function(dat = both_b,
   
   pr = as.character(unique(dat[which(dat$prov == p),"province"]))
 
+  
      dat <- filter(dat,
                    var %in% g,
                   province %in% pr,
@@ -93,6 +94,7 @@ plot_sel_general <- function(dat = both_b,
  
   dat$mod <- factor(dat$model,levels = c("old","new"), ordered = T)
   
+  
 source("Functions/palette.R")  
 
   if(region_in_title){
@@ -104,7 +106,7 @@ source("Functions/palette.R")
   if(labs_inc){
     lbs = dat[which(dat$model == "new" & dat$year == lbl_y[1] |
                       dat$model == "old" & dat$year == lbl_y[2]),]
-    lbs$lbl <- paste(toupper(lbs$model),"model")
+    lbs$lbl <- paste(str_to_sentence(lbs$model),"model")
   }
 
       outgg = ggplot(data = dat,aes(x = year,y = mean,group = mod,fill = mod))+
@@ -121,13 +123,15 @@ source("Functions/palette.R")
         #                 inherit.aes = FALSE,nudge_y = max(dat$mean)*-0.03,nudge_x = xndg,
         #                 colour = grey(0.7),min.segment.length = 0,size = 3)+
         theme_classic()+
-        theme(legend.position = "none",
+        theme(text = element_text(family = "Times"),
+              legend.position = "none",
               title = element_text(size = 9))+
         coord_cartesian(xlim = c(startYear, 2019))
       
       if(labs_inc){
         outgg <- outgg+geom_text_repel(data = lbs,aes(label = lbl,colour = mod),
-                                       nudge_y = max(dat$mean)*0.3,nudge_x = 4,min.segment.length = 0,size = 3)
+                                       nudge_y = max(dat$mean)*0.3,nudge_x = 4,min.segment.length = 0,size = 3,
+                                       family = "Times")
       }
         
  

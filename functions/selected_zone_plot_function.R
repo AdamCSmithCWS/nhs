@@ -6,10 +6,14 @@ plot_sel_sp <- function(dat = zone_both_a,
                               p = "SK",
                               z = 3,
                         spgp = "duck",
+                        name_case = "lower",
                         labs_inc = FALSE,
                         lbl_y = c(1990,1995),
                         dots_x = 10){
   
+  if(name_case == "lower"){
+    splab = sp_case[which(sp_case$species == sp),"species_lower_case"]
+  }else{splab = sp}
   
   pr = as.character(unique(dat[which(dat$prov == p),"province"]))
 
@@ -62,7 +66,7 @@ for(y in 2:length(jdat$nhunter_y)){
   if(labs_inc){
     lbs = dat[which(dat$model == "new" & dat$year == lbl_y[1] |
                       dat$model == "old" & dat$year == lbl_y[2]),]
-    lbs$lbl <- paste(toupper(lbs$model),"model")
+    lbs$lbl <- paste(str_to_sentence(lbs$model),"model")
   }
 
       outgg = ggplot(data = dat,aes(x = year,y = mean,group = mod,fill = mod))+
@@ -71,20 +75,23 @@ for(y in 2:length(jdat$nhunter_y)){
         geom_line(aes(colour = mod))+
         ylab("")+
         xlab("")+
-        labs(title = paste(p,"zone",z,sp))+
+        labs(title = paste0(p,z," ",splab))+
         geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
         scale_y_continuous(limits = c(0,NA),labels = scales::comma)+
         my_col+
         geom_text_repel(data = nwing_lab,aes(x = year,y = mean,label = np),
                         inherit.aes = FALSE,nudge_y = max(dat$mean)*-0.03,nudge_x = xndg,
-                        colour = grey(0.7),min.segment.length = 0,size = 3)+
+                        colour = grey(0.7),min.segment.length = 0,size = 3,
+                        family = "Times")+
         theme_classic()+
-        theme(legend.position = "none",
+        theme(text = element_text(family = "Times"),
+              legend.position = "none",
               title = element_text(size = 9))
       
       if(labs_inc){
         outgg <- outgg+geom_text_repel(data = lbs,aes(label = lbl,colour = mod),
-                                       nudge_y = max(dat$mean)*0.3,nudge_x = -4,min.segment.length = 0,size = 3)
+                                       nudge_y = max(dat$mean)*0.3,nudge_x = -4,min.segment.length = 0,size = 3,
+                                       family = "Times")
       }
         
  

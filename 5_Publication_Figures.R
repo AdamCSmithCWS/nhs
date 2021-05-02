@@ -98,7 +98,7 @@ for(spgp in others){
 sim_vars <- read.csv("data/website_variable_names_in.csv")
 sp_vars <- read.csv("data/website_species_variable_names_in.csv")
 
-
+sp_case <- sp_vars[,c("species","species_lower_case")]
 ### load saved results from 
 load("data/Posterior_summaries.RData") 
 
@@ -133,7 +133,7 @@ zone_sums_a <- left_join(zone_sums_a,provs,by = "prov")
 
 
 sums_a <- bind_rows(nat_sums_a,prov_sums_a)
-names(species_web_names) <- c("AOU","species")
+names(species_web_names)[1] <- c("AOU")
 sums_a <- left_join(sums_a,species_web_names)
 zone_sums_a <- left_join(zone_sums_a,species_web_names)
 
@@ -144,6 +144,13 @@ zone_both_a <- bind_rows(zone_sums_a,pubEsts_species_all[which(!is.na(pubEsts_sp
 ### not totally sure why there are na values in the species columns...
 both_a <- both_a[which(!is.na(both_a$species)),]
 zone_both_a <- zone_both_a[which(!is.na(zone_both_a$species)),]
+### adding the lower-case versions of species names for JWM..sigh...
+both_a <- left_join(both_a,sp_case,by = "species")
+
+
+zone_both_a <- left_join(zone_both_a,sp_case,by = "species")
+
+
 
 # B tables ----------------------------------------------------------------
 
@@ -186,7 +193,7 @@ nat_sums_c <- left_join(nat_sums_c,provs,by = "prov")
 zone_sums_c <- left_join(zone_sums_c,provs,by = "prov")
 
 sums_c <- bind_rows(nat_sums_c,prov_sums_c)
-names(species_web_names) <- c("AOU","species")
+names(species_web_names)[1] <- c("AOU")
 sums_c <- left_join(sums_c,species_web_names)
 zone_sums_c <- left_join(zone_sums_c,species_web_names)
 
@@ -198,6 +205,12 @@ zone_both_c <- bind_rows(zone_sums_c,pubEsts_age_sex_all[which(!is.na(pubEsts_ag
 ### not totally sure why there are na values in the species columns...
 both_c <- both_c[which(!is.na(both_c$species)),]
 zone_both_c <- zone_both_c[which(!is.na(zone_both_c$species)),]
+
+### adding the lower-case versions of species names for JWM..sigh...
+both_c <- left_join(both_c,sp_case,by = "species")
+
+
+zone_both_c <- left_join(zone_both_c,sp_case,by = "species")
 
 
 both_b$name <- gsub(both_b$name,pattern = " (total)",
@@ -227,6 +240,7 @@ allkill <- read.csv("data/allkill.csv") ## raw data summary of survey responses 
 ###########################################################
 # plotting ----------------------------------------------------------------
 
+species_web_names <- left_join(species_web_names,sp_case,by = "species")
 
 
 
@@ -271,6 +285,7 @@ fg1 = ggplot()+
                    segment.size = 0.2,
                    segment.color = grey(0.2),
                    fontface = "bold",
+                   family = "Times",
                    size = 2,
                    label.size = 0.01,
                    label.padding = 0.13)+
@@ -279,7 +294,8 @@ fg1 = ggplot()+
   xlab("")+
   ylab("")+
   theme_light()+
-    theme(axis.title=element_blank(), axis.text=element_text(size = 5), axis.ticks=element_blank(),
+    theme(text = element_text(family = "Times"),
+          axis.title=element_blank(), axis.text=element_text(size = 5), axis.ticks=element_blank(),
           legend.position = "none")+
   scale_x_continuous(breaks = c(-120,-100,-80,-60))
 
@@ -434,7 +450,7 @@ p1 = comp_plot_species(dat = both_a,
                        add_nwings = TRUE,
                        samplesize_scale = 1,
                        nwing_scale = 0.1,
-                       title_base = "Harvest",
+                       unit = "Harvest",
                        add_n_labs = FALSE)
 
 
@@ -461,13 +477,14 @@ p1 = comp_plot_species(dat = both_c,
                               "Ross' Goose"),
                        reg = "Canada",
                        labs_inc = T,
-                       lbl_y = c(1999,2014),
-                       lab_sp = "Ross' Goose",
+                       lbl_y = c(1982,2010),
+                       lab_sp = "Greater Scaup",
                        add_samplesize = FALSE,
                        add_nwings = TRUE,
                        samplesize_scale = 1,
                        nwing_scale = 0.02,
-                       title_base = "Age Ratio (Immatures/Adults)",
+                       unit = "Age ratio (immatures/adults)",
+                       #title_base = "Age ratio (immatures/adults)",
                        add_n_labs = FALSE)
 
 
@@ -492,11 +509,11 @@ p1 = comp_plot_species(dat = both_c,
                        add_nwings = TRUE,
                        samplesize_scale = 0.01,
                        nwing_scale = 0.005,
-                       title_base = "",
+                       title_base = "Ontario",
                        labs_inc = FALSE,
                        lbl_y = c(1990,1995),
                        lab_sp = NULL,
-                       unit = "Age Ratio",
+                       unit = "Age ratio (immatures/adults)",
                        add_n_labs = FALSE,
                        startYear = NULL,
                        facet_scales = "free",
@@ -509,11 +526,11 @@ p2 = comp_plot_species(dat = both_c,
                        add_samplesize = FALSE,
                        add_nwings = TRUE,
                        nwing_scale = 0.005,
-                       title_base = "",
+                       title_base = "Saskatchewan",
                        labs_inc = FALSE,
                        lbl_y = c(1990,1995),
                        lab_sp = NULL,
-                       unit = "Age Ratio",
+                       unit = "Age ratio (immatures/adults)",
                        add_n_labs = FALSE,
                        startYear = NULL,
                        facet_scales = "free",
@@ -563,11 +580,11 @@ p5 = comp_plot_species(dat = both_c,
                        add_nwings = TRUE,
                        samplesize_scale = 0.01,
                        nwing_scale = 0.005,
-                       title_base = "",
+                       title_base = "Canada",
                        labs_inc = TRUE,
                        lbl_y = c(1997,1977),
                        lab_sp = NULL,
-                       unit = "Age Ratio",
+                       unit = "Age ratio (immatures/adults)",
                        add_n_labs = FALSE,
                        startYear = NULL,
                        facet_scales = "free")

@@ -9,7 +9,7 @@ comp_plot_species <- function(dat = both_a,
                               add_nwings = FALSE,
                               samplesize_scale = 1,
                               nwing_scale = 1,
-                              title_base = "Harvest",
+                              title_base = "",
                               labs_inc = FALSE,
                               lbl_y = c(1990,1995),
                               lab_sp = NULL,
@@ -173,10 +173,10 @@ comp_plot_species <- function(dat = both_a,
     
     
     if(by_zone){
-      my_facets <- facet_wrap(facets = ~species+zone,ncol = 3,scales = facet_scales)
+      my_facets <- facet_wrap(facets = ~species_lower_case+zone,ncol = 3,scales = facet_scales)
       
     }else{
-      my_facets <- facet_wrap(facets = ~species,ncol = 3,scales = facet_scales)
+      my_facets <- facet_wrap(facets = ~species_lower_case,ncol = 3,scales = facet_scales)
       if(nspecies == 1){
         my_facets <- NULL
       }
@@ -194,7 +194,7 @@ comp_plot_species <- function(dat = both_a,
           
         }
         
-        lbs$lbl <- paste(toupper(lbs$model),"model")
+        lbs$lbl <- paste(str_to_sentence(lbs$model),"model")
       }
       
       if(!is.null(startYear)){datp <- filter(datp,year >= startYear)}
@@ -204,14 +204,15 @@ comp_plot_species <- function(dat = both_a,
       outgg = ggplot(data = datp,aes(x = year,y = mean,group = mod,fill = mod))+
         geom_point(aes(colour = mod),size = 0.5)+
         geom_line(aes(colour = mod))+
-        #labs(x = "",title = paste(pp,title_base))+
+        labs(title = paste(title_base))+
         ylab(unit)+
         xlab("")+
         geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
         scale_y_continuous(limits = c(0,yup))+
         my_col+
         theme_classic()+
-        theme(legend.position = "none",
+        theme(text = element_text(family = "Times"),
+              legend.position = "none",
               strip.text = element_text(size = 10),
               axis.text = element_text(size = 8))+
         my_facets
@@ -241,7 +242,8 @@ comp_plot_species <- function(dat = both_a,
       
       if(labs_inc){
         outgg <- outgg + geom_text_repel(data = lbs,aes(x = year,y = mean,label = lbl,group = mod,colour = mod),
-                                         nudge_y = max(lbs$mean,na.rm = T)*0.4,nudge_x = diff(range(dat$year))*0.1,size = 3)
+                                         nudge_y = max(lbs$mean,na.rm = T)*0.4,nudge_x = diff(range(dat$year))*0.1,size = 3,
+                                         family = "Times")
       }
       
       outggs[[ppn]] <- outgg
