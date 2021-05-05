@@ -1,3 +1,40 @@
+# Script to prepare zonal jags data for full species harvest model for other game birds -------------
+### this script cannot be directly run because the input data are not included
+#### Input data cannot be shared due to privacy concerns
+### The anonymized data that are included in the jdat lists created
+### by this script are included in the archived repo,
+
+
+### scripts 1, 2a and 2b all require these sensitive data and cannot be run
+### these 3 initial scripts have been included so that the data-manipulation tasks are transparent
+
+### The anonymous data that are required to run the model 
+## have been included in the repo and scripts 3a, 3b, 4, and 5 can be run
+
+
+
+
+
+Y <- 2019
+FY = 1976
+years <- FY:Y
+
+names(years) <- paste(years)
+
+library(foreign)
+library(runjags)
+library(rjags)
+library(jagsUI)
+library(tidyverse)
+library(ggmcmc)
+library(tidybayes)
+library(ggrepel)
+library(ggforce)
+library(doParallel)
+library(foreach)
+
+#load.module("glm") 
+
 
 load(paste0("data/parts and harvest survey info",Y,".RData"))
 
@@ -76,7 +113,7 @@ keep_E <- paste(rep(c("MB","NB","SK"),each = 3),rep(c(1,2,3),times = 3))
 # province and zone loops -------------------------------------------------
 non_res_combine <- non_res_combine[-which(non_res_combine %in% keep_E)]
 
-for(pr in provs[12]){
+for(pr in provs){
   
   
   #################### try keeping all caste effects constant through time - done (except caste-D day effect)

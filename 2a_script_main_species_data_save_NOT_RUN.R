@@ -4,6 +4,13 @@
 ### The anonymized data that are included in the jdat lists created
 ### by this script are included in the archived repo, so the models can be run
 
+### scripts 1, 2a and 2b all require these sensitive data and cannot be run
+### these 3 initial scripts have been included so that the data-manipulation tasks are transparent
+
+### The anonymous data that are required to run the model 
+## have been included in the repo and scripts 3a, 3b, 4, and 5 can be run
+
+
 
 Y <- 2019
 FY = 1976

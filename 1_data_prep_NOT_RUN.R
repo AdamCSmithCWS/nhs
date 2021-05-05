@@ -1,10 +1,12 @@
 
-####### the following commented out lines ~ 400 lines
-## represent the add-hoc processes required to load all the 
-## historical harvest survey data
-## the line :load("full data prep updated harvest model.RData")
-## on about line-400 will load everything created below
+### this file represents the data-preparation require to generate the raw data for the analysis.
+### unfortunately, these raw data include some sensitive information and cannot be shared in this
+### public repo. 
+### scripts 1, 2a and 2b all require these sensitive data and cannot be run
+### these 3 initial scripts have been included so that the data-manipulation tasks are transparent
 
+### The anonymous data that are required to run the model 
+## have been included in the repo and scripts 3a, 3b, 4, and 5 can be run
 
 
 ### 

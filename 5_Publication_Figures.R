@@ -234,7 +234,6 @@ allkill <- read.csv("data/allkill.csv") ## raw data summary of survey responses 
 
 
 
-write.csv()
 
 
 ###########################################################
@@ -404,7 +403,13 @@ pdf("Figures/Figure 3.pdf",
 print(p1+p2+p3+p4)
 dev.off()
 
-
+# figure for readme
+png("Figures/Figure 3.png",
+    width = 480*2,
+    height = 480*2,
+    res = 150)
+print(p1+p2+p3+p4)
+dev.off()
 
 
 # Figure 4 - Six example CVs of national species harvest estimates ---------------------------------------
