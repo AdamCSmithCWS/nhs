@@ -9,6 +9,7 @@ library(patchwork)
 library(sf)
 library(RColorBrewer)
 library(ggthemes)
+library(ggspatial)
 
 
 Y <- 2019
@@ -98,7 +99,8 @@ for(spgp in others){
 sim_vars <- read.csv("data/website_variable_names_in.csv")
 sp_vars <- read.csv("data/website_species_variable_names_in.csv")
 
-sp_case <- sp_vars[,c("species","species_lower_case")]
+sp_case <- sp_vars[,c("species","species_lower_case",
+                      "species_sentence_case")]
 ### load saved results from 
 load("data/Posterior_summaries.RData") 
 
@@ -296,7 +298,12 @@ fg1 = ggplot()+
     theme(text = element_text(family = "Times"),
           axis.title=element_blank(), axis.text=element_text(size = 5), axis.ticks=element_blank(),
           legend.position = "none")+
-  scale_x_continuous(breaks = c(-120,-100,-80,-60))
+  scale_x_continuous(breaks = c(-120,-100,-80,-60))+
+  annotation_north_arrow(aes(which_north = "true",location = "bl"),
+                         style = north_arrow_minimal(),
+                         height = unit(0.75,"cm"),
+                         width = unit(0.35,"cm"))+
+  annotation_scale(style = "tick",location = "tr")
 
 print(fg1)
 
@@ -334,12 +341,14 @@ p2 = plot_sel_general(dat = both_b,
                       g = "TOGOK",
                       p = "Canada",
                       z = NULL,
-                      spgp = "goose")
+                      spgp = "goose",
+                      xlb = "Year")
 p3 = plot_sel_general(dat = both_b,
                       g = "SUTOGO",
                       p = "Canada",
                       z = NULL,
-                      spgp = "goose")
+                      spgp = "goose",
+                      xlb = "Year")
 p4 = plot_sel_general(dat = both_b,
                       g = "SUTODU",
                       p = "Canada",
@@ -378,7 +387,8 @@ p1 = plot_sel_sp(dat = zone_both_a,
                              sp = "Mallard",
                              p = "SK",
                              z = 3,
-                             spgp = "duck")
+                             spgp = "duck",
+                 ylb = "Estimated harvest")
 p2 = plot_sel_sp(dat = zone_both_a,
                  sp = "Canada Goose: small races",
                  p = "MB",
@@ -390,12 +400,15 @@ p3 = plot_sel_sp(dat = zone_both_a,
                  z = 2,
                  spgp = "duck",
                  labs_inc = TRUE,
-                 lbl_y = c(2010,1995))
+                 lbl_y = c(2010,1995),
+                 xlb = "Year",
+                 ylb = "Estimated harvest")
 p4 = plot_sel_sp(dat = zone_both_a,
                  sp = "Northern Pintail",
                  p = "SK",
                  z = 3,
-                 spgp = "duck")
+                 spgp = "duck",
+                 xlb = "Year")
 
 pdf("Figures/Figure 3.pdf",
     width = 180/25,
@@ -428,7 +441,8 @@ p1 = comp_plot_species_CV(dat = both_a,
                  lbl_y = c(2001,1986),
                  add_nwings = TRUE,
                  nwing_scale = 0.005,
-                 lab_sp = "Black Scoter")
+                 lab_sp = "Black Scoter",
+                 xlb = "Year")
 
 
 pdf("Figures/Figure 4.pdf",
@@ -533,7 +547,8 @@ p1 = comp_plot_species(dat = both_c,
                        add_n_labs = FALSE,
                        startYear = NULL,
                        facet_scales = "free",
-                       yup = 7.5)
+                       yup = 7.5,
+                       xlb = "")
 
 p2 = comp_plot_species(dat = both_c,
                        sp = "Mallard",
@@ -550,7 +565,8 @@ p2 = comp_plot_species(dat = both_c,
                        add_n_labs = FALSE,
                        startYear = NULL,
                        facet_scales = "free",
-                       yup = 7.5)
+                       yup = 7.5,
+                       xlb = "Year")
 
 
 # p3 = comp_plot_species(dat = both_c,
@@ -603,7 +619,8 @@ p5 = comp_plot_species(dat = both_c,
                        unit = "Age ratio (immatures/adults)",
                        add_n_labs = FALSE,
                        startYear = NULL,
-                       facet_scales = "free")
+                       facet_scales = "free",
+                       xlb = "Year")
 
 source("functions/parts_by_harvest_means.R")
 p6 = parts_by_harvest(sp = "Mallard",reg = c("Saskatchewan","Ontario"))

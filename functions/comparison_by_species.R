@@ -17,7 +17,8 @@ comp_plot_species <- function(dat = both_a,
                               add_n_labs = TRUE,
                               startYear = NULL,
                               facet_scales = "free",
-                              yup = NA){
+                              yup = NA,
+                              xlb = "Year"){
   
   
   
@@ -173,10 +174,10 @@ comp_plot_species <- function(dat = both_a,
     
     
     if(by_zone){
-      my_facets <- facet_wrap(facets = ~species_lower_case+zone,ncol = 3,scales = facet_scales)
+      my_facets <- facet_wrap(facets = ~species_sentence_case+zone,ncol = 3,scales = facet_scales)
       
     }else{
-      my_facets <- facet_wrap(facets = ~species_lower_case,ncol = 3,scales = facet_scales)
+      my_facets <- facet_wrap(facets = ~species_sentence_case,ncol = 3,scales = facet_scales)
       if(nspecies == 1){
         my_facets <- NULL
       }
@@ -206,9 +207,9 @@ comp_plot_species <- function(dat = both_a,
         geom_line(aes(colour = mod))+
         labs(title = paste(title_base))+
         ylab(unit)+
-        xlab("")+
+        xlab(xlb)+
         geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
-        scale_y_continuous(limits = c(0,yup))+
+        scale_y_continuous(limits = c(0,yup),labels = scales::comma)+
         my_col+
         theme_classic()+
         theme(text = element_text(family = "Times"),
@@ -277,7 +278,7 @@ for(ppn in 1:nspecies){
     geom_line(aes(colour = mod))+
     labs(x = "",title = paste0(pp," Harvest (mean and 95 CI)"))+
     geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
-    scale_y_continuous(limits = c(0,yup))+
+    scale_y_continuous(limits = c(0,yup),labels = scales::comma)+
     my_col+
     theme_classic()+
     theme(legend.position = "none")+

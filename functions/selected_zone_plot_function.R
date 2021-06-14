@@ -6,14 +6,22 @@ plot_sel_sp <- function(dat = zone_both_a,
                               p = "SK",
                               z = 3,
                         spgp = "duck",
-                        name_case = "lower",
+                        name_case = "sentence",
                         labs_inc = FALSE,
                         lbl_y = c(1990,1995),
-                        dots_x = 10){
+                        dots_x = 10,
+                        xlb = "",
+                        ylb = ""){
   
   if(name_case == "lower"){
     splab = sp_case[which(sp_case$species == sp),"species_lower_case"]
-  }else{splab = sp}
+  }
+  if(name_case == "sentence"){
+    splab = sp_case[which(sp_case$species == sp),"species_sentence_case"]
+  }
+  if(is.null(name_case)){
+    splab = sp
+  }
   
   pr = as.character(unique(dat[which(dat$prov == p),"province"]))
 
@@ -73,8 +81,8 @@ for(y in 2:length(jdat$nhunter_y)){
         geom_dotplot(data = nwing,aes(x = year),inherit.aes = FALSE,binwidth = 1,colour = grey(0.1),fill = grey(0.5),alpha = 0.1,method = "histodot",dotsize = 0.6)+
         geom_point(aes(colour = mod),size = 0.5)+
         geom_line(aes(colour = mod))+
-        ylab("")+
-        xlab("")+
+        ylab(ylb)+
+        xlab(xlb)+
         labs(title = paste0(p,z," ",splab))+
         geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
         scale_y_continuous(limits = c(0,NA),labels = scales::comma)+

@@ -10,7 +10,9 @@ comp_plot_species_CV <- function(dat = both_a,
                               nwing_scale = 1,
                               lbl_y = c(1990,1995),
                               lab_sp = NULL,
-                              yup = NA){
+                              yup = NA,
+                              xlb = "",
+                              ylb = ""){
   
   
   if(!is.null(sp)){
@@ -47,10 +49,10 @@ comp_plot_species_CV <- function(dat = both_a,
     nreg <- length(reg)
     outggs <- vector(mode = "list",length = nreg)
     if(by_zone){
-      my_facets <- facet_wrap(facets = ~species_lower_case+zone,ncol = 3,scales = "free")
+      my_facets <- facet_wrap(facets = ~species_sentence_case+zone,ncol = 3,scales = "free")
       
     }else{
-      my_facets <- facet_wrap(facets = ~species_lower_case,ncol = 3,scales = "free")
+      my_facets <- facet_wrap(facets = ~species_sentence_case,ncol = 3,scales = "free")
       
     }
     for(ppn in 1:length(reg)){
@@ -94,8 +96,8 @@ comp_plot_species_CV <- function(dat = both_a,
       outgg = ggplot(data = datp,aes(x = year,y = CV,group = mod,fill = mod))+
         geom_point(aes(colour = mod),size = 0.5)+
         geom_line(aes(colour = mod))+
-        ylab("Coefficient of variation 100*(SD/mean)")+
-        xlab("")+
+        ylab("Coefficient of variation 100*(SD/x\u0305)")+
+        xlab(xlb)+
         #labs(title = paste0("Variance of ",pp," harvest estimates by year"))+
         #geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
         scale_y_continuous(limits = c(0,yup))+
@@ -117,8 +119,8 @@ comp_plot_species_CV <- function(dat = both_a,
                        colour = grDevices::grey(0.3),alpha = 0.2,dotsize = 0.6)+
           geom_point(aes(colour = mod),size = 0.5)+
           geom_line(aes(colour = mod))+
-          ylab("Coefficient of variation 100*(SD/mean)")+
-          xlab("")+
+          ylab("Coefficient of variation 100*(SD/x\u0305)")+
+          xlab(xlb)+
           #labs(title = paste0("Variance of ",pp," harvest estimates by year"))+
           #geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
           scale_y_continuous(limits = c(0,yup))+

@@ -9,7 +9,8 @@ plot_sel_general <- function(dat = both_b,
                         labs_inc = FALSE,
                         lbl_y = c(1990,1995),
                         region_in_title = FALSE,
-                        startYear = 1976){
+                        startYear = 1976,
+                        xlb = ""){
   
   
   pr = as.character(unique(dat[which(dat$prov == p),"province"]))
@@ -114,7 +115,7 @@ source("Functions/palette.R")
         geom_point(aes(colour = mod),size = 0.5)+
         geom_line(aes(colour = mod))+
         ylab("")+
-        xlab("")+
+        xlab(xlb)+
         labs(title = ttle)+
         geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
         scale_y_continuous(limits = c(0,NA),labels = scales::comma)+
