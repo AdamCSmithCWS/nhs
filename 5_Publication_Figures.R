@@ -425,7 +425,7 @@ print(p1+p2+p3+p4)
 dev.off()
 
 
-# Figure 4 - Six example CVs of national species harvest estimates ---------------------------------------
+# Figure 5 - Six example CVs of national species harvest estimates ---------------------------------------
 
 source("Functions/comparison_CV_by_species.R")
 
@@ -445,7 +445,7 @@ p1 = comp_plot_species_CV(dat = both_a,
                  xlb = "Year")
 
 
-pdf("Figures/Figure 4.pdf",
+pdf("Figures/Figure 5.pdf",
     width = 180/25,
     height = 180/25)
 print(p1)
@@ -453,7 +453,7 @@ dev.off()
 
 
 
-# Figure 5 uncommon species including Species of Conservation Concern --------------------------------
+# Figure 4 conservation concern species --------------------------------
 
 # national Harlequin Duck
 # national King Eider
@@ -484,7 +484,7 @@ p1 = comp_plot_species(dat = both_a,
                        add_n_labs = FALSE)
 
 
-pdf("Figures/Figure 5.pdf",
+pdf("Figures/Figure 4.pdf",
     width = 180/25,
     height = 180/25)
 print(p1)
