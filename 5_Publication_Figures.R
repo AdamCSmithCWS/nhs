@@ -640,6 +640,127 @@ dev.off()
 
 
 
+# calculations of %diff in harvest between models -------------------------
+p_dif = function(x,y){
+  y[which(y == 0)] <- NA
+  d = 100*(c(x-y)/mean(c(y),na.rm = TRUE))
+  return(d)
+}
+
+harv_comp_p <- both_a[which(both_a$province != "Canada" & is.na(both_a$zone) & #both_a$year > 1999 &
+                              both_a$species_sentence_case != "Eurasian green-winged teal" 
+                            & (both_a$AOU > 1000 & both_a$AOU < 1690)
+),]
+
+diff_harv_p = harv_comp_p %>% select(species_sentence_case,AOU,model,year,mean,province) %>% 
+  pivot_wider(.,names_from = model,
+              values_from = mean)  %>% 
+  mutate(mean_diff = p_dif(new,old) ,
+         mean_new = mean(new,na.rm = TRUE)) %>% 
+  group_by(species_sentence_case,AOU,province) %>% 
+  summarise(mean = mean(mean_diff,na.rm = TRUE),
+            lqrt = quantile(mean_diff,0.05,na.rm = TRUE),
+            uqrt = quantile(mean_diff,0.95,na.rm = TRUE),
+            size = mean(mean_new))
+
+
+diff_plot_p = ggplot(data = diff_harv,aes(x = species_sentence_case,y = mean))+
+  geom_point(aes(size = size))+
+  geom_errorbar(aes(ymin = lqrt,ymax = uqrt,width = 0),alpha = 0.3)+
+  facet_wrap(~province,scales = "free_x")+
+  coord_flip()
+
+print(diff_plot_p)
+
+
+
+
+harv_comp <- both_a[which(both_a$province != "Canada" & #both_a$year > 1999 &
+                        both_a$species_sentence_case != "Eurasian green-winged teal" 
+                        & (both_a$AOU > 1000 & both_a$AOU < 1690)
+                           ),]
+
+diff_harv = harv_comp %>% select(species_sentence_case,AOU,model,year,mean) %>% 
+  pivot_wider(.,names_from = model,
+              values_from = mean)  %>% 
+  mutate(mean_diff = p_dif(new,old) ,
+         mean_new = mean(new,na.rm = TRUE)) %>% 
+  group_by(species_sentence_case,AOU) %>% 
+  summarise(mean = mean(mean_diff,na.rm = TRUE),
+            lqrt = quantile(mean_diff,0.05,na.rm = TRUE),
+            uqrt = quantile(mean_diff,0.95,na.rm = TRUE),
+            size = mean(mean_new))
+
+
+
+
+
+diff_harv
+diff_plot = ggplot(data = diff_harv,aes(x = species_sentence_case,y = mean))+
+  geom_point(aes(size = size))+
+  geom_errorbar(aes(ymin = lqrt,ymax = uqrt,width = 0),alpha = 0.3)+
+  coord_flip()
+
+print(diff_plot)
+
+mean(diff_harv$mean)
+range(diff_harv$mean)
+quantile(diff_harv$mean,c(0.1,0.9))
+
+length(which(abs(diff_harv$mean) < 10))/length(diff_harv$mean)
+length(which(abs(diff_harv$mean) < 10))
+length(diff_harv$mean)
+diff_harv[which(abs(diff_harv$mean) > 10),]
+
+# Calculations of CV compared across years --------------------------------
+
+cv_a2 <- both_a[which(both_a$province == "Canada" & both_a$year > 2009 &
+                        both_a$species_sentence_case != "Eurasian green-winged teal"),]
+  cv_a2[,"CV"] <- (((cv_a2$uci-cv_a2$lci)/(qnorm(0.975)*2))/cv_a2$mean)*100
+
+w_lci0 = which(cv_a2$lci == 0)
+#cv_a2[w_lci0,"CV"] <- (cv_a2[w_lci0,"sd"])/cv_a2[w_lci0,"mean"]
+
+
+mean_cv = cv_a2 %>% group_by(species_sentence_case,AOU,model) %>% 
+  summarise(mean = mean(CV,na.rm = TRUE),
+            lqrt = quantile(CV,0.25,na.rm = TRUE),
+            uqrt = quantile(CV,0.75,na.rm = TRUE))
+
+
+cv_comp = ggplot(data = mean_cv)+
+  geom_pointrange(aes(x = species_sentence_case,y = mean,ymin = lqrt,ymax = uqrt,colour = model))+
+  coord_flip()
+print(cv_comp)
+
+### number of species with mean annual CVs < 10% in the last decade 
+nsp_LT10 <- mean_cv %>% group_by(species_sentence_case,model) %>% 
+  summarise(lt10 = ifelse(mean < 10,TRUE,FALSE) ) %>% 
+  group_by(model) %>% 
+  summarise(nsp_LT10 = length(which(lt10)))
+nsp_LT10
+
+
+diff_cv = cv_a2 %>% select(species_sentence_case,AOU,model,year,CV) %>% 
+  pivot_wider(.,names_from = model,
+              values_from = CV)  %>% 
+  mutate(CV_diff = new-old) %>% 
+  group_by(species_sentence_case,AOU) %>% 
+  summarise(mean = mean(CV_diff,na.rm = TRUE),
+            lqrt = quantile(CV_diff,0.25,na.rm = TRUE),
+            uqrt = quantile(CV_diff,0.75,na.rm = TRUE))
+
+# cv_diff = ggplot(data = diff_cv)+
+#   geom_pointrange(aes(x = species_sentence_case,y = median,ymin = lqrt,ymax = uqrt))+
+#   coord_flip()
+# print(cv_diff)
+
+mean(diff_cv$mean)
+range(diff_cv$mean)
+length(which(diff_cv$mean < 0))
+length(which(diff_cv$mean > 0))
+
+
 # 
 # # Figure Alt - age and sex specific harvests --------------------------------
 # source("Functions/Demographics_plot.R")
