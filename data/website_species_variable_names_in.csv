@@ -31,13 +31,13 @@ sp,species,newvar,source,as_var,group,species_lower_case,species_sentence_case
 1650,White-winged Scoter,kill_ys,duck,axcomp_axsy,sea_ducks,white-winged scoter,White-winged scoter
 1660,Surf Scoter,kill_ys,duck,axcomp_axsy,sea_ducks,surf scoter,Surf scoter
 1670,Ruddy Duck,kill_ys,duck,axcomp_axsy,puddle_ducks,ruddy duck,Ruddy duck
-1690,Lesser Snow Goose: white phase,kill_ys,goose,axcomp_axsy,,lesser snow goose: white phase,Lesser snow goose: white phase
-1691,Lesser Snow Goose: blue phase,kill_ys,goose,axcomp_axsy,,lesser snow goose: blue phase,Lesser snow goose: blue phase
+1690,Lesser Snow Goose: white phase,kill_ys,goose,axcomp_axsy,,lesser snow goose: white,Lesser snow goose: white
+1691,Lesser Snow Goose: blue phase,kill_ys,goose,axcomp_axsy,,lesser snow goose: blue,Lesser snow goose: blue
 1699,Greater Snow Goose,kill_ys,goose,axcomp_axsy,,greater snow goose,Greater snow goose
 1700,Ross' Goose,kill_ys,goose,axcomp_axsy,,Ross' goose,Ross' goose
 1710,White-fronted Goose,kill_ys,goose,axcomp_axsy,,white-fronted goose,White-fronted goose
 1720,Canada Goose,kill_ys,goose,axcomp_axsy,,Canada goose,Canada goose
-1721,Canada Goose: small races,kill_ys,goose,axcomp_axsy,,Canada goose: small races,Canada goose: small races
-1722,Canada Goose: large races,kill_ys,goose,axcomp_axsy,,Canada goose: large races,Canada goose: large races
+1721,Canada Goose: small races,kill_ys,goose,axcomp_axsy,,Canada goose: small,Canada goose: small
+1722,Canada Goose: large races,kill_ys,goose,axcomp_axsy,,Canada goose: large,Canada goose: large
 1730,Brant,kill_ys,goose,axcomp_axsy,,brant,Brant
 1740,Black Brant,kill_ys,goose,axcomp_axsy,,black brant,Black brant

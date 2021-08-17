@@ -374,7 +374,86 @@ dev.off()
 # }
 # dev.off()
 
-# Figure 3 - Four example species harvest estimates ---------------------------------------
+# Figure 3 - All duck harvest estimate comparison 2009 - 2018 ---------------------------------------
+# calculations of %diff in harvest between models -------------------------
+p_dif = function(x,y){
+  y[which(y == 0)] <- NA
+  d = mean(log(x/y))
+  return(d)
+}
+
+
+harv_comp <- both_a %>% 
+  filter(province == "Canada",
+         is.na(zone),
+         year > 2008,
+         species_sentence_case != "Eurasian green-winged teal",
+         (AOU > 1000 & AOU < 1690)) 
+
+spmeans = harv_comp %>% filter(model == "old") %>% 
+  group_by(species_sentence_case) %>% 
+  summarise(mean_harv = mean(mean,na.rm = TRUE)) %>% 
+  left_join(.,sp_vars,by = "species_sentence_case") %>% 
+  arrange(.,source,mean_harv) %>% 
+  mutate(sp_f = factor(species_sentence_case,levels = species_sentence_case,ordered = TRUE)) %>% 
+  select(species_sentence_case,mean_harv,sp_f,source)
+
+
+# both_a[which(both_a$province == "Canada" & is.na(both_a$zone) & both_a$year > 2010 &
+#                       both_a$species_sentence_case != "Eurasian green-winged teal" 
+#                       & (both_a$AOU > 1000 & both_a$AOU < 1690)
+#                          ),]
+
+diff_harv = harv_comp %>% ungroup() %>% 
+  select(species_sentence_case,model,year,mean) %>% 
+  pivot_wider(.,names_from = model,
+              values_from = mean)  %>%
+  group_by(species_sentence_case,year) %>% 
+  mutate(mean_diff = p_dif(new,old)) %>% 
+  group_by(species_sentence_case) %>% 
+  summarise(mean = mean(mean_diff,na.rm = TRUE),
+            lqrt = quantile(mean_diff,0.0,na.rm = TRUE),
+            uqrt = quantile(mean_diff,1,na.rm = TRUE),
+            nn = length(which(!is.na(mean_diff)))) %>% 
+  left_join(.,spmeans,by = "species_sentence_case") %>% 
+  arrange(sp_f)
+
+
+
+ch_lab_loc = log(c(0.5,0.75,1,1.33,2,4))
+ch_labs = paste(round((exp(ch_lab_loc)-1)*100),"%")
+ch_labs[which(ch_labs == "0 %")] <- ""
+
+diff_plot = ggplot(data = diff_harv,aes(x = sp_f,y = mean))+
+  geom_point()+
+  geom_errorbar(aes(ymin = lqrt,ymax = uqrt,width = 0),alpha = 0.3)+
+  geom_abline(slope = 0,intercept = 0)+
+  scale_y_continuous(breaks = ch_lab_loc,labels = ch_labs)+
+ # scale_colour_viridis_c(aesthetics = "colour",end = 0.8,direction = -1)+
+  ylab("")+
+  xlab("")+
+  coord_flip(ylim = c(ch_lab_loc[1],ch_lab_loc[length(ch_lab_loc)]))+
+  theme_classic()+
+  theme(text = element_text(family = "Times"),
+        legend.position = "none",
+        axis.text = element_text(size = 8))
+
+print(diff_plot)
+
+
+
+pdf("Figures/Figure 3.pdf",
+    width = 85/25,
+    height = 180/25)
+print(diff_plot)
+
+dev.off()
+
+
+
+# Figure 4 - Four example species harvest estimates -----------------------
+
+
 
 # Mallard harvest in SK 3
 # CAGO small harvest in MB 1
@@ -388,7 +467,7 @@ p1 = plot_sel_sp(dat = zone_both_a,
                              p = "SK",
                              z = 3,
                              spgp = "duck",
-                 ylb = "Estimated harvest")
+                 ylb = "Harvest")
 p2 = plot_sel_sp(dat = zone_both_a,
                  sp = "Canada Goose: small races",
                  p = "MB",
@@ -402,7 +481,7 @@ p3 = plot_sel_sp(dat = zone_both_a,
                  labs_inc = TRUE,
                  lbl_y = c(2010,1995),
                  xlb = "Year",
-                 ylb = "Estimated harvest")
+                 ylb = "Harvest")
 p4 = plot_sel_sp(dat = zone_both_a,
                  sp = "Northern Pintail",
                  p = "SK",
@@ -410,14 +489,14 @@ p4 = plot_sel_sp(dat = zone_both_a,
                  spgp = "duck",
                  xlb = "Year")
 
-pdf("Figures/Figure 3.pdf",
+pdf("Figures/Figure 4.pdf",
     width = 180/25,
     height = 180/25)
 print(p1+p2+p3+p4)
 dev.off()
 
 # figure for readme
-png("Figures/Figure 3.png",
+png("Figures/Figure 4.png",
     width = 480*2,
     height = 480*2,
     res = 150)
@@ -425,7 +504,7 @@ print(p1+p2+p3+p4)
 dev.off()
 
 
-# Figure 5 - Six example CVs of national species harvest estimates ---------------------------------------
+# Figure 6 - Six example CVs of national species harvest estimates ---------------------------------------
 
 source("Functions/comparison_CV_by_species.R")
 
@@ -445,7 +524,7 @@ p1 = comp_plot_species_CV(dat = both_a,
                  xlb = "Year")
 
 
-pdf("Figures/Figure 5.pdf",
+pdf("Figures/Figure 6.pdf",
     width = 180/25,
     height = 180/25)
 print(p1)
@@ -453,7 +532,7 @@ dev.off()
 
 
 
-# Figure 4 conservation concern species --------------------------------
+# Figure 5 conservation concern species --------------------------------
 
 # national Harlequin Duck
 # national King Eider
@@ -484,7 +563,7 @@ p1 = comp_plot_species(dat = both_a,
                        add_n_labs = FALSE)
 
 
-pdf("Figures/Figure 4.pdf",
+pdf("Figures/Figure 5.pdf",
     width = 180/25,
     height = 180/25)
 print(p1)
@@ -493,7 +572,7 @@ dev.off()
 
 
 
-# Figure 6 - age ratio examples -------------------------------------------
+# Figure 7 - age ratio examples -------------------------------------------
 
 
 
@@ -503,7 +582,7 @@ p1 = comp_plot_species(dat = both_c,
                               "American Black Duck",
                               "Greater Scaup",
                               "Canvasback",
-                              "Canada Goose: small races",
+                              "Canada Goose: small",
                               "Ross' Goose"),
                        reg = "Canada",
                        labs_inc = T,
@@ -518,7 +597,7 @@ p1 = comp_plot_species(dat = both_c,
                        add_n_labs = FALSE)
 
 
-pdf("Figures/Figure 6.pdf",
+pdf("Figures/Figure 7.pdf",
     width = 180/25,
     height = 180/25)
 print(p1)
@@ -529,7 +608,7 @@ dev.off()
 
 
 
-# Figure 7 Mallard age ratios ---------------------------------------------
+# Figure 8 Mallard age ratios ---------------------------------------------
 
 p1 = comp_plot_species(dat = both_c,
                        sp = "Mallard",
@@ -630,7 +709,7 @@ p6 = parts_by_harvest(sp = "Mallard",reg = c("Saskatchewan","Ontario"))
 
 
 
-pdf("Figures/Figure 7.pdf",
+pdf("Figures/Figure 8.pdf",
     width = 180/25,
     height = 180/25)
 print((p1[[1]]+p2[[1]])/
@@ -640,70 +719,95 @@ dev.off()
 
 
 
-# calculations of %diff in harvest between models -------------------------
-p_dif = function(x,y){
-  y[which(y == 0)] <- NA
-  d = 100*(c(x-y)/mean(c(y),na.rm = TRUE))
-  return(d)
-}
-
-harv_comp_p <- both_a[which(both_a$province != "Canada" & is.na(both_a$zone) & #both_a$year > 1999 &
-                              both_a$species_sentence_case != "Eurasian green-winged teal" 
-                            & (both_a$AOU > 1000 & both_a$AOU < 1690)
-),]
-
-diff_harv_p = harv_comp_p %>% select(species_sentence_case,AOU,model,year,mean,province) %>% 
-  pivot_wider(.,names_from = model,
-              values_from = mean)  %>% 
-  mutate(mean_diff = p_dif(new,old) ,
-         mean_new = mean(new,na.rm = TRUE)) %>% 
-  group_by(species_sentence_case,AOU,province) %>% 
-  summarise(mean = mean(mean_diff,na.rm = TRUE),
-            lqrt = quantile(mean_diff,0.05,na.rm = TRUE),
-            uqrt = quantile(mean_diff,0.95,na.rm = TRUE),
-            size = mean(mean_new))
 
 
-diff_plot_p = ggplot(data = diff_harv,aes(x = species_sentence_case,y = mean))+
-  geom_point(aes(size = size))+
-  geom_errorbar(aes(ymin = lqrt,ymax = uqrt,width = 0),alpha = 0.3)+
-  facet_wrap(~province,scales = "free_x")+
-  coord_flip()
+# 
+# diff_plot_p = ggplot(data = diff_harv_p,aes(x = species_sentence_case,y = mean))+
+#   geom_point()+
+#   geom_errorbar(aes(ymin = lqrt,ymax = uqrt,width = 0),alpha = 0.3)+
+#   facet_wrap(~province,scales = "free_x")+
+#   coord_flip()
+# 
+# print(diff_plot_p)
+# 
+# 
+# 
+# 
+# harv_comp_p <- both_a[which(both_a$province != "Canada" & is.na(both_a$zone) & both_a$year > 2010 &
+#                               both_a$species_sentence_case != "Eurasian green-winged teal"  
+#                             & (both_a$AOU > 1000 & both_a$AOU < 1690)
+# ),]
+# 
+# 
+# 
+#  
+# diff_harv_p = harv_comp_p %>% select(species_sentence_case,AOU,model,year,mean,province) %>% 
+#   pivot_wider(.,names_from = model,
+#               values_from = mean)  %>%
+#   group_by(species_sentence_case,AOU,province,year) %>% 
+#   mutate(mean_diff = p_dif(new,old))  %>% 
+#   group_by(species_sentence_case,) %>% 
+#   summarise(mean = mean(mean_diff,na.rm = TRUE),
+#             lqrt = quantile(mean_diff,0.05,na.rm = TRUE),
+#             uqrt = quantile(mean_diff,0.95,na.rm = TRUE))
+# 
+# 
+# diff_plot_p = ggplot(data = diff_harv_p,aes(x = species_sentence_case,y = mean))+
+#   geom_point()+
+#   geom_errorbar(aes(ymin = lqrt,ymax = uqrt,width = 0),alpha = 0.3)+
+#   #facet_wrap(~province,scales = "free_x")+
+#   coord_flip()
+# 
+# print(diff_plot_p)
+# 
+# 
+# diff_harv_p$mean
 
-print(diff_plot_p)
+# include Ducks, Geese, and Murres
+# sort according to groups and then according to total harvest
+
+### make this into a new plot to discuss the redistribution of harvest from common species to less common species
+# 
+# diff_harv_all = harv_comp %>% ungroup() %>% 
+#   select(species_sentence_case,model,year,mean) %>% 
+#   pivot_wider(.,names_from = model,
+#               values_from = mean)  %>%
+#   group_by(species_sentence_case,year) %>% 
+#   mutate(diff = p_dif(new,old)) %>% 
+#   left_join(.,spmeans,by = "species_sentence_case") %>% 
+#   arrange(sp_f)
+# 
+# 
+# 
+# diff_plot_alt = ggplot(data = diff_harv_all,aes(x = sp_f,y = diff,colour = source))+
+#   geom_point(position = position_jitter(width = 0.2),alpha = 0.2)+
+#   #geom_errorbar(aes(ymin = lqrt,ymax = uqrt,width = 0),alpha = 0.3)+
+#   geom_abline(slope = 0,intercept = 0)+
+#   scale_y_continuous(breaks = ch_lab_loc,labels = ch_labs)+
+#   scale_colour_viridis_d(aesthetics = "colour",end = 0.8)+
+#   ylab("")+
+#   xlab("")+
+#   coord_flip(ylim = c(ch_lab_loc[1],ch_lab_loc[length(ch_lab_loc)]))+
+#   theme_classic()+
+#   theme(text = element_text(family = "Times"),
+#         legend.position = "none",
+#         axis.text = element_text(size = 8))
+# 
+# print(diff_plot_alt)
+# 
+# 
+# 
+# pdf("Figures/Figure new alt.pdf",
+#     width = 85/25,
+#     height = 180/25)
+# print(diff_plot_alt)
+# 
+# dev.off()
 
 
 
 
-harv_comp <- both_a[which(both_a$province != "Canada" & #both_a$year > 1999 &
-                        both_a$species_sentence_case != "Eurasian green-winged teal" 
-                        & (both_a$AOU > 1000 & both_a$AOU < 1690)
-                           ),]
-
-diff_harv = harv_comp %>% select(species_sentence_case,AOU,model,year,mean) %>% 
-  pivot_wider(.,names_from = model,
-              values_from = mean)  %>% 
-  mutate(mean_diff = p_dif(new,old) ,
-         mean_new = mean(new,na.rm = TRUE)) %>% 
-  group_by(species_sentence_case,AOU) %>% 
-  summarise(mean = mean(mean_diff,na.rm = TRUE),
-            lqrt = quantile(mean_diff,0.05,na.rm = TRUE),
-            uqrt = quantile(mean_diff,0.95,na.rm = TRUE),
-            size = mean(mean_new))
-
-
-
-
-
-diff_harv
-diff_plot = ggplot(data = diff_harv,aes(x = species_sentence_case,y = mean))+
-  geom_point(aes(size = size))+
-  geom_errorbar(aes(ymin = lqrt,ymax = uqrt,width = 0),alpha = 0.3)+
-  coord_flip()
-
-print(diff_plot)
-
-mean(diff_harv$mean)
+median(diff_harv$mean)
 range(diff_harv$mean)
 quantile(diff_harv$mean,c(0.1,0.9))
 
