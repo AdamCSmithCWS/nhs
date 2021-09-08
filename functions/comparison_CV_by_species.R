@@ -96,7 +96,7 @@ comp_plot_species_CV <- function(dat = both_a,
       outgg = ggplot(data = datp,aes(x = year,y = CV,group = mod,fill = mod))+
         geom_point(aes(colour = mod),size = 0.5)+
         geom_line(aes(colour = mod))+
-        ylab("Coefficient of variation 100*(SD/x\u0305)")+
+        ylab("Coefficient of variation 100*(SD/\u0078\u0305 )")+
         xlab(xlb)+
         #labs(title = paste0("Variance of ",pp," harvest estimates by year"))+
         #geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
@@ -119,7 +119,7 @@ comp_plot_species_CV <- function(dat = both_a,
                        colour = grDevices::grey(0.3),alpha = 0.2,dotsize = 0.6)+
           geom_point(aes(colour = mod),size = 0.5)+
           geom_line(aes(colour = mod))+
-          ylab("Coefficient of variation 100*(SD/x\u0305)")+
+          ylab("Coefficient of variation 100*(SD/\u0078\u0305 )")+
           xlab(xlb)+
           #labs(title = paste0("Variance of ",pp," harvest estimates by year"))+
           #geom_ribbon(aes(ymax = uci,ymin = lci),alpha = 0.2)+
